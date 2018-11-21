@@ -1,0 +1,67 @@
+This is a guide for translating external protocol messages to internal server calls.
+TCP sends data in a string, so it is the job of protocol modules to convert that string data into objects which are readable by the server.
+
+Many protocols may work differently, so sometimes manually pulling information is necessary. Look up how to use the process api for help regarding this.
+
+Client
+INFO_REQ - Client wants to know the server's status and information. INFO_SEND is sent in reply.
+
+INFO_SEND = {
+	software = (text),
+	version = (text),
+
+	name = (text),
+	description = (text),
+
+	maxplayers = (num),
+	players = (num),
+}
+
+
+JOIN_REQ - Client wishes to join the server. Either JOIN_ALLOW or JOIN_DENY may be sent
+
+JOIN_DENY = {
+	reason = (text),
+	code = (JOIN_CODE),
+}
+
+
+CHAR_REQ - Client wishes to pick a character. Either CHAR_ALLOW or CHAR_DENY may be sent
+
+CHAR_REQ = {
+	character = (text),
+}
+
+CHAR_DENY = {
+	character = (text),
+	reason = (text),
+	code = (CHAR_CODE),
+}
+
+
+OOC - The client sends a simple text message. The object is the same in both directions. Though name can be omitted when receiving.
+
+OOC = {
+	message = (text),
+	name = (text),
+}
+
+IC - The client sends an emote with dialogue. The object is the same in both directions.
+
+IC = {
+	dialogue = (text),
+	character = (text),
+	name = (text),
+
+	emote = (text),
+	pre_emote = (text),
+
+	--Below are optional variables you may need.
+	item = (int),
+	side = (SIDE_CODE),
+	h_scroll = (num),
+
+	flip = (bool),
+	append = (bool),
+
+}

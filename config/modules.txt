@@ -1,0 +1,11 @@
+#Add the names of the modules you want to use.
+#You can use a # prefix to disable instead.
+
+#Subsystems
+commands
+rooms
+
+#Features.
+
+#Completely optional and seperate
+ao2advertiser
