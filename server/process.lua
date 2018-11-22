@@ -24,6 +24,7 @@ Called when a client disconnects or is detected as closed.
 function process:start(server)
 	math.randomseed(os.time())
 	math.random()math.random()
+
 	self.id = -1
 
 	self.server = server
@@ -38,11 +39,11 @@ function process:start(server)
 	self.callbacks = {}
 
 	--Load from configuration
-	self.characters = dofile(path.."config/characters.lua")
+	self.characters = self:loadList(path.."config/characters.txt")
+	self.backgrounds = self:loadList(path.."config/backgrounds.txt")
+	self.music = self:loadList(path.."config/music.txt")
 
-	dofile(path.."config/features.lua")
-
-
+	local modules = self:loadList(path.."config/modules.txt")
 end
 
 --Message sent from client to process via protocol
@@ -101,7 +102,7 @@ function process:send(client, call, data)
 		end
 	end
 	if n == "IC" then
-		self:protocolStringAssert(call,data, "dialogue","character","name","emote","pre_emote")
+		self:protocolStringAssert(call,data, "dialogue","character","emote")
 
 		if self:event("emote", client, data) then
 			for i,receiver in ipairs(self.players) do
@@ -189,14 +190,63 @@ function process:protocolNumberAssert(call,data,...)
 	end
 end
 
---API functions
-function process:getCharacters(client)
-	return self.characters
+--API helpers
+function process:assertValue(value,kind,argi)
+	if type(value) ~= kind then error("Error: Expected "..kind.." value at argument #"..argi.."! Got "..type(value).." instead.",3) end
 end
 
+--General API functions
 function process:print(text,caller)
 	print(os.date("%x %H:%S").." ["..(caller or "Server").."]: "..text)
 end
 
+function process:loadList(dir)
+	local t = {}
+	local file = io.open(dir)
+	if file then
+		for line in file:lines() do
+			if line:sub(1,1) ~= "#" and #line > 0 then
+				table.insert(t,line)
+			end
+		end
+	end
+	return t
+end
+
+function process:saveList(list,dir)
+	local file = io.open(dir,"w")
+	for i=1,#list do local v = list[i]
+		if v then
+			file:write(v.."\n")
+		end
+	end
+	file:close()
+end
+
+function process:getCharacters(client) --April fools joke idea: Shuffle the list every time.
+	return self.characters
+end
+function process:getBackgrounds(client)
+	return self.backgrounds
+end
+function process:getMusic(client)
+	return self.music
+end
+
+function process:sendMessage(client,message,ooc_name)
+	local ooc = {
+		name=ooc_name or config.serverooc,
+		message=message
+	}
+	receiver:send("OOC", ooc)
+end
+function process:sendEmote(client,emote)
+	local ic = {}
+	for k,v in pairs(emote) do
+		ic[k] = v
+	end
+
+	v:send("IC", ic)
+end
 
 return process

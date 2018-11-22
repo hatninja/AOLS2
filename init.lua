@@ -23,16 +23,14 @@ if config.interface then interface = dofile(path.."server/interface.lua") end
 while not server.kill do
 	local st = os.clock()
 
-	local g,err = pcall(server.update,server)
+	local g,err = xpcall(server.update,debug.traceback,server)
 	if not g then
-		print("FATAL ERROR:\n"..tostring(err))
-		server:close()
-	end
-	if server.kill and config.autorestart then
-		print("RESTARTING!")
-		server = nil
-		server = dofile("server/server.lua")
-		server:start()
+		print("FATAL ERROR: "..tostring(err))
+		server:close(config.autorestart)
+		if not server.kill then
+			print("RESTARTING!")
+			server:start()
+		end
 	end
 
 	if interface then
@@ -44,7 +42,7 @@ while not server.kill do
 	if time < config.rate then
 		socket.sleep(config.rate-time)
 	else
-		verbosewrite("Stutter detected!\n")
+		print("Stutter detected! Maybe your update rate is too fast?")
 	end
 end
 if interface then interface:close() end

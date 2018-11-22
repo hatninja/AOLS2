@@ -29,18 +29,14 @@ local server = {
 	software = "AOLS2",
 	version = "alpha",
 
-	kill=false,
-
 	clients={},
-
-	process = dofile(path.."server/process.lua"),
 
 	protocols={
 		dofile(path.."server/protocols/ao2.lua"),
 		dofile(path.."server/protocols/websocket.lua"),
 	},
-	modules={}, --TODO: Make this adjustable via file. --Wait why have modules here if process is the one using them?
 
+	process = dofile(path.."server/process.lua"),
 }
 
 function server:start()
@@ -68,13 +64,12 @@ function server:start()
 	end
 end
 
---TODO: Fix poor client close handling.
-
 function server:update()
 	repeat
 		local client = self.socket:accept()
 		if client then
 			client:settimeout(0)
+			--TODO: Implement client:close, good shorthand and allows protocols to do it properly.
 			self.clients[client] = {
 				socket=client,
 				buffer="",
@@ -136,9 +131,15 @@ function server:update()
 	self.process:update()
 end
 
-function server:close()
-	self.socket:close()
-	self.kill = true
+function server:close(reset)
+	for k,client in pairs(self.clients) do
+		--TODO: Change to client:close()
+		client.socket:close()
+	end
+	if not reset then
+		self.socket:close()
+		self.kill = true
+	end
 end
 
 return server

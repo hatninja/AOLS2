@@ -1,65 +1,35 @@
--- For websocket support
-local guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+--Websocket wrapper implementation.
+local websocket = {
+	guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+	
+}
+
 local mime = require("mime")
-local sha1 = dofile(path.."sha1.lua")
+local sha1 = dofile(path.."server/libraries/sha1.lua")
 
-local clientList = {}
+function websocket:detect(client,process)
+	if #client.received == 0 or data:sub(1,3) ~= "GET" then return end
 
-function buffersend(client,msg)
-	if client and clientList[client] then
-		clientList[client].send = (clientList[client].send or "") .. msg
+	if client.received:find("websocket") then --Client is using websocket, we need to send a handshake back!
+		print(client.received)
+		local key = data:match("Sec%-WebSocket%-Key: (%S+)")
+		if key then
+			local accept = mime.b64(sha1.binary(key..self.guid)):sub(1,-2).."="
+			
+			local handshake = "HTTP/1.1 101 Switching Protocols\r\n"
+			.."Upgrade: websocket\r\n"
+			.."Connection: Upgrade\r\n"
+			.."Sec-WebSocket-Accept: "..accept.."\r\n\r\n"
+			
+			client:sendraw(handshake)
+			client.websocket = true
+			client.received = ""
+		end
 	end
 end
 
-function loop()
-	repeat
-		local client = server:accept()
-		if client then
-			client:settimeout(0)
-
-			clientList[client] = ({
-				socket=client,
-				send="",
-				received="",
-				open=false,
-			})
-		end
-	until not client
-
-	for i,v in pairs(clientList) do
-		local client = v
-		if client and client.socket then
-			--RECEIVE
-			local data = ""
-			repeat
-				local c,err = client.socket:receive(1)
-				if c then data=data .. c end
-				if err == "closed" or #data > 4000 then --Way too massive for anyone to expect from a client!
-					doclosed(client.socket)
-					clientList[i] = nil
-					break
-				end
-			until not c --Always check if your loops are correct. I thought "client:receive(1)" was blocking like mad!
-
-			if #data>0 then --Only open if data is received
-
-			--Hacky WebSockets Support
-			if data:sub(1,3) == "GET" and data:find("websocket") then --Client is using websocket, we need to send a handshake back!
-				local key = data:match("Sec%-WebSocket%-Key: (%S+)")
-				if key then
-					local accept = mime.b64(sha1.binary(key..guid)):sub(1,-2).."="
-
-					local handshake = "HTTP/1.1 101 Switching Protocols\r\n"
-					handshake = handshake.."Upgrade: websocket\r\n"
-					handshake = handshake.."Connection: Upgrade\r\n"
-					handshake = handshake.."Sec-WebSocket-Accept: "..accept.."\r\n\r\n"
-
-					customsend(client.socket,handshake)
-					client.websocket = true
-					data = ""
-				end
-			end
-			if client.websocket then
+function websocket:update(client,process)
+	--[[		if client.websocket then
 				local dat,opcode,masked,fin = wspayloaddecode(data)
 				if dat then
 					if opcode < 3 then
@@ -71,34 +41,6 @@ function loop()
 						customsend(client.socket,wspayloadencode(dat,10,false,true)) --Send PONG
 					end
 					--print("GOT","'"..dat.."'","OPCODE: "..tostring(opcode),"Masked: "..tostring(masked),"FIN: "..tostring(fin))
-				end
-			end
-
-			client.received=client.received .. data
-
-			--Open clients here, because we want to keep it clean for websocket handshake.
-			if not client.open then
-				doaccept(client.socket)
-				client.open = true
-			end
-
-			end
-
-			--PROCESS
-			repeat
-				local st,en = client.received:find("%%")
-				if st then
-					local subcommand = client.received:sub(1,st-1)
-
-					local suc,err = pcall(dosubcommand, client.socket,subcommand)
-					if not suc then
-						print("Client["..tostring(client).."] Error with: "..subcommand)
-						print(err)
-					end
-
-					client.received = client.received:sub(en+1,-1)
-				end
-			until not st
 
 			--SEND
 			if client.websocket then
@@ -113,25 +55,11 @@ function loop()
 
 						local dat,opcode,masked,fin = wspayloaddecode(message)
 						--print("SENT","'"..tostring(dat).."'","LENGTH: "..tostring(#dat),"OPCODE: "..tostring(opcode),"Masked: "..tostring(masked),"FIN: "..tostring(fin))
-
-						client.send = client.send:sub(en+1,-1)
-					end
-				until not st
-			else
-				local data = client.send:sub(1,2048)
-				if #data > 0 then
-					customsend(client.socket,data)
-				end
-				client.send = client.send:sub(2048,-1)
-			end
-		end
-	end
-
-	doupdate(rate)
+						]]
 end
 
 
-function getbytes(str)
+function websocket:getbytes(str)
 	local t = {}
 	for i=1,#str do
 		table.insert(t,string.byte(str:sub(i,i)))
@@ -140,33 +68,34 @@ function getbytes(str)
 end
 
 
-function wspayloaddecode(dat)
-	if dat == "" or not dat then return nil end
+function websocket:decode(dat)
+	if not bit then return end
+	if #dat < 4 then return nil end
+
 	local p = 0
 
-	local byteA,byteB = getbytes(dat:sub(p+1,p+2))
-	--local byteB = string.byte(dat:sub(p+2,p+2))
+	local byteA,byteB = self:getbytes(dat:sub(p+1,p+2))
+
 	local FIN = bit.band(byteA,0x80) ~= 0
 	local OPCODE = bit.band(byteA,0x0F)
 	local MASKED = bit.band(byteB,0x80) ~= 0
 	local LENGTH = bit.band(byteB,0x7F)
 	p = p + 2
 	if LENGTH == 126 then
-		local a,b = getbytes(dat:sub(p+1,p+2))
+		local a,b = self:getbytes(dat:sub(p+1,p+2))
 		LENGTH = bit.bor(bit.lshift(a,8),b)
 		p = p + 2
-	elseif LENGTH == 127 then
-
-		local a,b,c,d,e,f,g,h = getbytes(dat:sub(p+1,p+8))
-		--Lua doesn't support 64-bit integers.
-		LENGTH = bit.bor(bit.lshift(e,24),bit.lshift(f,16),bit.lshift(g,8),h)
+		
+	elseif LENGTH == 127 then 
+		local a,b,c,d,e,f,g,h = self:getbytes(dat:sub(p+1,p+8))
+		LENGTH = bit.bor(bit.lshift(e,24),bit.lshift(f,16),bit.lshift(g,8),h) --Lua doesn't use 64-bit integers
 		p = p + 8
 	end
+	
 	local MASKKEY
 	if MASKED then
-		local a,b,c,d = getbytes(dat:sub(p+1,p+4))
+		local a,b,c,d = self:getbytes(dat:sub(p+1,p+4))
 		MASKKEY = {a,b,c,d}
-		--MASKKEY = bit.bor(bit.lshift(a,24),bit.lshift(b,16),bit.lshift(c,8),d)
 		p = p + 4
 	end
 	local PAYLOAD = dat:sub(p+1,p+LENGTH)
@@ -186,7 +115,9 @@ function wspayloaddecode(dat)
 	return data,OPCODE,MASKED,FIN
 end
 
-function wspayloadencode(dat,opcode,masked,fin)
+function websocket:encode(dat,opcode,masked,fin)
+	if not bit then return end
+	
 	local encoded = ""
 
 	local OPCODE = opcode or 1
@@ -198,6 +129,7 @@ function wspayloadencode(dat,opcode,masked,fin)
 	local bytes = {}
 	if masked then byteB = bit.bor(byteB,0x80) end
 
+	--Convert length into string data
 	if #dat < 126 then
 		byteB = bit.bor(byteB,#dat)
 	elseif #dat < 0xFFFF then
@@ -211,7 +143,6 @@ function wspayloadencode(dat,opcode,masked,fin)
 		table.insert(bytes,bit.band(bit.rshift(#dat,8),0xFF))
 		table.insert(bytes,bit.band(#dat,0xFF))
 	end
-
 	local bytechars = ""
 	for i=1,#bytes do bytechars = bytechars .. string.char(bytes[i]) end
 	encoded = encoded .. string.char(byteB) .. bytechars
