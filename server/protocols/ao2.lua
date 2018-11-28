@@ -9,60 +9,100 @@ local AO2 = {
 	output = {},
 }
 
+function AO2:detect(client,process)
+	--Simple timer, attempt to connect if nothing sent. AO2 really needs a handshake...
+	if true then
+		client.protocol = self
+		client.protocol_state = {}
+		process:send(client,"INFO_REQ")
+		return true
+	end
+end
+
+--Update a client.
+function AO2:update(client,process)
+	local st,en = client.received:find("%%")
+	if st then
+		local subcommand = client.received:sub(1,st-1)
+		client.received = client.received:sub(en+1,-1)
+
+		if subcommand:sub(1,1) == "#" then subcommand = subcommand:sub(2,-1) end
+		local args = self:split(subcommand,"#")
+
+		print("CLIENTRAW",encrypted and "("..encrypted..")" or "("..args[1]..")",table.concat(args,", "))
+
+		if self.input[args[1]] then
+			self.input[args[1]](self,client,process,unpack(args))
+			--Maybe have returns send messages for invalid messages.
+		else
+			print("Unknown message: "..args[1])
+		end
+
+		--client:sendraw("SC#%") insta-closes the client, neato!
+	end
+end
+
+--Incoming messages
 AO2.input["HI"] = function(self,client,process,call, hardwareid)
 	client.hardwareid = hardwareid
 end
-
 AO2.input["ID"] = function(self,client,process,call, software,version)
 	client.software = software
 	client.version = version
 end
 
 AO2.input["askchaa"] = function(self,client,process,call)
-	local characters = process:getCharacters(client)
+	local characters =  AO2:makeNameList(process:getCharacters(client),"name")
 	client.protocol_state.char_list = characters
+
+	local music =  AO2:makeNameList(process:getMusic(client),"name")
+	client.protocol_state.music_list = music
+
+	client.protocol_state.hp = {0,0}
 
 	process:send(client,"JOIN_REQ")
 end
-
 --[[Loading 1.0]]
 AO2.input["askchar2"] = function(self,client,process,call)
 	if not client.protocol_state.char_list then return end
 	client.software = "AO"
-	self:sendCharacterList(client,client.protocol_state.char_list, feature_fastslowload or 1)
+	self:sendAssetList(client,"CI",client.protocol_state.char_list, feature_fastslowload or 1)
 end
 AO2.input["AN"] = function(self,client,process,call, page)
 	if not client.protocol_state.char_list then return end
 	if tonumber(page) and tonumber(page)*10 <= #client.protocol_state.char_list then
-		self:sendCharacterList(client,client.protocol_state.char_list, tonumber(page)+1)
+		self:sendAssetList(client,"CI",client.protocol_state.char_list, tonumber(page)+1)
 	else
 		client:sendraw("EI#1#N&A&1&hi_there.png&#%") --Characters finished, let's move over to evidence,
 	end
 end
 AO2.input["AE"] = function(self,client,process,call, page)
-	client:sendraw("EM#0#No Music#%") --No evidence here, let's go to music.
+	--No evidence here, let's go to music.
+	if not client.protocol_state.music_list then return end
+	self:sendAssetList(client,"EM",client.protocol_state.char_list, feature_fastslowload or 1)
 end
-AO2.input["AM"] = function(self,client,process,call, page) --TODO: Implement music in AO loading 1.0
-	--Welp it looks like we're done!
-
-	client:sendraw("CharsCheck#0#%") --TODO: Fix WebAO breaking when all values aren't filled.
-	client:sendraw("DONE#%")
-	--NOTE: Freepick boot with CHAR_PICK, send -1 to process or keep it here?
-	if feature_freepick then client:sendraw("PV#0#CID#-1#%") end --Boots the player to the scene.
-
+AO2.input["AM"] = function(self,client,process,call, page) --Used for both so we get the same finishcode.
+	if not client.protocol_state.music_list then return end
+	if tonumber(page) and tonumber(page)*10 <= #client.protocol_state.music_list then
+		self:sendAssetList(client,"EM",client.protocol_state.music_list, tonumber(page)+1)
+	else
+		self:finishLoad(client,process)
+	end
 end
-
 --[[Loading 2.0]]
 AO2.input["RC"] = function(self,client,process,call)
 	if not client.protocol_state.char_list then return end
-	self:sendCharacterList(client,client.protocol_state.char_list)
+	self:sendAssetList(client,"SC",client.protocol_state.char_list)
 end
 AO2.input["RM"] = function(self,client,process,call)
-	client:sendraw("SM#Yes Music#%")
+	if not client.protocol_state.music_list then return end
+	self:sendAssetList(client,"SM",client.protocol_state.music_list)
 end
-AO2.input["RD"] = AO2.input["AM"] --It's the same finish code, for now
+AO2.input["RD"] = function(self,client,process,call)
+	self:finishLoad(client,process)
+end
 
-
+--The rest
 AO2.input["CC"] = function(self,client,process,call, playerid,id) --I wonder if anyone actually has a version using names instead. Just because #CID# and all...
 	local char_id = self:tointeger(id)
 	if not char_id then return end
@@ -71,17 +111,14 @@ AO2.input["CC"] = function(self,client,process,call, playerid,id) --I wonder if 
 		character = client.protocol_state.char_list[char_id+1]
 	})
 end
-
 AO2.input["ZZ"] = function(self,client,process,call, reason)
 	process:send(client,"MOD_CALL", {
 		reason = self:unescape(tostring(reason))
 	})
 end
-
 AO2.input["CH"] = function(self,client,process,call)
 	client:sendraw("CHECK#%")
 end
-
 AO2.input["CT"] = function(self,client,process,call, name,message)
 	if not name or not message then return end
 	process:send(client,"OOC", {
@@ -89,8 +126,7 @@ AO2.input["CT"] = function(self,client,process,call, name,message)
 		message = self:unescape(tostring(message))
 	})
 end
-
-AO2.input["MS"] = function(self,client,process,call, ...)
+AO2.input["MS"] = function(self,client,process,call, ...) --No server is complete without tons of hours spent on MS
 	local desk, pre_emote, character, emote, message, side, sfx_name,
 		  emote_modifier, char_id, sfx_delay, shout_modifier, evidence,
 		  flip, realization, text_color, cc_showname = ...
@@ -183,6 +219,10 @@ AO2.input["MS"] = function(self,client,process,call, ...)
 	end]]
 
 	--Update values for processing
+	local zoom = emote_modifier == 5 or emote_modifier == 6
+	flip = flip == 1
+	realization = realization == 1
+
 	if desk == "chat" then
 		desk = false
 		if side == "def" or side == "pro" or side == "wit" then desk = true end
@@ -190,9 +230,13 @@ AO2.input["MS"] = function(self,client,process,call, ...)
 		desk = true
 	else
 		desk = false
-	end
+	end	
+	local bg
+	if zoom then
+		desk = false
 
-	local zoom = (emote_modifier > 4)
+		bg = "speedlines"
+	end
 
 	if side == "wit" then side = 0
 	elseif side == "def" then side = 1
@@ -202,9 +246,6 @@ AO2.input["MS"] = function(self,client,process,call, ...)
 	elseif side == "hlp" then side = 5
 	else side = 0
 	end
-
-	--Doesn't hurt to remove this silly restriction, eh?
-	--if shout_modifier ~= 0 then emote_modifier = 2 end
 
 	if emote_modifier == 0 or emote_modifier > 4 or pre_emote == "-" or zoom then pre_emote = nil end
 
@@ -216,11 +257,66 @@ AO2.input["MS"] = function(self,client,process,call, ...)
 		emote=emote,
 		pre_emote=pre_emote,
 
+		interjection=shout_modifier,
+
 		side=side,
 		item=evidence,
-	})
 
-	--No server is complete without tons of hours spent on MS!
+		bg=bg,
+		fg=desk,
+
+		flip=flip,
+
+		sfx_name=sfx_name,
+		sfx_delay=sfx_delay,
+
+		realization=realization,
+		text_color=text_color,
+		--zoom=zoom,
+		--desk=desk,
+
+		software=client.software,
+	})
+end
+
+AO2.input["MC"] = function(self,client,process,call, track, id, cc_showname)
+	if not track or not self:tointeger(id) then return end
+	process:send(client,"MUSIC", {
+		track = self:unescape(tostring(track)),
+		character = self:getCharacterName(client, self:tointeger(id)),
+		name = self:unescape(tostring(cc_showname)),
+	})
+end
+
+AO2.input["HP"] = function(self,client,process,call, side, amount)
+	if not self:tointeger(side) then return end
+	if not client.protocol_state.hp then return end
+	local prevhp = client.protocol_state.hp[self:tointeger(side)]
+	local currhp = self:tointeger(amount)
+	if not prevhp or not currhp then return end
+
+	--The idea is that penalize will play animation, while restore sets it without notice.
+	local event = "hp_penalize"
+	if currhp > prevhp or prevhp-1 < currhp then event="hp_restore" end
+	process:send(client,"EVENT", {
+		event=event,
+		side=tonumber(side),
+		amount=tonumber(amount),
+		change=currhp-prevhp,
+	})
+end
+
+AO2.input["RT"] = function(self,client,process,call, event)
+	if not event then return end
+
+	--Make it more readable. We will translate back anyway. ;)
+	local name = "witness_testimony"
+	if event == "testimony2" then
+		name = "cross_examination"
+	end
+	process:send(client,"EVENT", {
+		event=self:unescape(name),
+	})
 end
 
 --Encrypted table
@@ -241,40 +337,8 @@ AO2.input["43DB"] = AO2.input["CT"]
 AO2.input["4D90"] = AO2.input["MS"]
 AO2.input["4D80"] = AO2.input["MC"]
 AO2.input["507C"] = AO2.input["PE"]
-
-
-function AO2:detect(client,process)
-	--Simple timer, attempt to connect if nothing sent. AO2 really needs a handshake...
-	if true then
-		client.protocol = self
-		client.protocol_state = {}
-		process:send(client,"INFO_REQ")
-		return true
-	end
-end
-
---Update a client.
-function AO2:update(client,process)
-	local st,en = client.received:find("%%")
-	if st then
-		local subcommand = client.received:sub(1,st-1)
-		client.received = client.received:sub(en+1,-1)
-
-		if subcommand:sub(1,1) == "#" then subcommand = subcommand:sub(2,-1) end
-		local args = self:split(subcommand,"#")
-
-		print("CLIENTRAW",encrypted and "("..encrypted..")" or "("..args[1]..")",table.concat(args,", "))
-
-		if self.input[args[1]] then
-			self.input[args[1]](self,client,process,unpack(args))
-			--Maybe have returns send messages for invalid messages.
-		else
-			print("Unknown message: "..args[1])
-		end
-
-		--client:sendraw("SC#%") insta-closes the client, neato!
-	end
-end
+AO2.input["48F9"] = AO2.input["HP"]
+AO2.input["5289"] = AO2.input["RT"]
 
 --Messages sent from server to clients
 function AO2:send(client,process, call,data)
@@ -290,31 +354,107 @@ function AO2:send(client,process, call,data)
 	if call == "JOIN_DENY" then end
 
 	if call == "CHAR_PICK" then
-		local char_id
-		local characters = client.protocol_state.char_list
-		if characters then
-			for i,v in ipairs(characters) do
-				if v == data.character then
-					char_id = i
-					break
-				end
-			end
-			if not char_id then --Send new list with the specific character added.
-				char_id = #characters+1
-				characters[char_id] = data.character
-				self:updateCharacterList(client,characters)
-			end
-			client:sendraw("PV#0#CID#"..(char_id-1).."#%")
-		end
+		local char_id = self:getCharacterId(client, data.character)
 		if data.character == -1 then
 			client:sendraw("PV#0#CID#-1#%")
+		else
+			client:sendraw("PV#0#CID#"..char_id.."#%")
 		end
 	end
 
 	if call == "OOC" then
 		client:sendraw("CT#"..self:escape(data.name).."#"..self:escape(data.message).."#%")
 	end
+	if call == "IC" then
+		local ms = "MS#"
+		local t  = {}
+		t[#t+1] = data.fg and 1 or 0
+		t[#t+1] = self:escape(data.pre_emote or "-")
+		t[#t+1] = self:escape(data.character)
+		t[#t+1] = self:escape(data.emote)
+		--Dialogue
+		local dialogue = data.dialogue
+		--Clean up non-CC messages to send to CC clients
+		if data.software ~= "CC" and client.software == "CC" then
+			--TODO: Fix for markdown
+			dialogue = dialogue:gsub("([%{%}%[%]%|%`%(%)])","\\%1")
+			dialogue = dialogue:gsub("^~~","\\~~")
+		end
+		t[#t+1] = self:escape(dialogue)
+		--Position
+		local side = "wit"
+		if side == 1 then side = "def"
+		elseif side == 2 then side = "pro"
+		elseif side == 3 then side = "jud"
+		elseif side == 4 then side = "hld" 
+		elseif side == 5 then side = "hlp"
+		end
+		t[#t+1] = side
+		--Sound name
+		t[#t+1] = data.sfx_name or 1
+		--Emote modification
+		local emote_modifier = 0
+		if data.pre_emote or data.interjection then
+			emote_modifier = 2
+		end
+		if data.bg then
+			emote_modifier = 6
+		end
+		t[#t+1] = emote_modifier
+		local char_id = self:getCharacterId(client, data.character)
+		t[#t+1] = char_id
+		--Sound delay
+		t[#t+1] = data.sfx_delay or 0
+		--Shout modifier
+		t[#t+1] = data.interjection
+		--Evidence
+		t[#t+1] = data.item
+		--Flip
+		if client.software == "AO" then
+			t[#t+1] = char_id
+		else
+			t[#t+1] = data.flip and 1 or 0
+		end
+		--data:getRealization() and :getColor() would be smart right now.
+		t[#t+1] = data.realization and 1 or 0
+		t[#t+1] = data.text_color or 0
+		--cc_showname
+		if client.software == "CC" then
+			t[#t+1] = data.name
+		end
+
+		client:sendraw(ms..table.concat(t,"#").."#%")
+	end
+
+	if call == "MUSIC" then
+		local mc = "MC#"
+		mc=mc .. self:escape(data.track).."#"
+		mc=mc .. self:getCharacterId(client, data.character).."#"
+		if data.name then
+			mc=mc..self:escape(data.name).."#"
+		end
+		client:sendraw(mc.."%")
+	end
+
+	if call == "BG" then
+		client:sendraw("BG#"..self:escape(data.bg).."#%")
+	end
+
+	if call == "EVENT" then
+		if data.event == "witness_testimony" then
+			client:sendraw("RT#testimony1#%")
+		elseif data.event == "cross_examination" then
+			client:sendraw("RT#testimony2#%")
+		elseif data.event == "hp_penalize" or data.event == "hp_restore" then
+
+			if client.protocol_state.hp then
+				client.protocol_state.hp[data.side] = data.amount
+			end
+			client:sendraw("HP#"..(data.side or 0).."#"..(data.amount or 0).."#%")
+		end
+	end
 end
+
 
 function AO2:tointeger(num)
 	local num = tonumber(num)
@@ -348,19 +488,17 @@ function AO2:split(input,delimit)
 end
 
 function AO2:escape(str)
-	return str:gsub("\\","\\\\") --Remove if AO print was not accurate.
-	:gsub("%#","<num>")
+	return str:gsub("%#","<num>")
 	:gsub("%$","<dollar>")
 	:gsub("%%","<percent>")
 	:gsub("%&","<and>")
 end
 
 function AO2:unescape(str)
-	return str:gsub("\\\\","\\") --Remove if AO print was not accurate.
-	:gsub("<num>","#")
-	:gsub("<dollar>","$")
-	:gsub("<percent>","%")
-	:gsub("<and>","&")
+	return str:gsub("%<num%>","#")
+	:gsub("%<dollar%>","$")
+	:gsub("%<percent%>","%%")
+	:gsub("%<and%>","&")
 end
 
 function AO2:colortomarkdown(color)
@@ -401,29 +539,74 @@ function AO2:decryptStr(str, key)
 	return final
 end
 
+function AO2:getCharacterId(client,name)
+	local char_id = 0
+	local characters = client.protocol_state.char_list
+	if characters then
+		for i,v in ipairs(characters) do
+			if v == name then
+				char_id = i
+				break
+			end
+		end
+	end
+	return char_id-1
+end
+
+function AO2:getCharacterName(client,id)
+	local char_name = "N/A"
+	local characters = client.protocol_state.char_list
+	if characters then
+		for i,v in ipairs(characters) do
+			if i == id+1 then
+				char_name = v
+				break
+			end
+		end
+	end
+	return char_name
+end
+
 --Character list shenanigans.
---TODO: Fix AO loading
-function AO2:sendCharacterList(client,t,page)
-	local charlist = ""
-	local char_table = {}
+function AO2:sendAssetList(client,command,t,page)
+	local list = ""
 	if not page then
 		for i,v in ipairs(t) do
-			charlist = charlist .. self:escape(v) .. "#"
-			char_table[#char_table+1] = v
+			list = list .. self:escape(v) .. "#"
 		end
-		client:sendraw("SC#"..charlist.."%")
 	else
-		local charlist = ""
 		for i3=1,(page == true and #t or 10) do
 			local id = ((page == true and 1 or page)-1)*10+i3
 			if t[id] then
-				charlist = charlist .. id-1 .. "#" .. self:escape(t[id]) .."&".."&0&&&0&#"
+				list = list .. id-1 .. "#" .. self:escape(t[id]) .."&".."&0&&&0&#"
 			else
 				break
 			end
 		end
-		client:sendraw("CI#"..charlist.."%")
 	end
+	client:sendraw(command.."#"..list.."%")
+end
+
+function AO2:makeNameList(t, key)
+	local list = {}
+	for k,v in pairs(t) do
+		local name
+		local value = v[key or "name"]
+		if type(value) == "string" then
+			name = value
+		elseif type(value) == "function" then
+			name = value(v)
+		end
+		table.insert(list,name)
+	end
+	return list
+end
+
+function AO2:finishLoad(client,process)
+	client:sendraw("CharsCheck#0#%") --TODO: Fix WebAO breaking when all values aren't filled.
+	client:sendraw("DONE#%")
+	--NOTE: Freepick boot with CHAR_PICK, send -1 to process or keep it here?
+	if feature_freepick then client:sendraw("PV#0#CID#-1#%") end --Boots the player to the scene.
 end
 
 return AO2

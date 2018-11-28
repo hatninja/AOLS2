@@ -6,7 +6,7 @@ load_config(config)
 
 if not loadfile(path.."server/arguments.lua")(...) then return end
 
-function verbosewrite(msg) if verbose then io.write(msg) end end
+function verbosewrite(msg) if config.verbose then io.write(msg) end end
 verbosewrite(string.format("Running from '%s'\n",path))
 
 --Load dependencies
@@ -15,9 +15,12 @@ verbosewrite "Requirements met!\n"
 
 print "Starting server..."
 
+dofile(path.."server/constants.lua")
+
 server = dofile(path.."server/server.lua")
 server:start()
 
+local interface
 if config.interface then interface = dofile(path.."server/interface.lua") end
 
 while not server.kill do
@@ -26,10 +29,11 @@ while not server.kill do
 	local g,err = xpcall(server.update,debug.traceback,server)
 	if not g then
 		print("FATAL ERROR: "..tostring(err))
-		server:close(config.autorestart)
-		if not server.kill then
+		if config.autorestart then
 			print("RESTARTING!")
-			server:start()
+			server:reload()
+		else
+			server:close()
 		end
 	end
 

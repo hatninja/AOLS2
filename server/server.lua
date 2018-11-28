@@ -1,26 +1,10 @@
 --[[Here's an overview of how this software is structured.
-
-Accepting clients:
-
-1. Client connects via TCP
-2. All the protocol objects team up and try to learn the software/protocol that client is using.
-2a. If a protocol recognizes the client, it is assigned to the client and handshakes can begin.
-2b. If the client cannot be recognized, it is thrown out.
-
-Updating clients:
-
-1. Client sends message via TCP
-2. The protocol translates the client's message and sends it over to processing.
-3. Processing performs basic logic and sends special events to modules.
-4. Modules receive those events and provide extra functionality.
-5. Then protocol translates server calls into outgoing messages.
-6. Finally, server message is sent via TCP.
-
-server - Provides base functions for communicating with clients and updating the server state.
-protocol - Communicates between internal protocol and the client's protocol.
-process - Handles all basic functions of an AO server. Characters, Messages, Music, etc.
-modules - Extra layer of logic that expands upon
+Server - Handles server socket and client communication.
+Protocol - Translates client messages into process-readable objects and vice-versa.
+Process - Handles all the basic behaviour of an AO server. Characters, Messages, Music, etc.
+Modules - Extends process via callbacks and can add any functionality.
 ]]
+--Server: Handles all communciation, delegates to process and protocols (via client objects).
 
 local RECEIVEMAX = 2048
 local SENDMAX = 2048
@@ -28,18 +12,14 @@ local SENDMAX = 2048
 local server = {
 	software = "AOLS2",
 	version = "alpha",
-
-	clients={},
-
-	protocols={
-		dofile(path.."server/protocols/ao2.lua"),
-		dofile(path.."server/protocols/websocket.lua"),
-	},
-
-	process = dofile(path.."server/process.lua"),
 }
 
 function server:start()
+	self:listen()
+	self:reload()
+end
+
+function server:listen()
 	self.socket = socket.tcp()
 	self.socket:setoption("reuseaddr",true)
 	self.socket:setoption("keepalive",false) --Prevent random disconnects, hopefully.
@@ -51,17 +31,25 @@ function server:start()
 
 	assert(self.socket:listen(config.maxplayers))
 	print("Server is now listening for up to "..config.maxplayers.." players.")
+end
 
-	self.process:start(server)
-	verbosewrite("Started process.\n")
-
-	local modules = {}
-	for i,v in ipairs(modules) do
-		local s, module = pcall(dofile,path.."server/modules/"..v)
-		if s then
-			modules[#modules+1] = module
+function server:reload()
+	if self.clients then
+		for k,client in pairs(self.clients) do
+			--TODO: Change to client:close()
+			client.socket:close()
 		end
 	end
+	self.clients = {}
+
+	self.protocols = {
+		dofile(path.."server/protocols/ao2.lua"),
+		dofile(path.."server/protocols/websocket.lua")
+	}
+
+	self.process = dofile(path.."server/process.lua")
+	self.process:start(self)
+	verbosewrite("Server loaded and running!\n")
 end
 
 function server:update()
@@ -131,15 +119,9 @@ function server:update()
 	self.process:update()
 end
 
-function server:close(reset)
-	for k,client in pairs(self.clients) do
-		--TODO: Change to client:close()
-		client.socket:close()
-	end
-	if not reset then
-		self.socket:close()
-		self.kill = true
-	end
+function server:close()
+	self.socket:close()
+	self.kill = true
 end
 
 return server

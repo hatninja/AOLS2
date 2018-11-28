@@ -1,25 +1,8 @@
---Process handles all the base behaviours, further functionality is provided by letting modules extend via events.
+--Process: Handles basic server behaviour and provides an API.
 local process = {}
 
---client:send is short for client.protocol:send(client,...)
-
---TODO: "Joined as client[1]""
---TODO: Auto present evidence
---TODO: Play sound effect if health changed.
-
---[[
-process:start
-Called when server is fully initialized.
-
-process:send
-Gets a message from a client in internal protocol.
-
-process:accept
-Called when a client connects to the server and the protocol has been chosen.
-
-process:disconnect
-Called when a client disconnects or is detected as closed.
-]]
+local Music = dofile(path.."server/classes/music.lua")
+local Character = dofile(path.."server/classes/character.lua")
 
 function process:start(server)
 	math.randomseed(os.time())
@@ -40,10 +23,25 @@ function process:start(server)
 
 	--Load from configuration
 	self.characters = self:loadList(path.."config/characters.txt")
+	for i,char in ipairs(self.characters) do
+		local s, e = char:find(": ")
+		self.characters[i] = Character:new(
+			s and char:sub(1,s-1) or char,
+			e and track:sub(e+1,-1) or "wit"
+		)
+	end
 	self.backgrounds = self:loadList(path.."config/backgrounds.txt")
 	self.music = self:loadList(path.."config/music.txt")
+	for i,track in ipairs(self.music) do
+		local s, e = track:find(": ")
+		self.music[i] = Music:new(
+			s and track:sub(1,s-1) or track,
+			e and tonumber(track:sub(e+1,-1)) or 0
+		)
+	end
 
 	local modules = self:loadList(path.."config/modules.txt")
+
 end
 
 --Message sent from client to process via protocol
@@ -96,21 +94,48 @@ function process:send(client, call, data)
 					message=data.message
 				}
 				if self:event("ooc_received", client, receiver, ooc_received) then
-					receiver:send("OOC", ooc_received)
+					self:sendMessage(client,ooc_received.message,ooc_received.name)
 				end
 			end
 		end
 	end
-	if n == "IC" then
+	if call == "IC" then
 		self:protocolStringAssert(call,data, "dialogue","character","emote")
 
 		if self:event("emote", client, data) then
 			for i,receiver in ipairs(self.players) do
-				local ic_received = {}
-				for k,v in pairs(data) do ic_received[k] = v end
+				local ic_received = self:clone(data)
 
 				if self:event("emote_received", client, receiver, ic_received) then
-					v:send("IC", ic_received)
+					receiver:send("IC", ic_received)
+				end
+			end
+		end
+	end
+	if call == "MUSIC" then
+		self:protocolStringAssert(call,data, "track")
+
+		if self:event("music_play", client, data) then
+			for i,receiver in ipairs(self.players) do
+				local mp_received = self:clone(data)
+
+				if self:event("music_received", client, receiver, mp_received) then
+					receiver:send("MUSIC", mp_received)
+				end
+			end
+		end
+	end
+
+	if call == "EVENT" then
+		self:protocolStringAssert(call,data, "event")
+
+		if self:event("event_play", client, data) then
+			--Not sure if events should be fully passthrough like the others.
+			for i,receiver in ipairs(self.players) do
+				local event_received = self:clone(data)
+
+				if self:event("event_received", client, receiver, event_received) then
+					receiver:send("EVENT", event_received)
 				end
 			end
 		end
@@ -136,6 +161,7 @@ function process:join(client)
 	self.viewers[client] = nil
 	self.viewercount = self.viewercount - 1
 
+	self:event("player_join",client)
 	self:print(client.ip ..":".. client.port .." is joining with ID: ".. client.id)
 end
 
@@ -143,6 +169,7 @@ function process:disconnect(client)
 	if client.id then
 		self.players[client.id] = nil
 		self.firstempty = math.min(client.id,self.firstempty)
+		self:event("player_leave",client)
 	else
 		self.viewers[client] = nil
 		self.viewercount = self.viewercount - 1
@@ -150,25 +177,13 @@ function process:disconnect(client)
 end
 
 function process:update()
+	self:event("update",client)
 end
 
 function process:updateClient(client)
-end
-
-
---Events system:
-function process:event(name,...)
-	if self.callbacks[name] then
-		for i,callback in ipairs(self.callbacks[name]) do
-			if callback[1](...) then return false end
-		end
+	if client.id then
+		self:event("player_update",client)
 	end
-	return true
-end
-function process:registerCallback(name,priority,func)
-	if not self.callbacks[name] then self.callbacks[name] = {} end
-	table.insert(self.callbacks[name],{func,priority})
-	table.sort(self.callbacks[name],function(a,b) return a[2] < b[2] end)
 end
 
 --Protocol handling functions
@@ -190,6 +205,14 @@ function process:protocolNumberAssert(call,data,...)
 	end
 end
 
+function process:clone(tc)
+	local clone = {}
+	for k,v in pairs(tc) do
+		clone[k] = v
+	end
+	return clone
+end
+
 --API helpers
 function process:assertValue(value,kind,argi)
 	if type(value) ~= kind then error("Error: Expected "..kind.." value at argument #"..argi.."! Got "..type(value).." instead.",3) end
@@ -200,19 +223,32 @@ function process:print(text,caller)
 	print(os.date("%x %H:%S").." ["..(caller or "Server").."]: "..text)
 end
 
+function process:event(name,...)
+	if self.callbacks[name] then
+		for i,callback in ipairs(self.callbacks[name]) do
+			if callback[1](...) then return false end
+		end
+	end
+	return true
+end
+function process:registerCallback(name,priority,func)
+	if not self.callbacks[name] then self.callbacks[name] = {} end
+	table.insert(self.callbacks[name],{func,priority})
+	table.sort(self.callbacks[name],function(a,b) return a[2] < b[2] end)
+end
+
 function process:loadList(dir)
 	local t = {}
 	local file = io.open(dir)
 	if file then
 		for line in file:lines() do
-			if line:sub(1,1) ~= "#" and #line > 0 then
+			if line:sub(1,1) ~= "#" and line:find("%S") then
 				table.insert(t,line)
 			end
 		end
 	end
 	return t
 end
-
 function process:saveList(list,dir)
 	local file = io.open(dir,"w")
 	for i=1,#list do local v = list[i]
@@ -238,7 +274,15 @@ function process:sendMessage(client,message,ooc_name)
 		name=ooc_name or config.serverooc,
 		message=message
 	}
-	receiver:send("OOC", ooc)
+	
+	--Seamless message
+	local ls,le = message:find("|: ")
+	if ls then
+		ooc.name = ooc.name .. message:sub(1,ls-1)
+		ooc.message = message:sub(le+1,-1)
+	end
+	
+	client:send("OOC", ooc)
 end
 function process:sendEmote(client,emote)
 	local ic = {}
@@ -246,7 +290,7 @@ function process:sendEmote(client,emote)
 		ic[k] = v
 	end
 
-	v:send("IC", ic)
+	client:send("IC", ic)
 end
 
 return process

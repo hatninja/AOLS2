@@ -32,4 +32,40 @@ function interface:print()
 	io.write("\x1B[G")
 end
 
+function getkey()
+    local char = getch()
+    if char > 31 and char < 127 then
+        return string.char(char)
+    elseif char == 27 then
+        local a = getch()
+        if a == "[" then
+            local b = getch()
+
+            --[[
+            ;5 - Ctrl
+            ;1 - Super
+            ;2 - Alt
+            ;3 - Shift
+            ]]
+            if b == "2" then return "insert"
+            elseif b == "3" then return "delete"
+            elseif b == "5" then return "pageup"
+            elseif b == "6" then return "pagedown"
+
+            elseif b == "A" then return "up"
+            elseif b == "B" then return "down"
+            elseif b == "C" then return "right"
+            elseif b == "D" then return "left"
+            elseif b == "F" then return "end"
+            elseif b == "H" then return "home"
+            end
+        end
+    elseif char == 127 then
+        return "backspace"
+    elseif char == 13 then
+        return "enter"
+    end
+end
+
+
 return interface
