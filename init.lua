@@ -1,8 +1,7 @@
 path = debug.getinfo(1, "S").source:sub(2,-9)
 
-dofile(path.."config/config.lua")
 config = {}
-load_config(config)
+dofile(path.."config/config.lua")(config)
 
 if not loadfile(path.."server/arguments.lua")(...) then return end
 
@@ -10,10 +9,11 @@ function verbosewrite(msg) if config.verbose then io.write(msg) end end
 verbosewrite(string.format("Running from '%s'\n",path))
 
 --Load dependencies
+print "--Loading dependencies--"
 if not dofile(path.."server/loader.lua") then return end
 verbosewrite "Requirements met!\n"
 
-print "Starting server..."
+print "--Starting server--"
 
 dofile(path.."server/constants.lua")
 

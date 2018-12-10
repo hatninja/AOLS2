@@ -1,5 +1,13 @@
 #You can add or comment out the names of modules to enable/disable specific functionality.
+ao2advertiser
+
 commands
 rooms
+rooms_navigation
+motd
 
-ao2advertiser
+antispam
+autocolor
+
+#Temporary
+misc

@@ -49,7 +49,7 @@ function server:reload()
 
 	self.process = dofile(path.."server/process.lua")
 	self.process:start(self)
-	verbosewrite("Server loaded and running!\n")
+	print("--Finished, now running--")
 end
 
 function server:update()
@@ -109,7 +109,7 @@ function server:update()
 		if self.clients[k] then
 			local data = client.buffer:sub(1,SENDMAX)
 			if #data > 0 then
-				print("SERVERRAW",data)
+				--print("SERVERRAW",data)
 				client.socket:send(data)
 			end
 			client.buffer = client.buffer:sub(SENDMAX+1,-1)
