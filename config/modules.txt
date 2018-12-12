@@ -3,11 +3,13 @@ ao2advertiser
 
 commands
 rooms
-rooms_navigation
+
 motd
+rooms_navigation
 
 antispam
 autocolor
+stenofriend
 
 #Temporary
 misc

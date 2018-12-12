@@ -18,7 +18,7 @@ return function(c)
 	c.serverooc = "(*^v^)/"
 
 	--Module: motd
-	c.motd = "Welcome to a default server!\nPossible motd commands: `/rules`, `/files`, `/help`, `/info`, `/motd`"
+	c.motd = "Welcome to a default server!\nCommands to use: `/rules`, `/files`, `/help`"
 	c.rules = ""
 	c.files = ""
 

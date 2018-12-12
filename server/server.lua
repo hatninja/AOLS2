@@ -34,6 +34,9 @@ function server:listen()
 end
 
 function server:reload()
+	config = {}
+	dofile(path.."config/config.lua")(config)
+
 	if self.clients then
 		for k,client in pairs(self.clients) do
 			--TODO: Change to client:close()
@@ -79,24 +82,32 @@ function server:update()
 			if char then
 				data = data .. char
 
-				if #data > RECEIVEMAX then --A failsafe against impossibly large messages.
+				if #data > RECEIVEMAX then --Failsafe against impossibly large messages.
 					print("A client is sending too much data!")
 					break
 				end
 			else
 				if err == "closed" then
+					if client.protocol then
+						client.protocol:close(client)
+					end
 					self.process:disconnect(client)
 					self.clients[k] = nil
 					break
 				end
 			end
 		until not char
-		client.received = client.received .. data
+		if #data > 0 then
+			print("Receiving data:",data)
+			client.received = client.received .. data
+		end
 
 		if not client.protocol then
-			for i,protocol in ipairs(server.protocols) do
+			for i,protocol in ipairs(self.protocols) do
 				if protocol:detect(client,self.process) then
+					client.protocol = protocol
 					self.process:accept(client)
+					break
 				end
 			end
 		end

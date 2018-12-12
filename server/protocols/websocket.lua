@@ -1,17 +1,22 @@
 --Websocket wrapper implementation.
+--Documentation used: https://tools.ietf.org/html/rfc6455
 local websocket = {
-	guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+	name = "WebSocket",
+	guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11",
 	
+	buffer = {},
+	protocol = {},
 }
 
 local mime = require("mime")
 local sha1 = dofile(path.."server/libraries/sha1.lua")
 
 function websocket:detect(client,process)
-	if #client.received == 0 or data:sub(1,3) ~= "GET" then return end
+	if not bit then return end
+
+	if #client.received == 0 or client.received:sub(1,3) ~= "GET" then return end
 
 	if client.received:find("websocket") then --Client is using websocket, we need to send a handshake back!
-		print(client.received)
 		local key = data:match("Sec%-WebSocket%-Key: (%S+)")
 		if key then
 			local accept = mime.b64(sha1.binary(key..self.guid)):sub(1,-2).."="
@@ -22,41 +27,66 @@ function websocket:detect(client,process)
 			.."Sec-WebSocket-Accept: "..accept.."\r\n\r\n"
 			
 			client:sendraw(handshake)
+
+			client.protocol = self
 			client.websocket = true
 			client.received = ""
+
+			self.buffer[client] = ""
+
+			return true
 		end
 	end
 end
 
 function websocket:update(client,process)
-	--[[		if client.websocket then
-				local dat,opcode,masked,fin = wspayloaddecode(data)
-				if dat then
-					if opcode < 3 then
-						data = dat
-					elseif opcode == 8 then --Client wants to close
-						doclosed(client.socket)
-						clientList[i] = nil
-					elseif opcode == 9 then --PING
-						customsend(client.socket,wspayloadencode(dat,10,false,true)) --Send PONG
-					end
-					--print("GOT","'"..dat.."'","OPCODE: "..tostring(opcode),"Masked: "..tostring(masked),"FIN: "..tostring(fin))
+	local server = process.server
+	repeat
+		local data, op, masked, fin, plength = self:decode(client.received)
+		if data then
+			if opcode < 3 then
+				self.buffer[client] = self.buffer[client] .. data
+				client.received = client.received:sub(plength+1,-1)
+			elseif opcode == 8 then --Client wants to close
+				break
+			elseif opcode == 9 then --PING
+				client:sendraw(self:encode(data,10,false,true)) --Send PONG
+			end
+		end
+	until not data
 
-			--SEND
-			if client.websocket then
-				repeat --Send by subcommands, webAO doesn't recognize multiple in one message.
-					local st,en = client.send:find("%%")
-					if st then
-						local subcommand = client.send:sub(1,st)
+	if not self.protocol[client] then
+		for k,protocol in pairs(server.protocols) do
+			if protocol:detect(client,process) then
+				self.protocol[client] = protocol
+				break
+			end
+		end
+	end
 
-						local message = wspayloadencode(subcommand,1,false,true)
-						customsend(client.socket,message)
+	if self.protocol[client] then
+		--Temporarily use self.buffer[client] as client.received
+		local received = client.received
+		client.received = self.buffer[client]
 
+		self.protocol[client]:update(client,process)
 
-						local dat,opcode,masked,fin = wspayloaddecode(message)
-						--print("SENT","'"..tostring(dat).."'","LENGTH: "..tostring(#dat),"OPCODE: "..tostring(opcode),"Masked: "..tostring(masked),"FIN: "..tostring(fin))
-						]]
+		self.buffer[client] = client.received
+		client.received = received
+	end
 end
+
+function websocket:send(client,process)
+	client.buffer = self:encode(client.buffer,1,false,true)
+	local dat,opcode,masked,fin = self:decode(client.buffer)
+	print("WS SENT","'"..tostring(dat).."'","LENGTH: "..tostring(#dat),"OPCODE: "..tostring(opcode),"Masked: "..tostring(masked),"FIN: "..tostring(fin))
+end
+
+function websocket:close(client)
+	self.buffer[client] = nil
+	self.protocol[client] = nil
+end
+
 
 
 function websocket:getbytes(str)
@@ -69,7 +99,6 @@ end
 
 
 function websocket:decode(dat)
-	if not bit then return end
 	if #dat < 4 then return nil end
 
 	local p = 0
@@ -112,12 +141,10 @@ function websocket:decode(dat)
 	else
 		data = PAYLOAD
 	end
-	return data,OPCODE,MASKED,FIN
+	return data,OPCODE,MASKED,FIN,p+LENGTH
 end
 
 function websocket:encode(dat,opcode,masked,fin)
-	if not bit then return end
-	
 	local encoded = ""
 
 	local OPCODE = opcode or 1
@@ -164,3 +191,5 @@ function websocket:encode(dat,opcode,masked,fin)
 
 	return encoded
 end
+
+return websocket

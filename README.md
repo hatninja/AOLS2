@@ -1,11 +1,7 @@
 # AOLS2
-The successor to AOls, an Attorney Online server written entirely with Lua.
+The successor to AOls. AOLS2 is an Attorney Online server written entirely with Lua.
 
-Although designed to be AO2 server, AOLS2 goal is to be extremely flexible in it's functionality.
-
-Eventually, running AO2 and AC simultaneously.
-
-If you have any feedback based on it's implementation, it would be greatly appreciated!
+If you have any feedback on it's implementation, it would be greatly appreciated!
 
 ## Requirements
 * Lua version 5.1 or above (LuaJIT is reccomended)
@@ -13,14 +9,14 @@ If you have any feedback based on it's implementation, it would be greatly appre
 
 ####Optional
 * BitOp or Bit32
-Bit operations are required for AO 1.x versions and WebSocket support.
+Bit operations are required for WebSocket support.
 * Lua-getch
-Getch is required to support the interface.
+Getch is required to support the terminal interface feature.
 
 ## Running
 
 1. Clone the source to any location.
-2. Configure your server by looking in the `config` folder.
-3. Run using `lua /path/to/AOLS2/init.lua` or `luajit /path/to/AOLS2/init.lua`
+2. Look in the `config` folder and configure as you like.
+3. Run using `lua /path/to/init.lua` or `luajit /path/to/init.lua`
 
 ##Features

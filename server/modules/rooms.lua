@@ -33,7 +33,10 @@ function rooms:init()
 	self:reload()
 
 	process:registerCallback(self,"emote",0,function(self,client,emote)
-		self:print(string.format("%s %s: %s",client.name or "Player["..client.id.."]", emote.name or client.character,emote.dialogue))
+		self:print(string.format("%s %s: %s",client.name or "Player["..tostring(client.id).."]", "("..tostring(emote.name or client.character)..")",emote.dialogue))
+	end)
+	process:registerCallback(self,"ooc",0,function(self,client,ooc)
+		self:print(string.format("%s: %s",client.name or "Player["..tostring(client.id).."]",ooc.message))
 	end)
 
 	--The events to block based on room locations.

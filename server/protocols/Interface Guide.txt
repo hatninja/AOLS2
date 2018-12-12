@@ -1,12 +1,61 @@
 This is a guide for translating external protocol messages to internal server calls.
-TCP sends data in a string, so it is the job of protocol modules to convert that string data into objects which are readable by the server.
+TCP sends data in a string, so it is the job of protocol object to convert that string data into objects which are readable by the server.
 
 Many protocols may work differently, so sometimes manually pulling information is necessary. Look up how to use the process api for help regarding this.
 
-Client
-INFO_REQ - Client wants to know the server's status and information. INFO_SEND is sent in reply.
+----------------------
+Protocol Object Layout
+----------------------
+Each protocol object must have these 4 functions in order to work.
 
-INFO_SEND = {
+:detect(client, process) 
+
+Determines if the client is using a particular protocol.
+return true to assign it to your object.
+
+:update(client, process)
+
+Should update the client and handle messages sent by it.
+
+:send(client, process, call, data)
+
+A message from process that needs to be sent to the client.
+
+:close(client)
+
+Called when client is detected as closed. This should be used to clear any variables that you stored for this client.
+
+----------------------
+Protocol Snippets
+----------------------
+Within your functions, here are snippets that you'll definitely have need of.
+
+client.received - Contains the client's message buffer. You should only modify it in :update()
+
+client:sendraw(msg) - Adds a string that will be sent to the client.
+
+process:send(client, call, data) - Sends data to process that describes a message sent.
+
+----------------------
+Internal Protocol
+----------------------
+All :send() functions in the software use two arguments, call and data.
+
+The call variable should be a string which describes the message being sent.
+
+The data variable should be an object which contains.
+However depending on the type of call, it may be omitted.
+
+----------------------
+Protocol Call List
+----------------------
+< Denotes client-sent messages.
+> Denotes server-sent messages.
+= Denotes messages that share the same structure, regardless of direction sent.
+
+< INFO_REQ - Client wants to know the server's status and information. INFO_SEND is sent in reply.
+
+> INFO_SEND = {
 	software = (text),
 	version = (text),
 
@@ -18,37 +67,42 @@ INFO_SEND = {
 }
 
 
-JOIN_REQ - Client wishes to join the server. Either JOIN_ALLOW or JOIN_DENY may be sent
+< JOIN_REQ - Client wishes to join the server. Either JOIN_ALLOW or JOIN_DENY may be sent
 
-JOIN_DENY = {
+> JOIN_ALLOW
+
+> JOIN_DENY = {
 	reason = (text),
 	code = (JOIN_CODE),
 }
 
 
-CHAR_REQ - Client wishes to pick a character. Either CHAR_ALLOW or CHAR_DENY may be sent
+< CHAR_REQ - Client wishes to pick a character. Either CHAR_ALLOW or CHAR_DENY may be sent
 
-CHAR_REQ = {
+< CHAR_REQ = {
 	character = (text),
 }
 
-CHAR_DENY = {
+> CHAR_ALLOW
+
+> CHAR_DENY = {
 	character = (text),
 	reason = (text),
 	code = (CHAR_CODE),
 }
 
 
-OOC - The client sends a simple text message. The object is the same in both directions. Though name can be omitted when receiving.
+= OOC - The client sends a simple text message.
 
-OOC = {
+= OOC = {
 	message = (text),
 	name = (text),
 }
 
-IC - The client sends an emote with dialogue. The object is the same in both directions.
 
-IC = {
+= IC - The client sends an emote with dialogue. As it is a big object to construct, each variable may not be guaranteed.
+
+= IC = {
 	dialogue = (text),
 	character = (text),
 	name = (text),
@@ -56,12 +110,41 @@ IC = {
 	emote = (text),
 	pre_emote = (text),
 
-	--Below are optional variables you may need.
 	item = (int),
 	side = (SIDE_CODE),
-	h_scroll = (num),
 
 	flip = (bool),
-	append = (bool),
+	interjection = (int),
 
+
+	--AO2 variables
+	text_color = (int),
+	realization = (bool),
+
+	...
+}
+
+
+= BG - Updates the background for the client.
+
+= BG = {
+	bg = (string)
+}
+
+
+= MUSIC - A request to play music.
+
+= MUSIC = {
+	track = (string),
+	character = (string),
+	name = (string),
+}
+
+
+= EVENT - Miscellaneous events that may have special variables associated with it. For AO2, WT/CE swooshes and HP fall under this category.
+
+= EVENT = {
+	event = (string),
+
+	...
 }

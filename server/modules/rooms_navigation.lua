@@ -34,6 +34,7 @@ function rooms:command(client, cmd,str,args)
 		return true
 	end
 
+
 	if cmd == "area" then
 		if str == "" then self:command(client, "areas",str,args);return true end 
 
@@ -46,11 +47,15 @@ function rooms:command(client, cmd,str,args)
 				target = room
 				break
 			end
+			
 		end
 
 		if target then
+			if target == client.room then return true end
+
 			self.parent:moveto(client,target)
 			process:sendMessage(client,"~~"..target.name.."~~")
+
 		else
 			process:sendMessage(client,"I couldn't find a room with that ID!")
 		end

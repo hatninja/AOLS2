@@ -6,19 +6,23 @@ local AO2 = {
 
 	input = {},
 
-	output = {},
+	state = {},
 }
 
-function AO2:detect(client,process)
-	--Simple timer, attempt to connect if nothing sent. AO2 really needs a handshake...
-	if true then
-		client.protocol = self
-		client.protocol_state = {}
+function AO2:detect(client,process) --Simple timer, attempt to connect if nothing sent. AO2 really needs a handshake...
+	if not self.state[client] then
+		self.state[client] = {}
+		self.state[client].time = os.clock()
+	end
+	if os.clock() > self.state[client].time+0.1/1000
+	or client.received:find("615810BC07D139%#%%")
+	or client.received:find("askchaa%#%%") then
 
 		--1.8 does not send the software packet, so we must assume this by default.
 		client.software = "AO"
 		client.version = "1.8"
 
+		client.protocol = self
 		process:send(client,"INFO_REQ")
 		return true
 	end
@@ -38,12 +42,9 @@ function AO2:update(client,process)
 
 		if self.input[args[1]] then
 			self.input[args[1]](self,client,process,unpack(args))
-			--Maybe have returns send messages for invalid messages.
 		else
-			print("Unknown message: "..args[1],self:decryptStr(self:hexToString(args[1]),5))
+			print("Unknown message: "..args[1],bit and self:decryptStr(self:hexToString(args[1]),5))
 		end
-
-		--client:sendraw("SC#%") insta-closes the client, neato!
 	end
 end
 
@@ -58,51 +59,51 @@ end
 
 AO2.input["askchaa"] = function(self,client,process,call)
 	local characters =  AO2:makeNameList(process:getCharacters(client),"name")
-	client.protocol_state.char_list = characters
+	self.state[client].char_list = characters
 
 	local music =  AO2:makeNameList(process:getMusic(client),"name")
-	client.protocol_state.music_list = music
+	self.state[client].music_list = music
 
-	client.protocol_state.hp = {0,0}
+	self.state[client].hp = {0,0}
 
 	process:send(client,"JOIN_REQ")
 end
 --[[Loading 1.0]]
 AO2.input["askchar2"] = function(self,client,process,call) --AO2 specific command. Loading is automatically initated by server itself for AO 1.8
-	if not client.protocol_state.char_list then return end
-	self:sendAssetList(client,"CI",client.protocol_state.char_list, 1)
+	if not self.state[client].char_list then return end
+	self:sendAssetList(client,"CI",self.state[client].char_list, 1)
 end
 AO2.input["AN"] = function(self,client,process,call, page)
-	if not client.protocol_state.char_list then return end
-	if tonumber(page) and tonumber(page)*10 < #client.protocol_state.char_list then
-		self:sendAssetList(client,"CI",client.protocol_state.char_list, tonumber(page)+1)
+	if not self.state[client].char_list then return end
+	if tonumber(page) and tonumber(page)*10 < #self.state[client].char_list then
+		self:sendAssetList(client,"CI",self.state[client].char_list, tonumber(page)+1)
 	else
-		self:sendAssetList(client,"EM",client.protocol_state.music_list, 1)
+		self:sendAssetList(client,"EM",self.state[client].music_list, 1)
 		--client:sendraw("EI#1#N&A&1&hi_there.png&#%") --Characters finished, let's move over to evidence,
 	end
 end
 --[[AO2.input["AE"] = function(self,client,process,call, page)
 	--No evidence here, let's go to music.
-	if not client.protocol_state.music_list then return end
-	self:sendAssetList(client,"EM",client.protocol_state.music_list, 1)
+	if not self.state[client].music_list then return end
+	self:sendAssetList(client,"EM",self.state[client].music_list, 1)
 end]]
 AO2.input["AM"] = function(self,client,process,call, page) --Used for both so we get the same finishcode.
-	if not client.protocol_state.music_list then return end
+	if not self.state[client].music_list then return end
 	if tonumber(page) and tonumber(page)*10 <
-	 #client.protocol_state.music_list then
-		self:sendAssetList(client,"EM",client.protocol_state.music_list, tonumber(page)+1)
+	 #self.state[client].music_list then
+		self:sendAssetList(client,"EM",self.state[client].music_list, tonumber(page)+1)
 	else
 		self:finishLoad(client,process)
 	end
 end
 --[[Loading 2.0]]
 AO2.input["RC"] = function(self,client,process,call)
-	if not client.protocol_state.char_list then return end
-	self:sendAssetList(client,"SC",client.protocol_state.char_list)
+	if not self.state[client].char_list then return end
+	self:sendAssetList(client,"SC",self.state[client].char_list)
 end
 AO2.input["RM"] = function(self,client,process,call)
-	if not client.protocol_state.music_list then return end
-	self:sendAssetList(client,"SM",client.protocol_state.music_list)
+	if not self.state[client].music_list then return end
+	self:sendAssetList(client,"SM",self.state[client].music_list)
 end
 AO2.input["RD"] = function(self,client,process,call)
 	self:finishLoad(client,process)
@@ -114,7 +115,7 @@ AO2.input["CC"] = function(self,client,process,call, playerid,id) --I wonder if 
 	if not char_id then return end
 
 	process:send(client,"CHAR_REQ", {
-		character = client.protocol_state.char_list[char_id+1]
+		character = self.state[client].char_list[char_id+1]
 	})
 end
 AO2.input["ZZ"] = function(self,client,process,call, reason)
@@ -162,72 +163,6 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	if cc_showname then client.software = "CC" end
 
 	message = self:unescape(message)
-
-	--[[--Escape carats for internal markdown safety.
-	message = message:gsub("%^","^^")
-
-	--Convert case cafe markdown to internal markdown.
-	local text_centered
-	if client.software == "CC" then
-		if message:sub(1,2) == "~~" then
-			text_centered = true
-			message = message:sub(3,-1)
-		end
-
-		local lastcolors = {text_color}
-		local gsubfunc = function(char,code)
-			--Get non-color markdowns out of the way.
-			if code == "{" then return char.."^t-" end
-			if code == "}" then return char.."^t+" end
-
-			--Get corresponding color code.
-			local code_color = 0
-			if code == "`" then code_color = 1
-			elseif code == "|" then code_color = 3
-			elseif code == "[" then code_color = 9
-			elseif code == "]" then code_color = -9
-			elseif code == "(" then code_color = 4
-			elseif code == ")" then code_color = -4
-			end
-
-			--Now we determine the right markdown needed to match the CC client's functionality.
-			local markdown
-			if code_color == 1 or code_color == 3 then --One character markdowns. Disappears on use.
-				if code_color ~= lastcolors[#lastcolors] then lastcolors[#lastcolors+1] = code_color
-				else lastcolors[#lastcolors] = nil
-				end
-				markdown = self:colortomarkdown(lastcolors[#lastcolors])
-				return char..markdown
-
-			else --Bracket markdowns. Doesn't disappear.
-				if code_color > 0 then
-					lastcolors[#lastcolors+1] = code_color
-					markdown = self:colortomarkdown(lastcolors[#lastcolors])
-
-					return char..markdown..code
-
-				else
-					markdown = self:colortomarkdown(lastcolors[#lastcolors-1])
-					lastcolors[#lastcolors] = nil
-
-					return char..code..markdown
-				end
-			end
-			return char..code
-		end
-
-		message = (" "..message) --A quick hack to make gsubfunc work
-		:gsub("\\(%s-)\\","%1<backslash>") --I'm really feelin' it!
-		:gsub("([^\\])([%`%|%[%]%(%)])",gsubfunc)
-		:gsub("\\",""):gsub("<backslash>","\\")
-		:sub(2,-1)
-	end
-
-	--Add internal markdown to the message.
-	if realization == 1 then message = "^er" .. message end
-	if text_color ~= 0 then
-		message = self:colortomarkdown(text_color) .. message
-	end]]
 
 	--Clean CC messages for viewing
 	if client.software == "CC" then
@@ -316,16 +251,13 @@ end
 
 AO2.input["HP"] = function(self,client,process,call, side, amount)
 	if not self:tointeger(side) then return end
-	if not client.protocol_state.hp then return end
-	local prevhp = client.protocol_state.hp[self:tointeger(side)]
+	if not self.state[client].hp then return end
+	local prevhp = self.state[client].hp[self:tointeger(side)]
 	local currhp = self:tointeger(amount)
 	if not prevhp or not currhp then return end
 
-	--The idea is that penalize will play animation, while restore sets it without notice.
-	local event = "hp_penalize"
-	if currhp > prevhp or prevhp-1 < currhp then event="hp_restore" end
 	process:send(client,"EVENT", {
-		event=event,
+		event="hp",
 		side=tonumber(side),
 		amount=tonumber(amount),
 		change=currhp-prevhp,
@@ -385,12 +317,12 @@ function AO2:send(client,process, call,data)
 		client:sendraw("decryptor#34#%")
 		client:sendraw("PN#"..(data.players).."#"..(data.maxplayers).."#%")
 		client:sendraw("ID#0#"..(data.software).."#"..(data.version).."#%")
-		client:sendraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cc_customshownames#characterpairs#arup#%")--noencryption,
+		client:sendraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cccc_ic_support#characterpairs#arup#%")--noencryption,
 	end
 	if call == "JOIN_ALLOW" then
 		local c = #process:getCharacters(client)
 		local m = #process:getMusic(client)
-		client:sendraw("SI#"..c.."#1#"..m.."#%") --Must have at least one character to properly initate loading. Loading does not rely on these numbers anyway.
+		client:sendraw("SI#"..c.."#1#"..m.."#%") --AO2 does not rely on these numbers.
 		
 		if client.software == "AO" then
 			client.received = client.received .. "askchar2#%"
@@ -420,18 +352,13 @@ function AO2:send(client,process, call,data)
 		end
 		t[#t+1] = self:escape(data.pre_emote or "-")
 		t[#t+1] = self:escape(data.character)
-		t[#t+1] = self:escape(data.emote)
+		t[#t+1] = self:escape(data.emote or "normal")
 		--Dialogue
-		local dialogue = data.dialogue
+		local dialogue = data.dialogue or ""
 		if client.software == "CC" then
 			if data.text_centered then
 				dialogue = "~~" .. dialogue
 			end
-		
-			--Client doesn't accept scrubbed version of it's own message.
-			--dialogue = dialogue:gsub("[%{%}%`%|%[%]%(%)]","\\%1")
-
-			--Convert internal markdown to CC markdown?
 		end
 		t[#t+1] = self:escape(dialogue)
 		--Position
@@ -464,9 +391,9 @@ function AO2:send(client,process, call,data)
 		--Sound delay
 		t[#t+1] = data.sfx_delay or 0
 		--Shout modifier
-		t[#t+1] = data.interjection
+		t[#t+1] = data.interjection or 0
 		--Evidence
-		t[#t+1] = data.item
+		t[#t+1] = data.item or 0
 		--Flip
 		if client.software == "AO" then
 			t[#t+1] = char_id
@@ -506,16 +433,18 @@ function AO2:send(client,process, call,data)
 			client:sendraw("RT#testimony1#%")
 		elseif data.event == "cross_examination" then
 			client:sendraw("RT#testimony2#%")
-		elseif data.event == "hp_penalize" or data.event == "hp_restore" then
-
-			if client.protocol_state.hp then
-				client.protocol_state.hp[data.side] = data.amount
+		elseif data.event == "hp" then
+			if self.state[client].hp then
+				self.state[client].hp[data.side] = data.amount
 			end
 			client:sendraw("HP#"..(data.side or 0).."#"..(data.amount or 0).."#%")
 		end
 	end
 end
 
+function AO2:close(client)
+	self.state[client] = nil
+end
 
 function AO2:tointeger(num)
 	local num = tonumber(num)
@@ -602,7 +531,7 @@ end
 
 function AO2:getCharacterId(client,name)
 	local char_id = 0
-	local characters = client.protocol_state.char_list
+	local characters = self.state[client].char_list
 	if characters then
 		for i,v in ipairs(characters) do
 			if v == name then
@@ -616,7 +545,7 @@ end
 
 function AO2:getCharacterName(client,id)
 	local char_name = "N/A"
-	local characters = client.protocol_state.char_list
+	local characters = self.state[client].char_list
 	if characters then
 		for i,v in ipairs(characters) do
 			if i == id+1 then
