@@ -7,7 +7,7 @@ If you have any feedback on it's implementation, it would be greatly appreciated
 * Lua version 5.1 or above (LuaJIT is reccomended)
 * Luasocket
 
-####Optional
+#### Optional
 * BitOp or Bit32
 Bit operations are required for WebSocket support.
 * Lua-getch
@@ -19,4 +19,10 @@ Getch is required to support the terminal interface feature.
 2. Look in the `config` folder and configure as you like.
 3. Run using `lua /path/to/init.lua` or `luajit /path/to/init.lua`
 
-##Features
+## Features
+* Modular design.
+* AO 1.x/2.x supported.
+* Websockets.
+* Automatic restart.
+
+## Commands
