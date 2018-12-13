@@ -6,9 +6,9 @@ rooms
 
 motd
 rooms_navigation
+whois
 
 antispam
-autocolor
 stenofriend
 
 #Temporary

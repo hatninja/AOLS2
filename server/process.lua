@@ -205,6 +205,7 @@ end
 function process:join(client)
 	self.players[self.firstempty] = client
 	client.id = self.firstempty
+	self.playercount = self.playercount + 1
 
 	client.ip,client.port = client.socket:getpeername()
 	repeat
@@ -221,6 +222,7 @@ end
 function process:disconnect(client)
 	if client.id then
 		self.players[client.id] = nil
+		self.playercount = self.playercount - 1
 		self.firstempty = math.min(client.id,self.firstempty)
 		self:event("player_leave",client)
 		self:print("Player with ID "..client.id.." disconnected.")
