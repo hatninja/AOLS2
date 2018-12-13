@@ -29,6 +29,7 @@ function process:start(server)
 	self.music = {}
 	self.backgrounds = {}
 
+	self.time = 0
 
 
 	verbosewrite("--Reading Assets--\n")
@@ -198,7 +199,7 @@ function process:accept(client)
 	self.viewers[client] = client
 	self.viewercount = self.viewercount + 1
 
-	client.jointime = os.time()
+	client.jointime = self.time
 end
 
 function process:join(client)
@@ -231,6 +232,8 @@ end
 
 function process:update()
 	self:event("update",client)
+	
+	self.time = self.time + config.rate
 end
 
 function process:updateClient(client)
