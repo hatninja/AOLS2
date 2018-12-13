@@ -27,14 +27,4 @@ else
 	end
 end
 
-verbosewrite "Getch - "
-local found,d = pcall(require,"getch")
-if found then
-	verbosewrite "👍 (lua-getch)\n"
-	getch = d.non_blocking
-else
-	verbosewrite "👎\n"
-	print "Warning: Getch not found! The server will run without an interface."
-end
-
 return true

@@ -11,8 +11,7 @@ return function(c)
 	--Software settings
 	c.rate = 1/20 --How fast to update the server, in seconds.
 
-	c.verbose = false --Verbose mode shows more descriptive messages. Use if developing.
-	c.interface = false --Interface toggle which allows interaction via the terminal.
+	c.verbose = true --Verbose mode shows more descriptive messages. Use if developing.
 	c.autorestart = true --Automatically restart when the server experiences a crash.
 
 	c.serverooc = "(*^v^)/"

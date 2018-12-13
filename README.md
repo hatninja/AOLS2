@@ -10,8 +10,6 @@ If you have any feedback on it's implementation, it would be greatly appreciated
 #### Optional
 * BitOp or Bit32
 Bit operations are required for WebSocket support.
-* Lua-getch
-Getch is required to support the terminal interface feature.
 
 ## Running
 

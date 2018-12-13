@@ -20,9 +20,6 @@ dofile(path.."server/constants.lua")
 server = dofile(path.."server/server.lua")
 server:start()
 
-local interface
-if config.interface then interface = dofile(path.."server/interface.lua") end
-
 while not server.kill do
 	local st = os.clock()
 
@@ -49,6 +46,5 @@ while not server.kill do
 		print("Stutter detected! Maybe your update rate is too fast?")
 	end
 end
-if interface then interface:close() end
 
 print "Safely shut down server!"
