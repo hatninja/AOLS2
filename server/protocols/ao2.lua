@@ -1,4 +1,4 @@
---The Attorney Online 1.x/2.x protocol. This implementaton also has extensions for the Case Cafe client.
+--The Attorney Online 1.x/2.x protocol. With support for version 2.6.0. Otherwise known as Case Cafe.
 --The AO protocol documentation can be found here:
 --https://github.com/AttorneyOnline/AO2Protocol/blob/master/Attorney%20Online%20Client-Server%20Network%20Specification.md
 local AO2 = {
@@ -136,7 +136,7 @@ end
 AO2.input["MS"] = function(self,client,process,call, ...) --No server is complete without tons of hours spent on MS
 	local desk, pre_emote, character, emote, message, side, sfx_name,
 		  emote_modifier, char_id, sfx_delay, shout_modifier, evidence,
-		  flip, realization, text_color, cc_showname = ...
+		  flip, realization, text_color, showname, pair, hscroll = ...
 
 	emote_modifier = self:tointeger(emote_modifier)
 	char_id = self:tointeger(char_id)
@@ -146,6 +146,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	flip = self:tointeger(flip)
 	realization = self:tointeger(realization)
 	text_color = self:tointeger(text_color)
+	hscroll = self:tointeger(hscroll)
 
 	--Make sure the message is safe.
 	if not (desk and pre_emote and character and emote and message and side and sfx_name
@@ -158,19 +159,16 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	if not (shout_modifier >= 0 and shout_modifier < 6) then return end
 	if not (evidence >= 0) then return end
 	if not (realization == 0 or realization == 1) then return end
+	if not (pair and hscroll) then return end
 	--if not (text_color >= 0 and text_color < 7) then return end
 
-	if cc_showname then client.software = "CC" end
+	--if cc_showname then client.software = "CC" end
 
 	message = self:unescape(message)
-
-	--Clean CC messages for viewing
-	if client.software == "CC" then
-		if message:sub(1,2) == "~~" then
-			text_centered = true
-			message = message:sub(3,-1)
-		end
-		--message = (" "..message):gsub("([^\\])[%`%|%{%}]","%1"):sub(2,-1)
+	
+	if message:sub(1,2) == "~~" then
+		text_centered = true
+		message = message:sub(3,-1)
 	end
 
 	--Update values for processing
@@ -211,10 +209,13 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 		sfx_delay = 0
 	end
 
+	character = self:getCharacterName(client,char_id)
+	pair = self:getCharacterName(client,pair)
+
 	process:send(client,"IC", {
 		dialogue=message,
 		character=character,
-		name=cc_showname,
+		name=showname,
 
 		emote=emote,
 		pre_emote=pre_emote,
@@ -229,14 +230,15 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 
 		flip=flip,
 
+		pair=pair,
+		hscroll=hscroll,
+
 		sfx_name=sfx_name,
 		sfx_delay=sfx_delay,
 
 		realization=realization,
 		text_color=text_color,
 		text_centered=text_centered,
-
-		software=client.software,
 	})
 end
 
@@ -317,7 +319,7 @@ function AO2:send(client,process, call,data)
 		client:sendraw("decryptor#34#%")
 		client:sendraw("PN#"..(data.players).."#"..(data.maxplayers).."#%")
 		client:sendraw("ID#0#"..(data.software).."#"..(data.version).."#%")
-		client:sendraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cccc_ic_support#characterpairs#arup#%")--noencryption,
+		client:sendraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cccc_ic_support#arup#casing_alerts#%")--noencryption,
 	end
 	if call == "JOIN_ALLOW" then
 		local c = #process:getCharacters(client)
@@ -355,7 +357,7 @@ function AO2:send(client,process, call,data)
 		t[#t+1] = self:escape(data.emote or "normal")
 		--Dialogue
 		local dialogue = data.dialogue or ""
-		if client.software == "CC" then
+		if client.version == "2.6.0" then
 			if data.text_centered then
 				dialogue = "~~" .. dialogue
 			end
@@ -404,13 +406,12 @@ function AO2:send(client,process, call,data)
 		t[#t+1] = data.realization and 1 or 0
 		local text_color = data.text_color or 0
 		if client.software == "AO" and text_color == 5 then text_color = 3 end
-		if client.software ~= "CC" and text_color > 6 then text_color = 0 end
 		t[#t+1] = text_color
-		--cc_showname
-		if client.software == "CC" then
-			t[#t+1] = data.name
-		end
-
+		--Shownames.
+		t[#t+1] = data.name or 0
+		--Character pairing.
+		t[#t+1] = self:getCharacterId(client, data.pair) or -1
+		t[#t+1] = data.hscroll or 0
 		client:sendraw(ms..table.concat(t,"#").."#%")
 	end
 
@@ -433,6 +434,10 @@ function AO2:send(client,process, call,data)
 			client:sendraw("RT#testimony1#%")
 		elseif data.event == "cross_examination" then
 			client:sendraw("RT#testimony2#%")
+		elseif data.event == "verdict_notguilty" then
+			client:sendraw("RT#judgeruling#0#%")
+		elseif data.event == "verdict_guilty" then
+			client:sendraw("RT#judgeruling#1#%")
 		elseif data.event == "hp" then
 			if self.state[client].hp then
 				self.state[client].hp[data.side] = data.amount
