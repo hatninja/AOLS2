@@ -92,6 +92,23 @@ Protocol Call List
 }
 
 
+< LOAD_CHARS - Client wants to load characters. Replied with SEND_CHARS.
+
+> SEND_CHARS = {
+	(Character Object),
+	...
+}
+
+< LOAD_MUSIC - Client wants to load music. Replied with SEND_MUSIC.
+
+> SEND_MUSIC = {
+	(Music Object),
+	...
+}
+
+< FIN - Client finished loading.
+
+
 = OOC - The client sends a simple text message.
 
 = OOC = {
@@ -148,3 +165,6 @@ Protocol Call List
 
 	...
 }
+
+
+< CLOSE - Client wishes to be disconnected.
