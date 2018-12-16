@@ -114,9 +114,11 @@ function process:send(client, call, data)
 	--Ignore any other messages if client has not joined yet.
 	if not client.id then return end
 
-	if call == "LIST_CHARS" then
+	if call == "LOAD_CHARS" then
+		client:send("SEND_CHARS",self:getCharacters())
 	end
-	if call == "LIST_MUSIC" then
+	if call == "LOAD_MUSIC" then
+		client:send("SEND_MUSIC",self:getMusic())
 	end
 
 	if call == "DONE" then

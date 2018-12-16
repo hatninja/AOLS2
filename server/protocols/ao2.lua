@@ -1,4 +1,4 @@
---The Attorney Online 1.x/2.x protocol. With support for version 2.6.0. Otherwise known as Case Cafe.
+--The Attorney Online 1.x/2.x protocol. Supports up to 2.6.0.
 --The AO protocol documentation can be found here:
 --https://github.com/AttorneyOnline/AO2Protocol/blob/master/Attorney%20Online%20Client-Server%20Network%20Specification.md
 local AO2 = {
@@ -71,6 +71,7 @@ end
 --[[Loading 1.0]]
 AO2.input["askchar2"] = function(self,client,process,call) --AO2 specific command. Loading is automatically initated by server itself for AO 1.8
 	if not self.state[client].char_list then return end
+	process:send(client,"LOAD_CHARS")
 	self:sendAssetList(client,"CI",self.state[client].char_list, 1)
 end
 AO2.input["AN"] = function(self,client,process,call, page)
@@ -78,19 +79,17 @@ AO2.input["AN"] = function(self,client,process,call, page)
 	if tonumber(page) and tonumber(page)*10 < #self.state[client].char_list then
 		self:sendAssetList(client,"CI",self.state[client].char_list, tonumber(page)+1)
 	else
+		process:send(client,"LOAD_MUSIC")
 		self:sendAssetList(client,"EM",self.state[client].music_list, 1)
 		--client:sendraw("EI#1#N&A&1&hi_there.png&#%") --Characters finished, let's move over to evidence,
 	end
 end
---[[AO2.input["AE"] = function(self,client,process,call, page)
-	--No evidence here, let's go to music.
-	if not self.state[client].music_list then return end
-	self:sendAssetList(client,"EM",self.state[client].music_list, 1)
-end]]
+AO2.input["AE"] = function(self,client,process,call, page)
+	--No evidence to send.
+end
 AO2.input["AM"] = function(self,client,process,call, page) --Used for both so we get the same finishcode.
 	if not self.state[client].music_list then return end
-	if tonumber(page) and tonumber(page)*10 <
-	 #self.state[client].music_list then
+	if tonumber(page) and tonumber(page)*10 < #self.state[client].music_list then
 		self:sendAssetList(client,"EM",self.state[client].music_list, tonumber(page)+1)
 	else
 		self:finishLoad(client,process)
@@ -99,10 +98,12 @@ end
 --[[Loading 2.0]]
 AO2.input["RC"] = function(self,client,process,call)
 	if not self.state[client].char_list then return end
+	process:send(client,"LOAD_CHARS")
 	self:sendAssetList(client,"SC",self.state[client].char_list)
 end
 AO2.input["RM"] = function(self,client,process,call)
 	if not self.state[client].music_list then return end
+	process:send(client,"LOAD_MUSIC")
 	self:sendAssetList(client,"SM",self.state[client].music_list)
 end
 AO2.input["RD"] = function(self,client,process,call)
@@ -110,7 +111,7 @@ AO2.input["RD"] = function(self,client,process,call)
 end
 
 --The rest
-AO2.input["CC"] = function(self,client,process,call, playerid,id) --I wonder if anyone actually has a version using names instead. Just because #CID# and all...
+AO2.input["CC"] = function(self,client,process,call, playerid,id)
 	local char_id = self:tointeger(id)
 	if not char_id then return end
 
@@ -146,6 +147,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	flip = self:tointeger(flip)
 	realization = self:tointeger(realization)
 	text_color = self:tointeger(text_color)
+	pair = self:tointeger(pair)
 	hscroll = self:tointeger(hscroll)
 
 	--Make sure the message is safe.
@@ -159,7 +161,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	if not (shout_modifier >= 0 and shout_modifier < 6) then return end
 	if not (evidence >= 0) then return end
 	if not (realization == 0 or realization == 1) then return end
-	if not (pair and hscroll) then return end
+	if pair and not (pair and hscroll) then return end
 	--if not (text_color >= 0 and text_color < 7) then return end
 
 	--if cc_showname then client.software = "CC" end
@@ -210,7 +212,9 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	end
 
 	character = self:getCharacterName(client,char_id)
-	pair = self:getCharacterName(client,pair)
+	if pair then
+		pair = self:getCharacterName(client,pair)
+	end
 
 	process:send(client,"IC", {
 		dialogue=message,
@@ -291,6 +295,11 @@ AO2.input["RT"] = function(self,client,process,call, event, ...)
 	end
 end
 
+AO2.input["DC"] = function(self,client,process,call)
+	process:send(client,"CLOSE")
+end
+
+
 --Encrypted table
 AO2.input["48E0"] = AO2.input["HI"]
 AO2.input["493F"] = AO2.input["ID"]
@@ -334,7 +343,7 @@ function AO2:send(client,process, call,data)
 
 	if call == "CHAR_PICK" then
 		local char_id = self:getCharacterId(client, data.character)
-		if data.character == -1 then
+		if char_id == -1 then
 			client:sendraw("PV#0#CID#-1#%")
 		else
 			client:sendraw("PV#0#CID#"..char_id.."#%")
@@ -600,8 +609,7 @@ end
 function AO2:finishLoad(client,process)
 	client:sendraw("CharsCheck#0#%") --TODO: Fix WebAO breaking when all values aren't filled.
 	client:sendraw("DONE#%")
-	--Not sure whether to send -1 to process or keep it here... I'll keep this feature around for later.
-	if feature_freepick and client.software ~= "AO" then client:sendraw("PV#0#CID#-1#%") end --Boots the player to the scene.
+	process:send(client,"FIN")
 end
 
 return AO2

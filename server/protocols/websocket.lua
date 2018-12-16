@@ -48,6 +48,7 @@ function websocket:update(client,process)
 				self.buffer[client] = self.buffer[client] .. data
 				client.received = client.received:sub(plength+1,-1)
 			elseif opcode == 8 then --Client wants to close
+				process:send(client,"CLOSE")
 				break
 			elseif opcode == 9 then --PING
 				client:sendraw(self:encode(data,10,false,true)) --Send PONG
