@@ -13,8 +13,6 @@ local commands = {
 	help = {
 		{"help","(page)","Get help with commands.","Put in any command name to read more about it."},
 	},
-
-	prefix = "/",
 }
 
 function commands:init()
@@ -27,6 +25,8 @@ function commands:init()
 			end
 		end
 	end
+	self.prefix = config.prefix or "/"
+	
 	process:registerCallback(self,"ooc",4,self.handle)
 	process:registerCallback(self,"emote",4,self.handle)
 	process:registerCallback(self,"command",1,self.helpcmd)
@@ -56,7 +56,7 @@ end
 
 function commands:helpcmd(client, cmd,str,args)
 	if cmd == "help" then
-		local length = 10
+		local length = config.helplength or 5
 		local page = tonumber(args[1])
 		local name = args[1]
 		local msg
@@ -64,24 +64,27 @@ function commands:helpcmd(client, cmd,str,args)
 		if not name and not page then page = 1 end
 
 		if page then
-			msg = "~~Command list~~\n"
+			msg = "~~Help: Page "..page.." of "..math.ceil(#self.helptable/length).."~~"
 			for i=1+(page-1)*length, page*length do
 				local entry = self.helptable[i]
 				if i <= #self.helptable and type(entry) == "table" then
-					msg=msg..(self.prefix..entry[1]).." - "..tostring(entry[3]).."\n"
+					msg=msg.."\n"
+					msg=msg..(self.prefix..entry[1]).." "..entry[2].."\n\t"..tostring(entry[3])
 				end
 			end
-			msg=msg
-			msg=msg.."--Page "..page.." of "..math.ceil(#self.helptable/length).."--"
 			process:sendMessage(client,msg)
 			return true
 		else
-			msg = "~~Command help~~\n"
+			msg = "~~Help~~\n"
 			for i,v in ipairs(self.helptable) do
 				if v[1] == name then
 					msg=msg..(self.prefix..name).." "..(v[2] or "")
-					msg=msg.." - "..tostring(v[3]).."\n"
-					msg=msg..tostring(v[4])
+					msg=msg.."\n"
+					if v[4] then
+						msg=msg..tostring(v[4])
+					else
+						msg=msg..tostring("No page exists for this command.")
+					end
 					process:sendMessage(client,msg)
 					return true
 				end

@@ -4,7 +4,7 @@ local process = ...
 local ao2advertiser = {
 	name = "AO2",
 
-	cooldown = 60*20, --In seconds
+	cooldown = 60*20, --Time (In seconds) to reconnect if connection was lost.
 }
 function ao2advertiser:init(process)
 	self:connect(config.ao2msip,config.ao2msport)
@@ -22,7 +22,7 @@ function ao2advertiser:connect(ip,port)
 		self.client = client
 
 		local heartbeat = "SCC#"..tostring(config.port).."#"..tostring(config.name).."#"..tostring(config.desc).."#"..tostring(process.server.software).."#%"
-		client:send(heartbeat,#heartbeat)
+		client:send(heartbeat,1,#heartbeat)
 		self.lastupdate = process.time
 
 		self:print("Connected to master server, now advertising.")
