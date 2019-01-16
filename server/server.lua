@@ -98,29 +98,26 @@ function server:update()
 			end
 		until not char
 		if #data > 0 then
-			print("Receiving data:",data)
 			client.received = client.received .. data
 		end
 
 		if not client.protocol then
 			for i,protocol in ipairs(self.protocols) do
 				if protocol:detect(client,self.process) then
-					client.protocol = protocol
 					self.process:accept(client)
 					break
 				end
 			end
 		end
 		if client.protocol then
-			client.protocol:update(client,self.process)
 			self.process:updateClient(client)
+			client.protocol:update(client,self.process)
 		end
 
 		--Send data
 		if self.clients[k] then
 			local data = client.buffer:sub(1,SENDMAX)
 			if #data > 0 then
-				--print("SERVERRAW",data)
 				client.socket:send(data)
 			end
 			client.buffer = client.buffer:sub(SENDMAX+1,-1)

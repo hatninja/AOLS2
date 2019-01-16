@@ -23,6 +23,7 @@ function AO2:detect(client,process) --Simple timer, attempt to connect if nothin
 		client.version = "1.8"
 
 		client.protocol = self
+		
 		process:send(client,"INFO_REQ")
 		return true
 	end
@@ -55,6 +56,10 @@ end
 AO2.input["ID"] = function(self,client,process,call, software,version)
 	client.software = software
 	client.version = version
+
+	if client.software == "webAO" then --How do you join without asking for characters? Seriously...
+		self.input["askchaa"](self,client,process,"askchaa")
+	end
 end
 
 AO2.input["askchaa"] = function(self,client,process,call)
@@ -160,18 +165,10 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	if not (sfx_delay >= 0) then return end
 	if not (shout_modifier >= 0 and shout_modifier < 6) then return end
 	if not (evidence >= 0) then return end
-	if not (realization == 0 or realization == 1) then return end
-	if pair and not (pair and hscroll) then return end
-	--if not (text_color >= 0 and text_color < 7) then return end
-
-	--if cc_showname then client.software = "CC" end
-
+	if not (realization == 0 or realization == 1) then return end --WebAO cannot see messages with this value as 2
+	if (pair and not hscroll) then return end
+	--if not (text_color >= 0 and text_color < 9) then return end
 	message = self:unescape(message)
-	
-	if message:sub(1,2) == "~~" then
-		text_centered = true
-		message = message:sub(3,-1)
-	end
 
 	--Update values for processing
 	local zoom = emote_modifier == 5 or emote_modifier == 6
@@ -202,7 +199,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	elseif side == "jud" then side = SIDE_JUD
 	elseif side == "hld" then side = SIDE_HLD
 	elseif side == "hlp" then side = SIDE_HLP
-	else side = 0
+	else side = SIDE_JUR
 	end
 
 	if emote_modifier == 0 or emote_modifier > 4 or pre_emote == "-" or zoom then
@@ -242,7 +239,6 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 
 		realization=realization,
 		text_color=text_color,
-		text_centered=text_centered,
 	})
 end
 
@@ -328,7 +324,7 @@ function AO2:send(client,process, call,data)
 		client:sendraw("decryptor#34#%")
 		client:sendraw("PN#"..(data.players).."#"..(data.maxplayers).."#%")
 		client:sendraw("ID#0#"..(data.software).."#"..(data.version).."#%")
-		client:sendraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cccc_ic_support#arup#casing_alerts#%")--noencryption,
+		client:sendraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cccc_ic_support#arup#%")--noencryption,
 	end
 	if call == "JOIN_ALLOW" then
 		local c = #process:getCharacters(client)
@@ -356,7 +352,7 @@ function AO2:send(client,process, call,data)
 	if call == "IC" then
 		local ms = "MS#"
 		local t  = {}
-		if client.software == "AO" then
+		if client.software == "AO" or client.software == "webAO" then
 			t[#t+1] = "chat"
 		else
 			t[#t+1] = data.fg and 1 or 0
@@ -366,11 +362,6 @@ function AO2:send(client,process, call,data)
 		t[#t+1] = self:escape(data.emote or "normal")
 		--Dialogue
 		local dialogue = data.dialogue or ""
-		if client.version == "2.6.0" then
-			if data.text_centered then
-				dialogue = "~~" .. dialogue
-			end
-		end
 		t[#t+1] = self:escape(dialogue)
 		--Position
 		local side = "wit"
@@ -379,6 +370,7 @@ function AO2:send(client,process, call,data)
 		elseif data.side == SIDE_JUD then side = "jud"
 		elseif data.side == SIDE_HLD then side = "hld" 
 		elseif data.side == SIDE_HLP then side = "hlp"
+		elseif data.side == SIDE_JUR then side = "jur"
 		end
 		if data.bg == "defense_speedlines" then side = "def" end
 		if data.bg == "prosecution_speedlines" then side = "pro" end
@@ -417,10 +409,19 @@ function AO2:send(client,process, call,data)
 		if client.software == "AO" and text_color == 5 then text_color = 3 end
 		t[#t+1] = text_color
 		--Shownames.
-		t[#t+1] = data.name or 0
+		t[#t+1] = data.name or ""
 		--Character pairing.
-		t[#t+1] = self:getCharacterId(client, data.pair) or -1
-		t[#t+1] = data.hscroll or 0
+		local pair_id = self:getCharacterId(client, data.pair) or -1
+		if pair_id ~= -1 and data.pair_emote then
+			t[#t+1] = pair_id
+			t[#t+1] = data.pair
+			t[#t+1] = data.pair_emote
+			t[#t+1] = data.hscroll or 0
+			t[#t+1] = data.pair_hscroll or 0
+			t[#t+1] = data.pair_flip or 0
+			t[#t+1] = data.pair_modifier or 0 --I assume this is emote_modifier...
+		end
+
 		client:sendraw(ms..table.concat(t,"#").."#%")
 	end
 
@@ -524,7 +525,7 @@ end
 function AO2:hexToString(hex)
 	local str = ""
 	for i=1,math.ceil(#hex/2)*2,2 do
-		str = str..string.char( tonumber(hex:sub(i,i+1),16) )
+		str = str..string.char( tonumber(hex:sub(i,i+1),16) or 0 )
 	end
 	return str
 end
