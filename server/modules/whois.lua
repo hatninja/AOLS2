@@ -33,14 +33,16 @@ function whois:command(client, cmd,str,args)
 
 		if player then
 			local msg = "~~Whois~~"
-			msg=msg.."\nJoin ID: "..tostring(player.id)
-			msg=msg.."\nUsername: "..tostring(player.name or "Player["..player.id.."]")
+			msg=msg.."\nPlayer ID: "..tostring(player.id)
 			msg=msg.."\nSoftware: "..tostring(player.software).." ("..tostring(player.version)..")"
+			msg=msg.."\nUsername: "..tostring(player.name)
+
 			msg=msg.."\nAddress: "..tostring(player.ip)..":"..tostring(player.port)
 			msg=msg.."\nHardware: "..tostring(player.hardwareid)
+
 			msg=msg.."\nRoom: "..tostring(player.room and player.room.name)
 			msg=msg.."\nCharacter: "..tostring(player.character)
-			msg=msg.."\nPosition: "..tostring(player.side)
+			msg=msg.."\nPosition: "..process:getSideName(player.side)
 			process:sendMessage(client,msg)
 		else
 			process:sendMessage(client,"I couldn't find a player with that ID!")
@@ -90,7 +92,7 @@ function whois:command(client, cmd,str,args)
 					end
 				end
 			end
-			msg=msg.."~"..process.playercount.." players total~"
+			msg=msg.."--"..process.playercount.." players total--"
 
 			process:sendMessage(client,msg)
 		else
@@ -104,7 +106,7 @@ function whois:command(client, cmd,str,args)
 		for player in process:eachPlayer() do
 			msg=msg.."\n"..self:list(player)
 		end
-		msg=msg.."\n~"..process.playercount.." players total~"
+		msg=msg.."\n--"..process.playercount.." players total--"
 
 		process:sendMessage(client,msg)
 		return true
@@ -114,9 +116,7 @@ end
 function whois:list(player)
 	local msg = ""
 	msg=msg..tostring(player.name or "Player["..player.id.."]")..": "..tostring(player.character)
-	if player.side then
-		msg=msg.." - "..tostring(player.side)
-	end
+	msg=msg.." - "..process:getSideName(player.side)
 	return msg
 end
 
