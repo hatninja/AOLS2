@@ -1,5 +1,7 @@
 local process = ...
 
+local Music = dofile(path.."server/classes/music.lua")
+
 local rooms = {
 	name = "Rooms"
 }
@@ -8,6 +10,32 @@ function rooms:init()
 	self.parent = process.modules["rooms"]
 
 	process:registerCallback(self,"command", 3,self.command)
+	process:registerCallback(self,"music_play", 3,self.areabutton)
+	process:registerCallback(self,"player_move", 3,self.welcometoroom)
+
+	self.roomlist = {}
+	for k,room in pairs(self.parent.rooms) do
+		if not room.hidden then
+			local track = Music:new(room.name,0)
+			track.room = room
+			table.insert(self.roomlist, track)
+		end
+	end
+
+	for i=#self.roomlist,1,-1 do
+		table.insert(process.music, 1, self.roomlist[i])
+	end
+end
+
+function rooms:areabutton(client, music)
+	for i,v in ipairs(self.roomlist) do
+		if v.name == music.track then
+			if v.room then
+				self.parent:moveto(client,v.room)
+			end
+			return true
+		end
+	end
 end
 
 function rooms:command(client, cmd,str,args)
@@ -54,13 +82,25 @@ function rooms:command(client, cmd,str,args)
 			if target == client.room then return true end
 
 			self.parent:moveto(client,target)
-			process:sendMessage(client,"~~"..target.name.."~~")
 
 		else
 			process:sendMessage(client,"I couldn't find a room with that ID!")
 		end
 		return true
 	end
+end
+
+function rooms:welcometoroom(client,room)
+	local msg = "~~"..room.name.."~~"
+	if room.desc then
+		msg = msg .."\n"..room.desc
+	end
+	process:sendMessage(client,msg)
+	
+	client:send("IC",{
+		dialogue="}}"..tostring(room.name),
+		name=">",
+	})
 end
 
 return rooms

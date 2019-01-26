@@ -13,7 +13,7 @@ function rooms:reload()
 		room.kind = room.kind or "court"
 		room.music = room.music or "No Music"
 		room.bg = room.bg or "gs4"
-		room.hp = room.hp or {0,0}
+		room.hp = room.hp or room.kind ~= "lobby" and {10,10} or {0,0}
 		room.evidence = room.evidence or {}
 
 		room.players = {}
@@ -32,11 +32,10 @@ end
 function rooms:init()
 	self:reload()
 
-	process:registerCallback(self,"emote",0,function(self,client,emote)
-		self:print(string.format("%s %s: %s",client.name or "Player["..tostring(client.id).."]", "("..tostring(emote.name or client.character)..")",emote.dialogue))
-	end)
-	process:registerCallback(self,"ooc",0,function(self,client,ooc)
-		self:print(string.format("%s: %s",client.name or "Player["..tostring(client.id).."]",ooc.message))
+	process:registerCallback(self,"music_play",1,function(self,client,music) --Track last played music.
+		if client.room then
+			client.room.music = music.track
+		end
 	end)
 
 	--The events to block based on room locations.
@@ -45,8 +44,8 @@ function rooms:init()
 		process:registerCallback(self,v, 4,self.roomcheck)
 	end
 
-	process:registerCallback(self,"player_join", 3,self.joinroom) --Change to player_done once it's implemented.
-	process:registerCallback(self,"player_leave", 3,self.leaveroom)
+	process:registerCallback(self,"player_join", 5,self.joinroom)
+	process:registerCallback(self,"player_leave", 1,self.leaveroom)
 end
 
 function rooms:roomcheck(sender, receiver, data)
@@ -63,8 +62,10 @@ function rooms:joinroom(client,r)
 
 	self:print("Player["..client.id.."] joined room: "..room.name)
 
-	client:send("BG",{bg=room.bg})
-	client:send("MUSIC",{track=room.music})
+	process:sendMusic(client,room.music)
+	process:sendBG(client,room.bg)
+	client:send("EVENT",{event="hp",side=1,amount=room.hp[1]})
+	client:send("EVENT",{event="hp",side=2,amount=room.hp[2]})
 end
 function rooms:leaveroom(client)
 	local room = client.room

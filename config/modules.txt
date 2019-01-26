@@ -3,10 +3,12 @@ ao2advertiser
 
 commands
 rooms
+rooms_logging
+rooms_navigation
 
 motd
-rooms_navigation
 whois
+emotehelper
 
 antispam
 stenofriend

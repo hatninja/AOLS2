@@ -1,8 +1,6 @@
 #(Name): (Length)
 # 0 means no loop.
 
-No Music: 0
-
 ~AA~
 Prelude(AA).mp3: 78
 Trial(AA).mp3: 109

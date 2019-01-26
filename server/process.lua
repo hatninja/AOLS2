@@ -243,6 +243,10 @@ end
 function process:updateClient(client)
 	if client.id then
 		self:event("player_update",client)
+
+		if client.loopat and process.time > client.loopat then
+			self:sendMusic(client,client.music,-1)
+		end
 	end
 end
 
@@ -278,11 +282,13 @@ function process:assertValue(value,kind,argi)
 	if type(value) ~= kind then error("Error: Expected "..kind.." value at argument #"..argi.."! Got "..type(value).." instead.",3) end
 end
 
---General API functions
-function process:print(text)
-	print(os.date("%x %H:%S").." ["..(self.name or "N/A").."] "..text)
-end
 
+-----------------------
+--General API functions
+-----------------------
+function process:print(text)
+	print(os.date("%x %H:%M",os.time()).." ["..(self.name or "N/A").."] "..text)
+end
 function process:event(name,...)
 	if self.callbacks[name] then
 		for i,callback in ipairs(self.callbacks[name]) do
@@ -299,9 +305,8 @@ function process:registerCallback(module,name,priority,func)
 
 	if not self.callbacks[name] then self.callbacks[name] = {} end
 	table.insert(self.callbacks[name],{func,priority,module})
-	table.sort(self.callbacks[name],function(a,b) return a[2] < b[2] end)
+	table.sort(self.callbacks[name],function(a,b) return a[2] > b[2] end)
 end
-
 function process:loadList(dir)
 	local t = {}
 	local file = io.open(dir)
@@ -364,7 +369,13 @@ function process:sendMessage(receiver,message,ooc_name)
 		ooc.message = message:sub(le+1,-1)
 	end
 	
-	receiver:send("OOC", ooc)
+	if receiver.players then
+		for k,player in pairs(receiver.players) do
+			player:send("OOC", ooc)
+		end
+	else
+		receiver:send("OOC", ooc)
+	end
 end
 function process:sendEmote(client,emote)
 	local ic = {}
@@ -373,6 +384,38 @@ function process:sendEmote(client,emote)
 	end
 
 	client:send("IC", ic)
+end
+function process:sendMusic(client,music,character,name)
+	local track = type(music) == "table" and music:getName() or tostring(music)
+	client.music = track
+
+	client.loopat = nil
+	for i,music in ipairs(self:getMusic()) do
+		if music.length and music.name == track then
+			client.loopat = self.time + music.length
+			break
+		end
+	end
+
+	client:send("MUSIC", {track=track, character=character, name=name})
+end
+function process:sendBG(client,bg)
+	if bg ~= client.bg then
+		client.bg = bg
+		client:send("BG", {bg=bg})
+	end
+end
+
+function process:getSideName(side)
+	if side == SIDE_WIT then return "Witness"
+	elseif side == SIDE_DEF then return "Defense"
+	elseif side == SIDE_PRO then return "Prosecution"
+	elseif side == SIDE_JUD then return "Judge"
+	elseif side == SIDE_HLD then return "Defense (Sideline)"
+	elseif side == SIDE_HLP then return "Prosecution (Sideline)"
+	elseif side == SIDE_JUR then return "Jury"
+	else return "Unnamed Position"
+	end
 end
 
 return process
