@@ -29,7 +29,7 @@ function commands:init()
 	
 	process:registerCallback(self,"ooc",4,self.handle)
 	process:registerCallback(self,"emote",4,self.handle)
-	process:registerCallback(self,"command",1,self.helpcmd)
+	process:registerCallback(self,"command",4,self.helpcmd)
 end
 
 function commands:handle(client,data)

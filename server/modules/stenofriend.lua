@@ -56,11 +56,9 @@ end
 function stenofriend:autocolor(client, emote)
 	local msg = emote.dialogue
 
-	--TODO: 2.6.0 exists now. Revamp may be nessecary.
-	--Color message
-	--[[local tc = emote.text_color
-	if tc == COLOR_WHITE and client.software ~= "2.6.0" then --Change only if player hasn't.
-		if msg:find("^%([^%(].-[^%)]%)$") then  --(Thinking brackets = blue)!
+	local tc = emote.text_color
+	if tc == COLOR_WHITE then
+		if msg:find("^%(.-%)$") then  --(Thinking brackets = blue)!
 			emote.text_color = COLOR_BLUE
 		end
 		if msg:find("^%*.-%*$") then --*Is Orange*
@@ -68,9 +66,8 @@ function stenofriend:autocolor(client, emote)
 		end 
 		if msg:find("^%s-[%=%-%~][%=%-%~]+.-[%=%-%~][%=%-%~]+%s-$") then --Start and end cards--
 			emote.text_color = COLOR_ORANGE
-			emote.text_centered = true
 		end
-	end]]
+	end
 end
 
 return stenofriend

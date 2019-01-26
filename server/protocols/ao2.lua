@@ -324,7 +324,7 @@ function AO2:send(client,process, call,data)
 		client:sendraw("decryptor#34#%")
 		client:sendraw("PN#"..(data.players).."#"..(data.maxplayers).."#%")
 		client:sendraw("ID#0#"..(data.software).."#"..(data.version).."#%")
-		client:sendraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cccc_ic_support#arup#%")--noencryption,
+		client:sendraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cccc_ic_support#arup#casing_alerts#looping_sfx#%")--noencryption,
 	end
 	if call == "JOIN_ALLOW" then
 		local c = #process:getCharacters(client)
@@ -358,7 +358,7 @@ function AO2:send(client,process, call,data)
 			t[#t+1] = data.fg and 1 or 0
 		end
 		t[#t+1] = self:escape(data.pre_emote or "-")
-		t[#t+1] = self:escape(data.character)
+		t[#t+1] = self:escape(data.character or " ")
 		t[#t+1] = self:escape(data.emote or "normal")
 		--Dialogue
 		local dialogue = data.dialogue or ""
@@ -390,6 +390,9 @@ function AO2:send(client,process, call,data)
 		end
 		t[#t+1] = emote_modifier
 		local char_id = self:getCharacterId(client, data.character)
+		if char_id == -1 then
+			char_id = 0
+		end
 		t[#t+1] = char_id
 		--Sound delay
 		t[#t+1] = data.sfx_delay or 0
@@ -610,7 +613,7 @@ end
 function AO2:finishLoad(client,process)
 	client:sendraw("CharsCheck#0#%") --TODO: Fix WebAO breaking when all values aren't filled.
 	client:sendraw("DONE#%")
-	process:send(client,"FIN")
+	process:send(client,"DONE")
 end
 
 return AO2
