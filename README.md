@@ -14,7 +14,7 @@ Bit operations are required for WebSocket support.
 ## Running
 
 1. Clone the source to any location.
-2. Look in the `config` folder and configure as you like.
+2. Rename `config.default` to `config`, and configure as you like.
 3. Run using `lua /path/to/init.lua` or `luajit /path/to/init.lua`
 
 ## Features
