@@ -158,7 +158,7 @@ function process:send(client, call, data)
 				local ic_received = self:clone(data)
 
 				if self:event("emote_received", client, receiver, ic_received) then
-					receiver:send("IC", ic_received)
+					self:sendEmote(client,ic_received)
 				end
 			end
 		end
@@ -171,7 +171,7 @@ function process:send(client, call, data)
 				local mp_received = self:clone(data)
 
 				if self:event("music_received", client, receiver, mp_received) then
-					receiver:send("MUSIC", mp_received)
+					self:sendMusic(client,mp_received.track,mp_received.character,mp_received.name)
 				end
 			end
 		end
@@ -329,14 +329,32 @@ function process:saveList(list,dir)
 	file:close()
 end
 
-function process:getCharacters(client) --April fools joke idea: Shuffle the list every time.
-	return self.characters
+function process:getCharacters(client)
+	local list = {}
+	for i,v in ipairs(self.characters) do table.insert(list,v) end
+	local count = #list
+	while count > 1 do
+		local rand = math.random(1,count)
+		list[rand], list[count] = list[count], list[rand]
+		count=count-1
+	end
+	return list or self.characters
 end
 function process:getBackgrounds(client)
 	return self.backgrounds
 end
 function process:getMusic(client)
-	return self.music
+	local list = {}
+	for i,v in ipairs(self.music) do table.insert(list,v) end
+	local count = #list
+	while count > 1 do
+		local rand = math.random(1,count)
+		list[rand], list[count] = list[count], list[rand]
+		count=count-1
+	end
+	table.insert(list,1,Music:new("-"))
+	table.insert(list,2,Music:new("-.mp3"))
+	return list or self.music
 end
 
 function process:getPlayer(id)
@@ -391,8 +409,10 @@ function process:sendMusic(client,music,character,name)
 
 	client.loopat = nil
 	for i,music in ipairs(self:getMusic()) do
-		if music.length and music.name == track then
-			client.loopat = self.time + music.length
+		if music.name == track then
+			if music.length ~= 0 then
+				client.loopat = self.time + music.length
+			end
 			break
 		end
 	end
@@ -411,8 +431,8 @@ function process:getSideName(side)
 	elseif side == SIDE_DEF then return "Defense"
 	elseif side == SIDE_PRO then return "Prosecution"
 	elseif side == SIDE_JUD then return "Judge"
-	elseif side == SIDE_HLD then return "Defense (Sideline)"
-	elseif side == SIDE_HLP then return "Prosecution (Sideline)"
+	elseif side == SIDE_HLD then return "Co-Defense"
+	elseif side == SIDE_HLP then return "Co-Prosecution"
 	elseif side == SIDE_JUR then return "Jury"
 	else return "Unnamed Position"
 	end

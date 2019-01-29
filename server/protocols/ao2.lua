@@ -320,6 +320,7 @@ AO2.input["4422"] = AO2.input["DC"]
 
 --Messages sent from server to clients
 function AO2:send(client,process, call,data)
+	if not self.state[client] then return end
 	if call == "INFO_SEND" then
 		client:sendraw("decryptor#34#%")
 		client:sendraw("PN#"..(data.players).."#"..(data.maxplayers).."#%")
@@ -430,10 +431,10 @@ function AO2:send(client,process, call,data)
 
 	if call == "MUSIC" then
 		local mc = "MC#"
-		mc=mc .. self:escape(data.track).."#"
+		mc=mc .. self:escape(tostring(data.track)).."#"
 		mc=mc .. self:getCharacterId(client, data.character).."#"
 		if data.name then
-			mc=mc..self:escape(data.name).."#"
+			mc=mc..self:escape(tostring(data.name)).."#"
 		end
 		client:sendraw(mc.."%")
 	end
