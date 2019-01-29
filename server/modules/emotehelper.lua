@@ -17,7 +17,7 @@ end
 
 function emotehelper:command(client, cmd,str,args)
 	if cmd == "pos" then
-		local arg = string.lower(args[1])
+		local arg = string.lower(tostring(str))
 		local side
 		if arg:sub(1,3) == "def" then side = SIDE_DEF
 		elseif arg:sub(1,3) == "pro" then side = SIDE_PRO
@@ -40,16 +40,20 @@ function emotehelper:command(client, cmd,str,args)
 		return true
 	end
 	if cmd == "desk" then
-		client.desk = args[1] == "1"
-		if args[1] == "default" or args[1] == "chat" then client.desk = nil end
+		if args[1] then
+			client.desk = args[1] == "1"
+			if args[1] == "default" or args[1] == "chat" then client.desk = nil end
 
-		local msg = "Desk is now forced on."
-		if client.desk == false then
-			msg = "Desk is now forced off."
-		elseif client.desk == nil then
-			msg = "Desk is now default."
+			local msg = "Desk is now forced on."
+			if client.desk == false then
+				msg = "Desk is now forced off."
+			elseif client.desk == nil then
+				msg = "Desk is now default."
+			end
+			process:sendMessage(client,msg)
+		else
+			process:sendMessage(client,"Use 0, 1, or chat (default)")
 		end
-		process:sendMessage(client,msg)
 		return true
 	end
 	if cmd == "zoom" then

@@ -97,9 +97,10 @@ function rooms:welcometoroom(client,room)
 	end
 	process:sendMessage(client,msg)
 	
-	client:send("IC",{
+	process:sendEmote(client,{
 		dialogue="}}"..tostring(room.name),
 		name=">",
+		side=client.side or SIDE_WIT,
 	})
 end
 
