@@ -330,13 +330,15 @@ function process:saveList(list,dir)
 end
 
 function process:getCharacters(client)
-	local list = {}
-	for i,v in ipairs(self.characters) do table.insert(list,v) end
-	local count = #list
-	while count > 1 do
-		local rand = math.random(1,count)
-		list[rand], list[count] = list[count], list[rand]
-		count=count-1
+	if config.shuffle then
+		local list = {}
+		for i,v in ipairs(self.characters) do table.insert(list,v) end
+		local count = #list
+		while count > 1 do
+			local rand = math.random(1,count)
+			list[rand], list[count] = list[count], list[rand]
+			count=count-1
+		end
 	end
 	return list or self.characters
 end
@@ -344,16 +346,18 @@ function process:getBackgrounds(client)
 	return self.backgrounds
 end
 function process:getMusic(client)
-	local list = {}
-	for i,v in ipairs(self.music) do table.insert(list,v) end
-	local count = #list
-	while count > 1 do
-		local rand = math.random(1,count)
-		list[rand], list[count] = list[count], list[rand]
-		count=count-1
+	if config.shuffle then
+		local list = {}
+		for i,v in ipairs(self.music) do table.insert(list,v) end
+		local count = #list
+		while count > 1 do
+			local rand = math.random(1,count)
+			list[rand], list[count] = list[count], list[rand]
+			count=count-1
+		end
+		table.insert(list,1,Music:new("-"))
+		table.insert(list,2,Music:new("-.mp3"))
 	end
-	table.insert(list,1,Music:new("-"))
-	table.insert(list,2,Music:new("-.mp3"))
 	return list or self.music
 end
 
