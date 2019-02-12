@@ -213,6 +213,10 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 		pair = self:getCharacterName(client,pair)
 	end
 
+	if showname == "" or showname == "0" then
+	--	showname = nil
+	end
+
 	process:send(client,"IC", {
 		dialogue=message,
 		character=character,
