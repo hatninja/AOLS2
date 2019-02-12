@@ -437,8 +437,8 @@ function process:getSideName(side)
 	elseif side == SIDE_JUD then return "Judge"
 	elseif side == SIDE_HLD then return "Co-Defense"
 	elseif side == SIDE_HLP then return "Co-Prosecution"
-	elseif side == SIDE_JUR then return "Jury"
-	else return "Unnamed Position"
+	elseif side == SIDE_JUR then return "Juror"
+	else return "N/A"
 	end
 end
 

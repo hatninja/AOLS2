@@ -44,7 +44,7 @@ function rooms:init()
 		process:registerCallback(self,v, 4,self.roomcheck)
 	end
 
-	process:registerCallback(self,"player_join", 5,self.joinroom)
+	process:registerCallback(self,"player_done", 5,self.joinroom)
 	process:registerCallback(self,"player_leave", 1,self.leaveroom)
 end
 

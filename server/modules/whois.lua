@@ -115,7 +115,7 @@ end
 
 function whois:list(player)
 	local msg = ""
-	msg=msg..tostring(player.name or "["..player.id.."]")..": "..tostring(player.character)
+	msg=msg..tostring(player.name or "["..player.id.."]").." "..tostring(player.character)
 	msg=msg.." - "..process:getSideName(player.side)
 	return msg
 end
