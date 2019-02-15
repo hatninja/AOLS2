@@ -30,11 +30,6 @@ function misc:command(client, cmd,str,args)
 		self:print(msg)
 		return true
 	end
-	if cmd == "reload" then
-		self:print("Reloading the server now!")
-		process.server:reload()
-		return true
-	end
 end
 
 return misc

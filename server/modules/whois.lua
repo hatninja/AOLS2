@@ -37,11 +37,13 @@ function whois:command(client, cmd,str,args)
 			msg=msg.."\nSoftware: "..tostring(player.software).." ("..tostring(player.version)..")"
 			msg=msg.."\nUsername: "..tostring(player.name)
 
-			msg=msg.."\nAddress: "..tostring(player.ip)..":"..tostring(player.port)
-			msg=msg.."\nHardware: "..tostring(player.hardwareid)
+			if client.mod then
+				msg=msg.."\nAddress: "..tostring(player.ip)..":"..tostring(player.port)
+				msg=msg.."\nHardware: "..tostring(player.hardwareid)
+			end
 
 			msg=msg.."\nRoom: "..tostring(player.room and player.room.name)
-			msg=msg.."\nCharacter: "..tostring(player.character)
+			msg=msg.."\nCharacter: "..(player.character or "Spectator")
 			msg=msg.."\nPosition: "..process:getSideName(player.side)
 			process:sendMessage(client,msg)
 		else
@@ -115,7 +117,7 @@ end
 
 function whois:list(player)
 	local msg = ""
-	msg=msg..tostring(player.name or "["..player.id.."]").." "..tostring(player.character)
+	msg=msg..tostring(player.name or "["..player.id.."]").." "..(player.character or "Spectator")
 	msg=msg.." - "..process:getSideName(player.side)
 	return msg
 end

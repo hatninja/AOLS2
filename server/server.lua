@@ -60,11 +60,15 @@ function server:update()
 		local client = self.socket:accept()
 		if client then
 			client:settimeout(0)
+			local cip, cport = client:getpeername()
 			--TODO: Implement client:close, good shorthand and allows protocols to do it properly.
 			self.clients[client] = {
 				socket=client,
 				buffer="",
 				received="",
+
+				ip=cip,
+				port=cport,
 
 				server=self,
 				process=self.process,
