@@ -124,6 +124,8 @@ AO2.input["CC"] = function(self,client,process,call, playerid,id)
 		character = self.state[client].char_list[char_id+1]
 	})
 end
+AO2.input["FC"] = function(self,client,process,call) --WebAO sends this while opening character list.
+end
 AO2.input["ZZ"] = function(self,client,process,call, reason)
 	process:send(client,"MOD_CALL", {
 		reason = self:unescape(tostring(reason))

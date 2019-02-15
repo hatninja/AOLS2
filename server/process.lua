@@ -1,4 +1,24 @@
---Process: Handles basic server behaviour and provides an API.
+--Process: Handles basic server behaviour, provides the modules functionality.
+--[[
+	Implemented events:
+	"client_join"
+	"player_join"
+	"player_done"
+	"player_leave"
+	"character_pick"
+	"ooc"
+	"ooc_received"
+	"emote"
+	"emote_received"
+	"music_play"
+	"music_received"
+	"event_play"
+	"event_received"
+	"bg_received"
+	"call_mod"
+	"update"
+	"player_update"
+]]
 local process = {
 	name = "Server",
 	id = -1
@@ -30,7 +50,6 @@ function process:start(server)
 	self.backgrounds = {}
 
 	self.time = 0
-
 
 	verbosewrite("--Reading Assets--\n")
 
@@ -81,10 +100,13 @@ function process:start(server)
 			print("👎 Error with "..name..": "..err)
 		end
 	end
-	for k,module in pairs(self.modules) do
-		if type(module.init) == "function" then
-			module:init(self)
-			verbosewrite("👍 '"..k.."' loaded!\n")
+	for i,name in ipairs(modules) do
+		local module = self.modules[name]
+		if module then
+			if type(module.init) == "function" then
+				module:init(self)
+				verbosewrite("👍 '"..name.."' loaded!\n")
+			end
 		end
 	end
 end
@@ -209,7 +231,6 @@ function process:join(client)
 	client.id = self.firstempty
 	self.playercount = self.playercount + 1
 
-	client.ip,client.port = client.socket:getpeername()
 	repeat
 		self.firstempty = self.firstempty+1
 	until not self.players[self.firstempty]
@@ -223,11 +244,13 @@ end
 
 function process:disconnect(client)
 	if client.id then
-		self.players[client.id] = nil
-		self.playercount = self.playercount - 1
-		self.firstempty = math.min(client.id,self.firstempty)
-		self:event("player_leave",client)
-		self:print("Player with ID "..client.id.." disconnected.")
+		if self:event("player_leave",client) then
+			self.players[client.id] = nil
+			self.playercount = self.playercount - 1
+			self.firstempty = math.min(client.id,self.firstempty)
+			
+			self:print("Player with ID "..client.id.." disconnected.")
+		end
 	else
 		self.viewers[client] = nil
 		self.viewercount = self.viewercount - 1
@@ -330,35 +353,42 @@ function process:saveList(list,dir)
 end
 
 function process:getCharacters(client)
-	if config.shuffle then
-		local list = {}
-		for i,v in ipairs(self.characters) do table.insert(list,v) end
-		local count = #list
-		while count > 1 do
-			local rand = math.random(1,count)
-			list[rand], list[count] = list[count], list[rand]
-			count=count-1
+	local characters = self:clone(self.characters)
+	if self:event("list_characters",characters) then
+		if config.shuffle then
+			local list = {}
+			for i,v in ipairs(characters) do table.insert(list,v) end
+			local count = #list
+			while count > 1 do
+				local rand = math.random(1,count)
+				list[rand], list[count] = list[count], list[rand]
+				count=count-1
+			end
 		end
+		return list or self.characters
 	end
-	return list or self.characters
-end
-function process:getBackgrounds(client)
-	return self.backgrounds
+
 end
 function process:getMusic(client)
-	if config.shuffle then
-		local list = {}
-		for i,v in ipairs(self.music) do table.insert(list,v) end
-		local count = #list
-		while count > 1 do
-			local rand = math.random(1,count)
-			list[rand], list[count] = list[count], list[rand]
-			count=count-1
+	local music = self:clone(self.music)
+	if self:event("list_music", music) then
+		if config.shuffle then
+			local list = {}
+			for i,v in ipairs(music) do table.insert(list,v) end
+			local count = #list
+			while count > 1 do
+				local rand = math.random(1,count)
+				list[rand], list[count] = list[count], list[rand]
+				count=count-1
+			end
+			table.insert(list,1,Music:new("-"))
+			table.insert(list,2,Music:new("-.mp3"))
 		end
-		table.insert(list,1,Music:new("-"))
-		table.insert(list,2,Music:new("-.mp3"))
+		return list or self.music
 	end
-	return list or self.music
+end
+function process:getBackgrounds(client)
+	return backgrounds
 end
 
 function process:getPlayer(id)
@@ -423,10 +453,17 @@ function process:sendMusic(client,music,character,name)
 
 	client:send("MUSIC", {track=track, character=character, name=name})
 end
+function process:sendEvent(client,event,t)
+	t.event = event
+	client:send("EVENT", t)
+end
 function process:sendBG(client,bg)
 	if bg ~= client.bg then
-		client.bg = bg
-		client:send("BG", {bg=bg})
+		local t = {bg=bg}
+		if self:event("bg_received",client,t) then
+			client.bg = t.bg
+			client:send("BG", t)
+		end
 	end
 end
 

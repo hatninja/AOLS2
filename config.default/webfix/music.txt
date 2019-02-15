@@ -1,0 +1,56 @@
+#(Target Web Music) > (Name to replace)
+
+Godot - The Fragrance of Dark Coffee.mp3 > Godot ~ The Fragrance of Dark Coffee
+
+#As a sample, here are some vanilla tracks. I don't have a full list, unfortunately.
+Prelude(AA).mp3
+Trial(AA).mp3
+Questioning(AA-normal).mp3
+Questioning(AA-allergo).mp3
+OBJECTION (AA).mp3
+PURSUIT(AA).mp3
+PURSUIT(AA) - variation.mp3
+Annonce The Truth(AA).mp3
+logic_and_trick.mp3
+Trial(JFA).mp3
+Questioning JFA (Moderato).mp3
+Questioning JFA (Allegro).mp3
+OBJECTION (JFA).mp3
+PURSUIT(JFA).mp3
+PURSUIT(JFA) - variation.mp3
+Annonce The Truth(JFA).mp3
+Trial(T&T).mp3
+Questioning T&T (Moderato).mp3
+Questioning T&T (Allegro).mp3
+OBJECTION (T&T).mp3
+PURSUIT(T&T).mp3
+PURSUIT(T&T) - variation.mp3
+Annonce The Truth(T&T).mp3
+Prelude(AJ).mp3
+Trial(AJ).mp3
+Questioning AJ (Moderato).mp3
+Questioning AJ (Allegro).mp3
+OBJECTIOM(AJ).mp3
+PURSUIT(AJ).mp3
+Annonce The Truth(AJ).mp3
+Trial(Miles).mp3
+OBJECTION(Miles).mp3
+114 Pursuit(Miles).mp3
+Annonce The Truth(Miles).mp3
+The Great Truth Burglar.mp3
+Great Revival ~ Franziska von Karma.mp3
+Great Revival ~ Miles Edgeworth.mp3
+Others ~ Guilty love.mp3
+Speak up Pup!.mp3
+Luke Atmey ~ I Just Want Love.mp3
+Suspence(AA).mp3
+113 Confrontation ~ Presto 2009.mp3
+Crises of Fate.mp3
+Hotline of Fate.mp3
+Super Trixie.mp3
+Forgotten Legend.mp3
+Interesting People.mp3
+Noisy People.mp3
+Ghost Trick - The World of the Dead.mp3
+Ghost Trick - 4 Minutes Before Death.mp3
+Ghost Trick - Countdown.mp3
