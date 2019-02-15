@@ -180,7 +180,7 @@ function process:send(client, call, data)
 				local ic_received = self:clone(data)
 
 				if self:event("emote_received", client, receiver, ic_received) then
-					self:sendEmote(client,ic_received)
+					self:sendEmote(receiver,ic_received)
 				end
 			end
 		end
@@ -193,7 +193,7 @@ function process:send(client, call, data)
 				local mp_received = self:clone(data)
 
 				if self:event("music_received", client, receiver, mp_received) then
-					self:sendMusic(client,mp_received.track,mp_received.character,mp_received.name)
+					self:sendMusic(receiver,mp_received.track,mp_received.character,mp_received.name)
 				end
 			end
 		end
@@ -208,7 +208,7 @@ function process:send(client, call, data)
 				local event_received = self:clone(data)
 
 				if self:event("event_received", client, receiver, event_received) then
-					receiver:send("EVENT", event_received)
+					self:sendEvent(receiver, event_received)
 				end
 			end
 		end
