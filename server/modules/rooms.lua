@@ -64,8 +64,8 @@ function rooms:joinroom(client,r)
 
 	process:sendMusic(client,room.music)
 	process:sendBG(client,room.bg)
-	client:send("EVENT",{event="hp",side=1,amount=room.hp[1]})
-	client:send("EVENT",{event="hp",side=2,amount=room.hp[2]})
+	process:sendEvent(client,"hp",{side=1,amount=room.hp[1]})
+	process:sendEvent(client,"hp",{side=2,amount=room.hp[2]})
 end
 function rooms:leaveroom(client)
 	local room = client.room
@@ -75,8 +75,8 @@ function rooms:leaveroom(client)
 	end
 end
 
-function rooms:moveto(client,targetroom)
-	if process:event("player_move", client, targetroom, client.room) then
+function rooms:moveto(client,targetroom,override)
+	if override or process:event("player_move", client, targetroom, client.room) then
 		self:leaveroom(client)
 		self:joinroom(client,targetroom)
 	end
