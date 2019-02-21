@@ -27,7 +27,14 @@ end
 
 function webfixer:emote(sender, receiver, emote)
 	if receiver.software ~= "webAO" then return end
+	for i,v in pairs(self.characters) do
+		if v[2] == emote.character then
+			emote.character = v[1]
+			return
+		end
+	end
 end
+
 
 function webfixer:music(sender, receiver, music)
 	if receiver.software ~= "webAO" then return end
