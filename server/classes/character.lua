@@ -1,7 +1,8 @@
 --Character: Stores information about a single character.
 --(String name) (Dynamic side)
 
-local Character = {__index=self}
+local Character = {}
+Character.__index=Character
 
 function Character:new(...)
 	local t = {}

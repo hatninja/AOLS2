@@ -1,7 +1,8 @@
 --Music: Stores information about a single track.
 --(String name) (Number length)
 
-local Music = {__index=self}
+local Music = {}
+Music.__index=Music
 
 function Music:new(...)
 	local t = {}

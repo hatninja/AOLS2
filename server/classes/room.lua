@@ -1,6 +1,7 @@
 --Room: Stores room information
 
-local Room = {__index=self}
+local Room = {}
+Room.__index=Room
 
 function Room:new(...)
 	local t = {}
