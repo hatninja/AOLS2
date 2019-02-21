@@ -18,6 +18,12 @@
 	"call_mod"
 	"update"
 	"player_update"
+	"list_characters"
+	"list_music"
+	"item_add"
+	"item_remove"
+	"item_edit"
+	"item_list"
 ]]
 local process = {
 	name = "Server",
@@ -214,6 +220,28 @@ function process:send(client, call, data)
 		end
 	end
 
+	if call == "ITEM_ADD" then
+		self:protocolStringAssert(call,data, "name","description","image")
+		if self:event("item_add",client,data) then
+			self:sendItems(client,{})
+		end
+	end
+
+	if call == "ITEM_REMOVE" then
+		if self:event("item_remove",client,data.id) then
+			self:sendItems(client,{})
+		end
+	end
+
+	if call == "ITEM_EDIT" then
+		self:protocolStringAssert(call,data, "name","description","image")
+		if self:event("item_edit",client,data.id,data) then
+			self:sendItems(client,{})
+		end
+	end
+
+
+	
 	if call == "MOD_CALL" then
 		self:event("call_mod", client, data)
 	end
@@ -354,37 +382,15 @@ end
 
 function process:getCharacters(client)
 	local characters = self:clone(self.characters)
-	if self:event("list_characters",characters) then
-		if config.shuffle then
-			local list = {}
-			for i,v in ipairs(characters) do table.insert(list,v) end
-			local count = #list
-			while count > 1 do
-				local rand = math.random(1,count)
-				list[rand], list[count] = list[count], list[rand]
-				count=count-1
-			end
-		end
-		return list or self.characters
+	if self:event("list_characters", client, characters) then
+		return characters
 	end
 
 end
 function process:getMusic(client)
 	local music = self:clone(self.music)
-	if self:event("list_music", music) then
-		if config.shuffle then
-			local list = {}
-			for i,v in ipairs(music) do table.insert(list,v) end
-			local count = #list
-			while count > 1 do
-				local rand = math.random(1,count)
-				list[rand], list[count] = list[count], list[rand]
-				count=count-1
-			end
-			table.insert(list,1,Music:new("-"))
-			table.insert(list,2,Music:new("-.mp3"))
-		end
-		return list or self.music
+	if self:event("list_music", client, music) then
+		return music
 	end
 end
 function process:getBackgrounds(client)
@@ -430,11 +436,7 @@ function process:sendMessage(receiver,message,ooc_name)
 	end
 end
 function process:sendEmote(client,emote)
-	local ic = {}
-	for k,v in pairs(emote) do
-		ic[k] = v
-	end
-
+	local ic = self:clone(emote)
 	client:send("IC", ic)
 end
 function process:sendMusic(client,music,character,name)
@@ -444,7 +446,7 @@ function process:sendMusic(client,music,character,name)
 	client.loopat = nil
 	for i,music in ipairs(self:getMusic()) do
 		if music.name == track then
-			if music.length ~= 0 then
+			if music.length and music.length ~= 0 then
 				client.loopat = self.time + music.length
 			end
 			break
@@ -453,8 +455,7 @@ function process:sendMusic(client,music,character,name)
 
 	client:send("MUSIC", {track=track, character=character, name=name})
 end
-function process:sendEvent(client,event,t)
-	t.event = event
+function process:sendEvent(client,t)
 	client:send("EVENT", t)
 end
 function process:sendBG(client,bg)
@@ -464,6 +465,11 @@ function process:sendBG(client,bg)
 			client.bg = t.bg
 			client:send("BG", t)
 		end
+	end
+end
+function process:sendItems(client,list)
+	if self:event("item_list",client,list) then
+		client:send("ITEM_LIST", list)
 	end
 end
 

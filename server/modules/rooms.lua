@@ -46,6 +46,11 @@ function rooms:init()
 
 	process:registerCallback(self,"player_done", 5,self.joinroom)
 	process:registerCallback(self,"player_leave", 1,self.leaveroom)
+
+	process:registerCallback(self,"item_add", 4,self.item_add)
+	process:registerCallback(self,"item_edit", 4,self.item_edit)
+	process:registerCallback(self,"item_remove", 4,self.item_remove)
+	process:registerCallback(self,"item_list", 4,self.item_list)
 end
 
 function rooms:roomcheck(sender, receiver, data)
@@ -64,8 +69,9 @@ function rooms:joinroom(client,r)
 
 	process:sendMusic(client,room.music)
 	process:sendBG(client,room.bg)
-	process:sendEvent(client,"hp",{side=1,amount=room.hp[1]})
-	process:sendEvent(client,"hp",{side=2,amount=room.hp[2]})
+	process:sendEvent(client,{event="hp",side=1,amount=room.hp[1]})
+	process:sendEvent(client,{event="hp",side=2,amount=room.hp[2]})
+	process:sendItems(client,{})
 end
 function rooms:leaveroom(client)
 	local room = client.room
@@ -76,9 +82,38 @@ function rooms:leaveroom(client)
 end
 
 function rooms:moveto(client,targetroom,override)
-	if override or process:event("player_move", client, targetroom, client.room) then
+	if override or process:event("player_move", client, targetroom, client.room)
+	and not (client.room == targetroom) then
 		self:leaveroom(client)
 		self:joinroom(client,targetroom)
+	end
+end
+
+
+function rooms:item_add(client,item)
+	local room = client.room
+	if room then
+		table.insert(room.evidence,item)
+	end
+end
+function rooms:item_edit(client,id,item)
+	local room = client.room
+	if room and tonumber(id) and room.evidence[id+1] then
+		room.evidence[id+1] = item
+	end
+end
+function rooms:item_remove(client,id)
+	local room = client.room
+	if room and tonumber(id) and room.evidence[id+1] then
+		table.remove(room.evidence, id+1)
+	end
+end
+function rooms:item_list(client,list)
+	local room = client.room
+	if room then
+		for i,v in ipairs(room.evidence) do
+			table.insert(list,v)
+		end
 	end
 end
 

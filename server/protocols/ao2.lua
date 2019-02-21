@@ -39,7 +39,9 @@ function AO2:update(client,process)
 		if subcommand:sub(1,1) == "#" then subcommand = subcommand:sub(2,-1) end
 		local args = self:split(subcommand,"#")
 
-		--print("CLIENTRAW",encrypted and "("..encrypted..")" or "("..args[1]..")",table.concat(args,", "))
+		if config.monitor then
+			print("CLIENTRAW",encrypted and "("..encrypted..")" or "("..args[1]..")",table.concat(args,", "))
+		end
 
 		if self.input[args[1]] then
 			self.input[args[1]](self,client,process,unpack(args))
@@ -144,7 +146,7 @@ end
 AO2.input["MS"] = function(self,client,process,call, ...) --No server is complete without tons of hours spent on MS
 	local desk, pre_emote, character, emote, message, side, sfx_name,
 		  emote_modifier, char_id, sfx_delay, shout_modifier, evidence,
-		  flip, realization, text_color, showname, pair, hscroll = ...
+		  flip, realization, text_color, showname, pair, hscroll, no_interrupt = ...
 
 	emote_modifier = self:tointeger(emote_modifier)
 	char_id = self:tointeger(char_id)
@@ -156,16 +158,17 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	text_color = self:tointeger(text_color)
 	pair = self:tointeger(pair)
 	hscroll = self:tointeger(hscroll)
+	no_interrupt = self:tointeger(no_interrupt)
 
 	--Make sure the message is safe.
 	if not (desk and pre_emote and character and emote and message and side and sfx_name
 	and emote_modifier and char_id and sfx_delay and shout_modifier and evidence
 	and flip and realization and text_color) then return end
 	if not (desk == "0" or desk == "1" or desk == "chat") then return end
-	if not (side == "def" or side == "pro" or side == "jud" or side == "wit" or side == "hld" or side == "hlp") then return end
-	if not (emote_modifier >= 0 and emote_modifier < 7) then return end
+--	if not (side == "def" or side == "pro" or side == "jud" or side == "wit" or side == "hld" or side == "hlp") then return end
+--	if not (emote_modifier >= 0 and emote_modifier < 7) then return end
 	if not (sfx_delay >= 0) then return end
-	if not (shout_modifier >= 0 and shout_modifier < 6) then return end
+--	if not (shout_modifier >= 0 and shout_modifier < 6) then return end
 	if not (evidence >= 0) then return end
 	if not (realization == 0 or realization == 1) then return end --WebAO cannot see messages with this value as 2
 	if (pair and not hscroll) then return end
@@ -216,7 +219,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	end
 
 	if showname == "" or showname == "0" then
-	--	showname = nil
+		showname = nil
 	end
 
 	process:send(client,"IC", {
@@ -239,6 +242,8 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 
 		pair=pair,
 		hscroll=hscroll,
+
+		no_interrupt=no_interrupt,
 
 		sfx_name=sfx_name,
 		sfx_delay=sfx_delay,
@@ -301,6 +306,26 @@ AO2.input["DC"] = function(self,client,process,call)
 	process:send(client,"CLOSE")
 end
 
+AO2.input["PE"] = function(self,client,process,call, name,desc,image)
+	process:send(client,"ITEM_ADD",{
+		name=tostring(name),
+		description=tostring(desc),
+		image=tostring(image),
+	})
+end
+AO2.input["DE"] = function(self,client,process,call, id)
+	process:send(client,"ITEM_REMOVE",{
+		id=self:tointeger(id),
+	})
+end
+AO2.input["EE"] = function(self,client,process,call, id,name,desc,image)
+	process:send(client,"ITEM_EDIT",{
+		id=self:tointeger(id),
+		name=tostring(name),
+		description=tostring(desc),
+		image=tostring(image),
+	})
+end
 
 --Encrypted table
 AO2.input["48E0"] = AO2.input["HI"]
@@ -319,10 +344,12 @@ AO2.input["43C7"] = AO2.input["CH"]
 AO2.input["43DB"] = AO2.input["CT"]
 AO2.input["4D90"] = AO2.input["MS"]
 AO2.input["4D80"] = AO2.input["MC"]
-AO2.input["507C"] = AO2.input["PE"]
 AO2.input["48F9"] = AO2.input["HP"]
 AO2.input["5289"] = AO2.input["RT"]
 AO2.input["4422"] = AO2.input["DC"]
+AO2.input["507C"] = AO2.input["PE"]
+AO2.input["4576"] = AO2.input["EE"]
+AO2.input["4424"] = AO2.input["DE"]
 
 --Messages sent from server to clients
 function AO2:send(client,process, call,data)
@@ -429,8 +456,8 @@ function AO2:send(client,process, call,data)
 			t[#t+1] = data.hscroll or 0
 			t[#t+1] = data.pair_hscroll or 0
 			t[#t+1] = data.pair_flip or 0
-			t[#t+1] = data.pair_modifier or 0 --I assume this is emote_modifier...
 		end
+		t[#t+1] = data.no_interrupt
 
 		client:sendraw(ms..table.concat(t,"#").."#%")
 	end
@@ -464,6 +491,16 @@ function AO2:send(client,process, call,data)
 			end
 			client:sendraw("HP#"..(data.side or 0).."#"..(data.amount or 0).."#%")
 		end
+	end
+
+	if call == "ITEM_LIST" then
+		local list = ""
+		for i,v in ipairs(data) do
+			list=list..v.name.."&"
+			list=list..v.description.."&"
+			list=list..v.image.."#"
+		end
+		client:sendraw("LE#"..list.."%")
 	end
 end
 
@@ -618,7 +655,7 @@ function AO2:makeNameList(t, key)
 end
 
 function AO2:finishLoad(client,process)
-	client:sendraw("CharsCheck#0#%") --TODO: Fix WebAO breaking when all values aren't filled.
+	client:sendraw("CharsCheck#0#%")
 	client:sendraw("DONE#%")
 	process:send(client,"DONE")
 end

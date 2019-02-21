@@ -13,6 +13,8 @@ return function(c)
 
 	c.verbose = true --Verbose mode shows more descriptive messages. Use if developing.
 	c.autorestart = true --Automatically restart when the server experiences a crash.
+	c.strict = true --If the server isn't strict, it will ignore errors and keep running.
+	c.monitor = false --Reading of client-sent packets.
 
 	c.serverooc = "(*^v^)/"
 
@@ -24,6 +26,12 @@ return function(c)
 	c.motd = "Welcome to a default server!\nSee `/help` for commands."
 	c.rules = ""
 	c.files = ""
+
+	--Module: charhelper
+	c.autospectate = false
+
+	--Module: misc
+	c.shuffle = false
 
 	--Module: antispam
 	c.maxnamelength = 30
