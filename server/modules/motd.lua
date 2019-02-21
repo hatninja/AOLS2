@@ -6,7 +6,7 @@ local motd = {
 	help = {
 		{"motd","","Repeats the welcome message."},
 		{"rules","","Read the rules."},
-		{"files","","Gets link to server files."}
+		{"files","","Gets link to server files."},
 	}
 }
 

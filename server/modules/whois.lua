@@ -3,9 +3,10 @@ local process = ...
 local whois = {
 
 	help = {
-		{"whois","","Get player information."},
+		{"whois","(id)","Get player information."},
 		{"getarea","","Gets list of people in a room."},
-		{"getareas","","Gets a list of all people."},
+		{"getareas","","Gets a list of all people in areas."},
+		{"getplayers","","Gets a list of all people."},
 	}
 }
 
@@ -88,13 +89,12 @@ function whois:command(client, cmd,str,args)
 			local msg = ""
 			for k,room in pairs(rooms_module.rooms) do
 				if not room.hidden and room.count > 0 then
-					msg = msg.."~~"..tostring(room.name).."~~\n"
+					msg = msg.."~~"..tostring(room.name).."~~"
 					for k,player in pairs(room.players) do
-						msg=msg..self:list(player).."\n"
+						msg=msg.."\n"..self:list(player)
 					end
 				end
 			end
-			msg=msg.."--"..process.playercount.." players total--"
 
 			process:sendMessage(client,msg)
 		else

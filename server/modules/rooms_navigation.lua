@@ -3,7 +3,12 @@ local process = ...
 local Music = dofile(path.."server/classes/music.lua")
 
 local rooms = {
-	name = "Rooms"
+	name = "Rooms",
+
+	help = {
+		{"areas","","Shows list of areas."},
+		{"area","(id)","Move to an area."},
+	}
 }
 
 function rooms:init()
