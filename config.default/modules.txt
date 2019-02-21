@@ -1,17 +1,27 @@
 #You can add or comment out the names of modules to enable/disable specific functionality.
-ao2advertiser
-
 commands
+
 rooms
 rooms_logging
 rooms_navigation
+rooms_lobby
+rooms_rp
+
+moderation
 
 motd
 whois
+misc
+
 emotehelper
+charhelper
+bghelper
+stenofriend
+rejoiner
+spectator
+pairing
 
 antispam
-stenofriend
+webfixer
 
-#Temporary
-misc
+ao2advertiser

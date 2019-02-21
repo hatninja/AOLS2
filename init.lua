@@ -26,11 +26,13 @@ while not server.kill do
 	local g,err = xpcall(server.update,debug.traceback,server)
 	if not g then
 		print("FATAL ERROR: "..tostring(err))
-		if config.autorestart then
-			print("RESTARTING!")
-			server:reload()
-		else
-			server:close()
+		if config.strict then
+			if config.autorestart then
+				print("RESTARTING!")
+				server:reload()
+			else
+				server:close()
+			end
 		end
 	end
 
