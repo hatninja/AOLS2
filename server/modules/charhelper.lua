@@ -57,7 +57,7 @@ function charhelper:character_pick(client, name)
 end
 
 function charhelper:emote(sender, emote)
-	if not emote.name then emote.name = emote.character end
+
 end
 
 
