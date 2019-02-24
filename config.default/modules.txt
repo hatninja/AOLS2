@@ -4,6 +4,7 @@ commands
 rooms
 rooms_logging
 rooms_navigation
+rooms_status
 rooms_lobby
 rooms_rp
 
@@ -16,11 +17,14 @@ misc
 emotehelper
 charhelper
 bghelper
+
+pairing
+communication
+
 stenofriend
 rejoiner
-spectator
-pairing
 
+spectator
 antispam
 webfixer
 

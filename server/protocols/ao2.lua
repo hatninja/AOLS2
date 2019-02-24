@@ -490,6 +490,18 @@ function AO2:send(client,process, call,data)
 				self.state[client].hp[data.side] = data.amount
 			end
 			client:sendraw("HP#"..(data.side or 0).."#"..(data.amount or 0).."#%")
+		elseif data.event == "arup_count" then
+			local list = ""
+			client:sendraw("ARUP#0#"..table.concat(data,"#").."#%")
+		elseif data.event == "arup_status" then
+			local list = ""
+			client:sendraw("ARUP#1#"..table.concat(data,"#").."#%")
+		elseif data.event == "arup_cm" then
+			local list = ""
+			client:sendraw("ARUP#2#"..table.concat(data,"#").."#%")
+		elseif data.event == "arup_lock" then
+			local list = ""
+			client:sendraw("ARUP#3#"..table.concat(data,"#").."#%")
 		end
 	end
 
