@@ -31,7 +31,7 @@ return function(c)
 	c.autospectate = false
 
 	--Module: misc
-	c.shuffle = false
+	c.shuffle = false --Shuffles the character/music list.
 
 	--Module: antispam
 	c.maxnamelength = 30

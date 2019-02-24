@@ -43,7 +43,7 @@ Opens an information page on a specific command.
 **/area (room id)** -
 Move to a specific area as shown by `/areas`
 
-**/area** or **/areas** - -
+**/area** or **/areas** -
 Displays the area list.
 
 **/getarea (room id)** - 
@@ -53,25 +53,26 @@ Gets the list of people in the room with you. Optionally, specify a room id to g
 Lists every user in every room.
 
 **/whois (user id)** -
-Returns your user information. Optionally specify the id of the user you want to view.
+Returns your user information. 
 
-**/g** - 
+**/g (message)** - 
 Sends a global message. Anyone in the server can see it.
 
 **/pm (user id) (message)** - 
 Sends a private message to a user.
 
-**/char** - 
-Selects a character directly.
+**/char (name)** - 
+Selects a character by name.
 
 **/charlist** - 
-Shows a list of characters that the server supports.
+Shows the list of characters that the server supports.
 
 **/randomchar** - 
 Selects a random character for you.
 
 **/pos** - 
-Sets your character's position within the courtroom.
+Sets your character's position within the background.
+Currently supported: def, pro, wit, jud, hld, hlp, jur
 
 **/desk** - 
 Sets your desk's visibility.
@@ -81,8 +82,8 @@ No arguments sets it back to default.
 **/zoom** - 
 Toggles speedlines when using an emote.
 
-**/bg (filename)** - 
-Sets the background for the room. Only server-supported ones can be used.
+**/bg (name)** - 
+Sets the background for the room.
 
 **/bglist** - 
 Shows list of the backgrounds that the server supports.
@@ -95,7 +96,7 @@ Sets the room's doc.
 Use with no arguments to return the doc.
 
 **/steno** -
-Toggles steno mode. Steno mode fixes common capitialization and puncuation errors. It also hides messages in double brackets.
+Toggles steno mode. Steno mode fixes common capitialization and punctuation errors. It also hides messages in double brackets.
 
 **/accumulate** -
 Toggles accumulate mode. Accumulate mode collects all a character's messages into a single one.
@@ -110,13 +111,13 @@ Flips a coin. You get Heads or Tails. The result will be announced in the room.
 Rolls a 6-sided die by default. You can specify how many sides the die has. The result will be announced in the room.
 
 **/timer (seconds)**
-Use without an argument to use stopwatch mode. Specify seconds to have an automatic timer run.
+Use without an argument to use it as a stopwatch. Use seconds to run an automatic timer.
 
 **/lock (password)** - 
-Locks a room with a password. Users will be required to use the password as a key, to enter. (See Below.)
+Locks a room with a password. Users are required to use a key to enter. (See Below.)
 
 **/key (password)** -
-Allows you to enter any room that uses this password as a lock.
+Allows you to enter any room that uses the same password.
 
 #### Mod commands
 **/modpass (passcode)** - 
