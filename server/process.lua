@@ -274,14 +274,14 @@ function process:disconnect(client)
 	if client.id then
 		if self:event("player_leave",client) then
 			self.players[client.id] = nil
-			self.playercount = self.playercount - 1
+			self.playercount =  math.max(self.playercount - 1, 0)
 			self.firstempty = math.min(client.id,self.firstempty)
 			
 			self:print("Player with ID "..client.id.." disconnected.")
 		end
 	else
 		self.viewers[client] = nil
-		self.viewercount = self.viewercount - 1
+		self.viewercount =  math.max(self.viewercount - 1, 0)
 	end
 end
 

@@ -47,7 +47,7 @@ function commands:handle(client,data)
 			table.insert(args,argument)
 		end
 
-		if process:event("command",client,cmd,str,args) then --Means no callbacks returned.
+		if process:event("command",client,cmd,str,args, data.name) then --Means no callbacks returned.
 			process:sendMessage(client,"Command \""..tostring(cmd).."\" not recognized! See /help for list of commands.")
 		end
 		return true
@@ -57,25 +57,17 @@ end
 function commands:helpcmd(client, cmd,str,args)
 	if cmd == "help" then
 		local length = config.helplength or 5
-		local page = tonumber(args[1])
 		local name = args[1]
-		local msg
-	
-		if not name and not page then page = 1 end
-
-		if page then
-			msg = "~~Help: Page "..page.." of "..math.ceil(#self.helptable/length).."~~"
-			for i=1+(page-1)*length, page*length do
-				local entry = self.helptable[i]
-				if i <= #self.helptable and type(entry) == "table" then
-					msg=msg.."\n"
-					msg=msg..(self.prefix..entry[1]).." "..entry[2].."\n\t"..tostring(entry[3])
-				end
+		if not name then
+			local msg = "Use /help (command) to get more detailed info.\n~~Commands List~~\n"
+			for i,v in ipairs(self.helptable) do
+				msg=msg..self.prefix..v[1]..", "
 			end
+			msg = msg:sub(1,-3)
 			process:sendMessage(client,msg)
 			return true
 		else
-			msg = "~~Help~~\n"
+			local msg = "~~Help~~\n"
 			for i,v in ipairs(self.helptable) do
 				if v[1] == name then
 					msg=msg..(self.prefix..name).." "..(v[2] or "")
@@ -83,7 +75,7 @@ function commands:helpcmd(client, cmd,str,args)
 					if v[4] then
 						msg=msg..tostring(v[4])
 					else
-						msg=msg..tostring("No page exists for this command.")
+						msg=msg..tostring(v[3])
 					end
 					process:sendMessage(client,msg)
 					return true

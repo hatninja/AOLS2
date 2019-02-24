@@ -17,18 +17,26 @@ function lobby:init()
 end
 
 function lobby:block(client, event)
-	if client.room and client.room.kind == "lobby" then return true end
+	if client.room and client.room.kind == "lobby" and not client.mod then return true end
 end
 
 
 function lobby:command(client, cmd,str,args)
-	if client.room and client.room.kind == "lobby" then return end
+	if client.room and client.room.kind ~= "lobby" then return end
 	if cmd == "bg" then
 		process:sendMessage(client,"You cannot change the BG in this room!")
 		return true
 	end
-	if cmd == "doc" and args[2] then
+	if cmd == "doc" and args[1] then
 		process:sendMessage(client,"You cannot change the doc in this room!")
+		return true
+	end
+	if cmd == "status" then
+		process:sendMessage(client,"You cannot change the status in this room!")
+		return true
+	end
+	if cmd == "lock" then
+		process:sendMessage(client,"You cannot change the lock in this room!")
 		return true
 	end
 end

@@ -20,7 +20,139 @@ Bit operations are required for WebSocket support.
 ## Features
 * Modular design.
 * AO 1.x/2.x supported.
+* 2.6.0 feature support.
 * Websockets.
 * Automatic restart.
+* Anti-Spam features.
+* Web-fixer, fixes content for web users.
+* Stenographing modes.
+* Ghost rejoining.
+* + Many more useful commands.
 
-## Commands
+## List of Commands
+**/motd, /rules, /files** -
+Each display a text message if it is set.
+`/motd` is the message you get when you join.
+
+**/help** -
+Displays a list of all commands. This may change between different server setups.
+
+**/help (command)** -
+Opens an information page on a specific command.
+
+**/area (room id)** -
+Move to a specific area as shown by `/areas`
+
+**/area** or **/areas** - -
+Displays the area list.
+
+**/getarea (room id)** - 
+Gets the list of people in the room with you. Optionally, specify a room id to get the list of that room.
+
+**/getareas** - 
+Lists every user in every room.
+
+**/whois (user id)** -
+Returns your user information. Optionally specify the id of the user you want to view.
+
+**/g** - 
+Sends a global message. Anyone in the server can see it.
+
+**/pm (user id) (message)** - 
+Sends a private message to a user.
+
+**/char** - 
+Selects a character directly.
+
+**/charlist** - 
+Shows a list of characters that the server supports.
+
+**/randomchar** - 
+Selects a random character for you.
+
+**/pos** - 
+Sets your character's position within the courtroom.
+
+**/desk** - 
+Sets your desk's visibility.
+0 forces desk off, 1 forces desk on.
+No arguments sets it back to default.
+
+**/zoom** - 
+Toggles speedlines when using an emote.
+
+**/bg (filename)** - 
+Sets the background for the room. Only server-supported ones can be used.
+
+**/bglist** - 
+Shows list of the backgrounds that the server supports.
+
+**/status** - 
+Sets the status of a courtroom.
+
+**/doc (link)** - 
+Sets the room's doc.
+Use with no arguments to return the doc.
+
+**/steno** -
+Toggles steno mode. Steno mode fixes common capitialization and puncuation errors. It also hides messages in double brackets.
+
+**/accumulate** -
+Toggles accumulate mode. Accumulate mode collects all a character's messages into a single one.
+
+**/rejoin** -
+Reconnects you as your ghost player if it exists.
+
+**/coinflip** - 
+Flips a coin. You get Heads or Tails. The result will be announced in the room.
+
+**/diceroll (sides)** - 
+Rolls a 6-sided die by default. You can specify how many sides the die has. The result will be announced in the room.
+
+**/timer (seconds)**
+Use without an argument to use stopwatch mode. Specify seconds to have an automatic timer run.
+
+**/lock (password)** - 
+Locks a room with a password. Users will be required to use the password as a key, to enter. (See Below.)
+
+**/key (password)** -
+Allows you to enter any room that uses this password as a lock.
+
+#### Mod commands
+**/modpass (passcode)** - 
+Logs you in as moderator.
+
+**/unmodme** -
+Removes your moderator status.
+
+**/kick (id)** - 
+Boots the user off the server.
+
+**/ban (id)** - 
+Bans the users ip from the server, they will not be able to rejoin.
+Their IP will be given once you do this.
+
+**/unban (ip)** - 
+Unbans the specified IP, users using the ip will be able to join again.
+
+**/mute (user id)** - 
+Stops a user from using IC features.
+
+**/unmute (user id)** - 
+Unmutes said user.
+
+**/move (user id) (room id)** - 
+Moves a user to the specified room.
+
+**/trap (user id) (room id)** - 
+Traps a user to the specified room, they will not be able to change rooms.
+You can omit room id, to lock the user where they are.
+
+**/untrap (user id)** - 
+Untraps a user.
+
+**/modlock** - 
+Locks a room so only moderators can enter. Use again to disable the lock.
+
+**/reload** - 
+Reloads the server. This will disconnect every client.

@@ -77,13 +77,17 @@ function rooms:leaveroom(client)
 	local room = client.room
 	if room then
 		room.players[client] = nil
-		room.count = room.count - 1
+		room.count = math.max(room.count - 1,0)
 	end
 end
 
+function rooms:getRoom(id)
+	return self.rooms[id]
+end
+
 function rooms:moveto(client,targetroom,override)
-	if override or process:event("player_move", client, targetroom, client.room)
-	and not (client.room == targetroom) then
+	if override 
+	or client.room ~= targetroom and process:event("player_move", client, targetroom, client.room) then
 		self:leaveroom(client)
 		self:joinroom(client,targetroom)
 	end

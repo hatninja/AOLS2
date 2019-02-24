@@ -16,7 +16,7 @@ function rooms:init()
 
 	process:registerCallback(self,"command", 3,self.command)
 	process:registerCallback(self,"music_play", 3,self.areabutton)
-	process:registerCallback(self,"player_move", 3,self.welcometoroom)
+	process:registerCallback(self,"player_move", 1,self.welcometoroom)
 
 	self.roomlist = {}
 	for k,room in pairs(self.parent.rooms) do
@@ -36,7 +36,7 @@ function rooms:areabutton(client, music)
 	for i,v in ipairs(self.roomlist) do
 		if v.name == music.track then
 			if v.room then
-				self.parent:moveto(client,v.room)
+				self.parent:moveto(client, v.room)
 			end
 			return true
 		end
@@ -57,7 +57,13 @@ function rooms:command(client, cmd,str,args)
 				end
 				msg=msg..room.name
 				if room.status then
-					msg=msg.."["..room.status.."]"
+					msg=msg.." ["..room.status.."]"
+				end
+				if room.lock then
+					msg=msg.." [Lock]"
+				end
+				if room.modlock then
+					msg=msg.." [Mod]"
 				end
 				msg=msg.." ("..tostring(room.count)..")"
 			end
