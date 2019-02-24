@@ -88,6 +88,7 @@ function server:update()
 
 				if #data > RECEIVEMAX then --Failsafe against impossibly large messages.
 					print("A client is sending too much data!")
+					client.socket:close()
 					break
 				end
 			else
