@@ -10,6 +10,7 @@ return function(t)
 		name="Courtroom",
 		bg="gs4",
 		kind="court",
+		renamable=true,
 	}
 	t[3] = {
 		name="Secret Court",

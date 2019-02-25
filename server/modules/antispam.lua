@@ -9,9 +9,11 @@ function antispam:init()
 
 	process:registerCallback(self,"ooc",0,self.strike)
 	process:registerCallback(self,"emote",0,self.strike)
+	process:registerCallback(self,"command",0,self.strike)
 	process:registerCallback(self,"music_play",0,self.strike)
 	process:registerCallback(self,"event_play",0,self.strike)
 	process:registerCallback(self,"call_mod",0,self.strike)
+	process:registerCallback(self,"player_move",0,self.strike)
 
 	process:registerCallback(self,"player_update",0,self.cooldown)
 

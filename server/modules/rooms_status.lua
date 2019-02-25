@@ -9,6 +9,7 @@ local rooms = {
 	help = {
 		{"doc","(link)","Shows the document for the room.","Add a link to change the room's doc."},
 		{"status","(status)","Change the status of the room."},
+		{"rename","(name)","Changes the name of your area."},
 		{"lock","(pass)","Locks a room with a passcode."},
 		{"key","(pass)","Sets your key. Allows you to enter rooms with the same passcode."},
 	}
@@ -63,9 +64,18 @@ function rooms:update()
 	local parent = process.modules["rooms"]
 	for k,v in pairs(parent.rooms) do
 		if v.count == 0 then
-			v.status = nil
+			if v.status then
+				v.status = nil
+				self.statuschange = true
+			end
+			if v.lock then
+				v.lock = nil
+				self.lockchange = true
+			end
 			v.doc = nil
-			v.lock = nil
+			if v.basename then
+				v.name = v.basename
+			end
 		end
 	end
 end
@@ -189,6 +199,32 @@ function rooms:command(client, cmd,str,args)
 				process:sendMessage(client,"Room is no longer mod-locked.")
 			end
 			self.lockchange = true
+			return true
+		end
+	end
+	if cmd == "rename" then
+		local room = client.room
+		if room then
+			if not room.renamable then
+				process:sendMessage(client,"This room isn't renamable!")
+				return true
+			end
+			if not room.basename then
+				room.basename = room.name
+			end
+
+			if str ~= "" then
+				if #str <= 20 then
+					room.name = str
+					process:sendMessage(room,"["..client.id.."] renamed the room to '"..room.name.."'")
+				else
+					process:sendMessage(client,"Your room name is too long!")
+				end
+			else
+				room.name = room.basename
+				process:sendMessage(room,"["..client.id.."] unnamed the room!")
+			end
+			self.statuschange = true
 			return true
 		end
 	end

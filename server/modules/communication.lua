@@ -11,7 +11,8 @@ local communication = {
 function communication:init()
 	process:registerCallback(self,"command",3,self.command)
 	process:registerCallback(self,"emote",3,self.emote)
-	process:registerCallback(self,"ooc", 3,self.message)
+	process:registerCallback(self,"ooc", 5,self.trackOOCname)
+	process:registerCallback(self,"ooc", 1,self.message)
 end
 
 function communication:command(client, cmd,str,args, oocname)
@@ -45,13 +46,15 @@ function communication:command(client, cmd,str,args, oocname)
 	end
 end
 
-function communication:message(client, ooc)
+function communication:trackOOCname(client, ooc)
 	if ooc.name then
-		ooc.name = ooc.name:match("^%s-(.-)%s-$")
+		ooc.name = ooc.name:match("^%s*(.-)%s*$")
 
 		client.name = ooc.name
 	end
 	if not ooc.name then ooc.name = client.character end
+end
+function communication:message(client, ooc)
 	for player in process:eachPlayer() do
 		if player ~= client and ooc.name == player.name then
 			process:sendMessage(client,"Your nickname is already in use!")
@@ -66,8 +69,8 @@ function communication:message(client, ooc)
 end
 
 function communication:emote(client, emote)
-	if emote.name and emote.name ~= emote.character then 
-		emote.name = emote.name:match("^%s-(.-)%s-$")
+	if emote.name then 
+		emote.name = emote.name:match("^%s*(.-)%s*$")
 		
 		client.showname = emote.name
 	end
@@ -76,7 +79,8 @@ function communication:emote(client, emote)
 
 	else --Ignore check if the user is not using any shownames
 		for player in process:eachPlayer() do
-			if player ~= client and (emote.name == player.showname or emote.name == player.name) then
+			if player ~= client
+			and (emote.name == player.showname or emote.name == player.name) then
 				process:sendMessage(client,"Your showname is already in use!")
 				return true
 			end

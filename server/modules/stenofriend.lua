@@ -80,7 +80,6 @@ function stenofriend:handle(sender, receiver, emote)
 		local author = emote.name or emote.character
 
 		if lastreceive == true or lastreceive.name ~= author then --Someone else spoke, send what we've accumulated.
-			self:print("New author!")
 			if lastreceive ~= true then
 				process:sendEmote(receiver,lastreceive)
 			end
