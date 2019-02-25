@@ -73,11 +73,7 @@ function communication:emote(client, emote)
 		emote.name = emote.name:match("^%s*(.-)%s*$")
 		
 		client.showname = emote.name
-	end
-	if not emote.name then
-		emote.name = emote.character
 
-	else --Ignore check if the user is not using any shownames
 		for player in process:eachPlayer() do
 			if player ~= client
 			and (emote.name == player.showname or emote.name == player.name) then
@@ -85,6 +81,9 @@ function communication:emote(client, emote)
 				return true
 			end
 		end
+	end
+	if not emote.name then
+		emote.name = emote.character
 	end
 end
 

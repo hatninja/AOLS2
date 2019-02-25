@@ -23,7 +23,6 @@ function pairing:emote(client, emote)
 			and lastemote.pair == client.character
 			and emote.pair == player.character 
 			and emote.side == lastemote.side then
-				self:print("PAIRING\t"..lastemote.pair.."\t"..emote.pair)
 				emote.pair_emote = lastemote.emote
 				emote.pair_hscroll = lastemote.hscroll
 				emote.pair_flip = lastemote.pair_flip

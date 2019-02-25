@@ -456,8 +456,9 @@ function AO2:send(client,process, call,data)
 			t[#t+1] = data.hscroll or 0
 			t[#t+1] = data.pair_hscroll or 0
 			t[#t+1] = data.pair_flip or 0
+			t[#t+1] = data.no_interrupt
 		end
-		t[#t+1] = data.no_interrupt
+		
 
 		client:sendraw(ms..table.concat(t,"#").."#%")
 	end
