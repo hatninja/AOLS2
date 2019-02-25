@@ -27,7 +27,7 @@ Bit operations are required for WebSocket support.
 * Web-fixer, fixes content for web users.
 * Stenographing modes.
 * Ghost rejoining.
-* + Many more useful commands.
+* Many more useful commands.
 
 ## List of Commands
 **/motd, /rules, /files** -
@@ -90,6 +90,9 @@ Shows list of the backgrounds that the server supports.
 
 **/status** - 
 Sets the status of a courtroom.
+
+**/rename** -
+Renames a room if it is renamable.
 
 **/doc (link)** - 
 Sets the room's doc.
