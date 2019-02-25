@@ -14,6 +14,8 @@ function antispam:init()
 	process:registerCallback(self,"event_play",0,self.strike)
 	process:registerCallback(self,"call_mod",0,self.strike)
 	process:registerCallback(self,"player_move",0,self.strike)
+	process:registerCallback(self,"item_add", 0,self.strike)
+	process:registerCallback(self,"item_edit", 0,self.strike)
 
 	process:registerCallback(self,"player_update",0,self.cooldown)
 
@@ -65,6 +67,12 @@ function antispam:item(client,a,b)
 	end
 	if item.description and #item.description > config.maxmsglength then
 		process:sendMessage(client,"Evidence description is "..tostring(#item.description - config.maxmsglength).." characters too long.")
+		return true
+	end
+	if client.room
+	and client.room.evidence
+	and #client.room.evidence > config.maxevidence then
+		process:sendMessage(client,"Too much evidence! You cannot add any more.")
 		return true
 	end
 end
