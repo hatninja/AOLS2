@@ -38,7 +38,9 @@ end
 
 function rooms:disconnected(client)
 	local msg = "["..client.id.."] disconnected."
-	process:sendMessage(client.room,msg)
+	if client.room then
+		process:sendMessage(client.room,msg)
+	end
 end
 
 return rooms

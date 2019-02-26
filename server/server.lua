@@ -11,7 +11,7 @@ local SENDMAX = 2048
 
 local server = {
 	software = "AOLS2",
-	version = "alpha",
+	version = "1.0",
 }
 
 function server:start()

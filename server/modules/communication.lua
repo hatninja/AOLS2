@@ -92,8 +92,8 @@ function communication:trackshowname(client, emote)
 		--Allow same shownames if in different rooms, but never allow a showname of a username.
 		for player in process:eachPlayer() do
 			if player ~= client
-			and (player.room == client.room and emote.name == player.showname)
-			or (emote.name == player.name) then
+			and ((player.room == client.room and emote.name == player.showname)
+			or (emote.name == player.name)) then
 				process:sendMessage(client,"Your showname is already in use!")
 				return true
 			end
