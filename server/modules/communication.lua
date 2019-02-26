@@ -1,4 +1,4 @@
---Handles communication.
+--Handles communication and also houses anti-impersonation features.
 local process = ...
 
 local communication = {
@@ -10,9 +10,11 @@ local communication = {
 
 function communication:init()
 	process:registerCallback(self,"command",3,self.command)
-	process:registerCallback(self,"emote",3,self.emote)
+	process:registerCallback(self,"ooc", 1,self.prefix)
 	process:registerCallback(self,"ooc", 5,self.trackOOCname)
-	process:registerCallback(self,"ooc", 1,self.message)
+	process:registerCallback(self,"music_play", 4,self.trackshowname)
+	process:registerCallback(self,"emote", 4,self.trackshowname)
+	process:registerCallback(self,"player_move", 0,self.removeshowname)
 end
 
 function communication:command(client, cmd,str,args, oocname)
@@ -46,45 +48,72 @@ function communication:command(client, cmd,str,args, oocname)
 	end
 end
 
-function communication:trackOOCname(client, ooc)
-	if ooc.name then
-		ooc.name = ooc.name:match("^%s*(.-)%s*$")
-
-		client.name = ooc.name
-	end
-	if not ooc.name then ooc.name = client.character end
-end
-function communication:message(client, ooc)
-	for player in process:eachPlayer() do
-		if player ~= client and ooc.name == player.name then
-			process:sendMessage(client,"Your nickname is already in use!")
-			return true
-		end
-	end
-
+function communication:prefix(client, ooc)
 	ooc.name = "["..client.id.."] ".. ooc.name
 	if client.mod then
 		ooc.name = "[Mod]".. ooc.name
 	end
 end
-
-function communication:emote(client, emote)
-	if emote.name then 
-		emote.name = emote.name:match("^%s*(.-)%s*$")
-		
-		client.showname = emote.name
+function communication:trackOOCname(client, ooc)
+	if ooc.name then
+		ooc.name = ooc.name:match("^%s*(.-)%s*$")
 
 		for player in process:eachPlayer() do
 			if player ~= client
-			and (emote.name == player.showname or emote.name == player.name) then
+
+			and player.ip ~= client.ip
+			and player.hardwareid ~= client.hardwareid
+
+			and (ooc.name == player.name or ooc.name == player.showname) then
+				process:sendMessage(client,"Your nickname is already in use!")
+				return true
+			end
+		end
+
+		--Prevent using a nickname to block normal character names.
+		for i,char in ipairs(process.characters) do
+			local charname = char:getName()
+			if charname == ooc.name then
+				return
+			end
+		end
+
+		client.name = ooc.name
+	end
+end
+
+function communication:trackshowname(client, emote)
+	if not emote.name then
+		emote.name = emote.character
+	end
+	if emote.name then 
+		emote.name = emote.name:match("^%s*(.-)%s*$")
+
+		--Allow same shownames if in different rooms, but never allow a showname of a username.
+		for player in process:eachPlayer() do
+			if player ~= client
+			and (player.room == client.room and emote.name == player.showname)
+			or (emote.name == player.name) then
 				process:sendMessage(client,"Your showname is already in use!")
 				return true
 			end
 		end
+
+		--Prevent using a showname to remotely block other characters.
+		if emote.name ~= emote.character then
+			for i,char in ipairs(process.characters) do
+				local charname = char:getName()
+				if charname == emote.name then
+					return
+				end
+			end
+		end
+	
+		client.showname = emote.name
 	end
-	if not emote.name then
-		emote.name = emote.character
-	end
+end
+function communication:removeshowname(client)
+	client.showname = nil
 end
 
 return communication

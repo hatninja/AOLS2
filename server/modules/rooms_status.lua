@@ -23,6 +23,7 @@ function rooms:init()
 
 	process:registerCallback(self,"player_done", 3,self.join)
 	process:registerCallback(self,"player_move", 4,self.move)
+	process:registerCallback(self,"player_leave", 0,self.leave)
 
 	--Must match the area list in the area selector
 	self.roomlist = {}
@@ -214,7 +215,7 @@ function rooms:command(client, cmd,str,args)
 			end
 
 			if str ~= "" then
-				if #str <= 20 then
+				if #str <= config.maxrename then
 					room.name = str
 					process:sendMessage(room,"["..client.id.."] renamed the room to '"..room.name.."'")
 				else
@@ -249,5 +250,10 @@ function rooms:move(client, targetroom, sourceroom)
 
 	self.countchange = true
 end
+
+function rooms:leave()
+	self.countchange = true
+end
+
 
 return rooms

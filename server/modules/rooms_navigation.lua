@@ -15,7 +15,7 @@ function rooms:init()
 	self.parent = process.modules["rooms"]
 
 	process:registerCallback(self,"command", 3,self.command)
-	process:registerCallback(self,"music_play", 3,self.areabutton)
+	process:registerCallback(self,"music_play", 5,self.areabutton)
 	process:registerCallback(self,"player_move", 1,self.welcometoroom)
 
 	self.roomlist = {}
