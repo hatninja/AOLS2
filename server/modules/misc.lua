@@ -30,7 +30,7 @@ function misc:command(client, cmd,str,args)
 		return true
 	end
 	if cmd == "diceroll" then
-		local range = tonumber(args[2]) or 6
+		local range = tonumber(args[1]) or 6
 		local result = math.random(1,math.max(range,1))
 		
 		local msg = "["..client.id.."] rolled a "..range.."-sided die and got "..result.."!"
@@ -50,7 +50,7 @@ function misc:command(client, cmd,str,args)
 				self.time[client] = -1
 				process:sendMessage(client.room or process,msg)
 			else
-				local msg = "["..client.id.."] stopped timing at "..math.abs(self.time[client]+1).." seconds."
+				local msg = "["..client.id.."] stopped timing at "..math.floor(math.abs(self.time[client]+1)).." seconds."
 				self.time[client] = nil
 				process:sendMessage(client.room or process,msg)
 			end

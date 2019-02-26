@@ -20,7 +20,6 @@ return function(c)
 
 	--Module: commands
 	c.prefix = "/"
-	c.helplength = 5
 
 	--Module: motd
 	c.motd = "Welcome to a default server!\nSee `/help` for commands."
@@ -37,6 +36,9 @@ return function(c)
 	c.maxnamelength = 30
 	c.maxmsglength = 300
 	c.maxevidence = 18 --By default 18 is one screen's worth.
+
+	--Module: communication
+	c.maxrename = 30 --The maxmimum characters a renamed room can have.
 
 	--Module: ao2advertiser
 	c.ao2msip = "master.aceattorneyonline.com"

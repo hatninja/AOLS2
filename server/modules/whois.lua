@@ -36,7 +36,7 @@ function whois:command(client, cmd,str,args)
 			local msg = "~~Whois~~"
 			msg=msg.."\nPlayer ID: "..tostring(player.id)
 			msg=msg.."\nSoftware: "..tostring(player.software).." ("..tostring(player.version)..")"
-			msg=msg.."\nUsername: '"..tostring(player.name or "N/A").."'"
+			msg=msg.."\nNickname: '"..tostring(player.name or "N/A").."'"
 			
 			if player.mod then
 				msg=msg.."\nModerator: Yes"

@@ -10,7 +10,7 @@ function rooms:init()
 	process:registerCallback(self,"emote",0,function(self,client,emote)
 		self:print(string.format("[%s] %s %s: %s",
 			client.room and client.room.name,
-			"["..tostring(client.id).."]"..(client.showname or ""),
+			"["..tostring(client.id).."] "..(client.showname or ""),
 			"("..tostring(client.character)..")",
 			emote.dialogue))
 	end)

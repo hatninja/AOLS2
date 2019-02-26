@@ -56,7 +56,6 @@ end
 
 function commands:helpcmd(client, cmd,str,args)
 	if cmd == "help" then
-		local length = config.helplength or 5
 		local name = args[1]
 		if not name then
 			local msg = "Use /help (command) to get more detailed info.\n~~Commands List~~\n"

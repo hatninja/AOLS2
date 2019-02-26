@@ -92,7 +92,7 @@ function moderation:command(client, cmd,str,args)
 		if id and room then
 			local player = process:getPlayer(id)
 			if player then
-				rooms:moveto(client,room,true)
+				rooms:moveto(player,room,true)
 				process:sendMessage(client,"Moved ["..id.."] to "..tostring(room.name))
 			else
 				process:sendMessage(client,"No player is online with ID "..id)
@@ -110,7 +110,7 @@ function moderation:command(client, cmd,str,args)
 		if player then
 			
 			if room then
-				rooms:moveto(client,room,true)
+				rooms:moveto(player,room,true)
 				player.trapped = true
 				process:sendMessage(client,"Trapped ["..id.."] in "..tostring(room.name))
 			else
