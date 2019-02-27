@@ -4,7 +4,7 @@ local process = ...
 local antispam = {}
 
 function antispam:init()
-	process:registerCallback(self,"ooc",5,self.handle)
+	process:registerCallback(self,"ooc",3.9,self.handle)
 	process:registerCallback(self,"emote",5,self.handle)
 
 	process:registerCallback(self,"ooc",0,self.strike)
@@ -28,9 +28,11 @@ function antispam:handle(client, emote)
 
 	if message == client.lastmsg then return true end
 
-	if message and #message > config.maxmsglength then
-		process:sendMessage(client,"Your message is "..tostring(#message - config.maxmsglength).." characters too long.")
-		return true
+	if message then
+		if #message > config.maxmsglength then
+			process:sendMessage(client,"Your message is "..tostring(#message - config.maxmsglength).." characters too long.")
+			return true
+		end
 	end
 	if emote.name and #emote.name > config.maxnamelength then
 		process:sendMessage(client,"Your name is "..tostring(#emote.name - config.maxnamelength).." characters too long.")
@@ -51,12 +53,13 @@ function antispam:strike(client,event)
 	if client.spam > 1 then
 		client.socket:close()
 		self:print("["..client.id.."] sent too many messages at once!")
+		return true
 	end
 end
 
 function antispam:cooldown(client)
 	if not client.spam then client.spam = 0 end
-	client.spam = math.max(client.spam - (1/4)*config.rate,0)
+	client.spam = math.max(client.spam - (1/6)*config.rate,0)
 end
 
 function antispam:item(client,a,b)
