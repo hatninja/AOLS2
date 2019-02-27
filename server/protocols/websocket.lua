@@ -59,7 +59,7 @@ function websocket:update(client,process)
 
 	--Temporarily use self.received[client] as client.received
 	local received = client.received
-	client.received = self.received[client]
+	client.received = self.received[client] or ""
 
 	--Update protocols just like in server.lua
 	if not self.protocol[client] then

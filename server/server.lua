@@ -79,53 +79,55 @@ function server:update()
 	until not client
 
 	for k,client in pairs(self.clients) do
-		--Receive data
-		local data = ""
-		repeat
-			local char,err = client.socket:receive(1)
-			if char then
-				data = data .. char
+		if client then
+			--Receive data
+			local data = ""
+			repeat
+				local char,err = client.socket:receive(1)
+				if char then
+					data = data .. char
 
-				if #data > RECEIVEMAX then --Failsafe against impossibly large messages.
-					print("A client is sending too much data!")
-					client.socket:close()
-					break
-				end
-			else
-				if err == "closed" then
-					if client.protocol then
-						client.protocol:close(client)
+					if #data > RECEIVEMAX then --Failsafe against impossibly large messages.
+						print("A client is sending too much data!")
+						client.socket:close()
+						break
 					end
-					self.process:disconnect(client)
-					self.clients[k] = nil
-					break
+				else
+					if err == "closed" then
+						if client.protocol then
+							client.protocol:close(client)
+						end
+						self.process:disconnect(client)
+						self.clients[k] = nil
+						break
+					end
 				end
-			end
-		until not char
-		if #data > 0 then
-			client.received = client.received .. data
-		end
-
-		if not client.protocol then
-			for i,protocol in ipairs(self.protocols) do
-				if protocol:detect(client,self.process) then
-					self.process:accept(client)
-					break
-				end
-			end
-		end
-		if client.protocol then
-			self.process:updateClient(client)
-			client.protocol:update(client,self.process)
-		end
-
-		--Send data
-		if self.clients[k] then
-			local data = client.buffer:sub(1,SENDMAX)
+			until not char
 			if #data > 0 then
-				client.socket:send(data)
+				client.received = client.received .. data
 			end
-			client.buffer = client.buffer:sub(SENDMAX+1,-1)
+
+			if not client.protocol then
+				for i,protocol in ipairs(self.protocols) do
+					if protocol:detect(client,self.process) then
+						self.process:accept(client)
+						break
+					end
+				end
+			end
+			if client.protocol then
+				self.process:updateClient(client)
+				client.protocol:update(client,self.process)
+			end
+
+			--Send data
+			if self.clients[k] then
+				local data = client.buffer:sub(1,SENDMAX)
+				if #data > 0 then
+					client.socket:send(data)
+				end
+				client.buffer = client.buffer:sub(SENDMAX+1,-1)
+			end
 		end
 	end
 
