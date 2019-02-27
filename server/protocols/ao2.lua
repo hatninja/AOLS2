@@ -606,12 +606,14 @@ end
 
 function AO2:getCharacterId(client,name)
 	local char_id = 0
-	local characters = self.state[client].char_list
-	if characters then
-		for i,v in ipairs(characters) do
-			if v == name then
-				char_id = i
-				break
+	if self.state[client] then
+		local characters = self.state[client].char_list
+		if characters then
+			for i,v in ipairs(characters) do
+					if v == name then
+					char_id = i
+					break
+				end
 			end
 		end
 	end
@@ -620,12 +622,14 @@ end
 
 function AO2:getCharacterName(client,id)
 	local char_name = "N/A"
-	local characters = self.state[client].char_list
-	if characters then
-		for i,v in ipairs(characters) do
-			if i == id+1 then
-				char_name = v
-				break
+	if self.state[client] then
+		local characters = self.state[client].char_list
+		if characters then
+			for i,v in ipairs(characters) do
+				if i == id+1 then
+					char_name = v
+					break
+				end
 			end
 		end
 	end

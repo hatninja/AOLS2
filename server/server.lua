@@ -7,7 +7,7 @@ Modules - Extends process via callbacks and can add any functionality.
 --Server: Handles all communciation, delegates to process and protocols (via client objects).
 
 local RECEIVEMAX = 2048
-local SENDMAX = 2048
+local SENDMAX = 4096
 
 local server = {
 	software = "AOLS2",
@@ -22,7 +22,7 @@ end
 function server:listen()
 	self.socket = socket.tcp()
 	self.socket:setoption("reuseaddr",true)
-	self.socket:setoption("keepalive",false) --Prevent random disconnects, hopefully.
+	self.socket:setoption("keepalive",true)
 	self.socket:settimeout(0)
 
 	assert(self.socket:bind(config.ip,config.port))
@@ -88,9 +88,10 @@ function server:update()
 					data = data .. char
 
 					if #data > RECEIVEMAX then --Failsafe against impossibly large messages.
-						print("A client is sending too much data!")
+						print("Receiving excessive data!",client.ip,client.port)
 						client.socket:close()
-						break
+						data=""
+						return --Escape so we don't get caught in a loop, as a fail-safe.
 					end
 				else
 					if err == "closed" then
@@ -123,6 +124,7 @@ function server:update()
 			--Send data
 			if self.clients[k] then
 				local data = client.buffer:sub(1,SENDMAX)
+				if #data < #client.buffer then print("Sending excessive data!",client.ip,client.port) end
 				if #data > 0 then
 					client.socket:send(data)
 				end
