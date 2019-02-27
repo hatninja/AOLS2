@@ -41,7 +41,7 @@ function antispam:handle(client, emote)
 end
 
 function antispam:strike(client,event)
-	if event and event.event == "hp" then return end
+	if type(event) == "table" and event.event == "hp" then return end
 	if not client.spam then client.spam = 0 end
 
 	client.spam = client.spam + 1/3

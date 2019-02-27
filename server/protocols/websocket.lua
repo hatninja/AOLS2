@@ -40,6 +40,8 @@ function websocket:detect(client,process)
 end
 
 function websocket:update(client,process)
+	if not self.received[client] then self.received[client] = "" end
+	
 	local server = process.server
 	repeat
 		local data, opcode, masked, fin, packetlength = self:decode(client.received)
@@ -59,7 +61,7 @@ function websocket:update(client,process)
 
 	--Temporarily use self.received[client] as client.received
 	local received = client.received
-	client.received = self.received[client] or ""
+	client.received = self.received[client]
 
 	--Update protocols just like in server.lua
 	if not self.protocol[client] then
