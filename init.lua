@@ -23,7 +23,7 @@ server:start()
 while not server.kill do
 	local st = os.clock()
 
-	local g,err = xpcall(server.update,debug.traceback,server)
+	local g,err = xpcall(server.update, debug.traceback)
 	if not g then
 		print("FATAL ERROR: "..tostring(err))
 		if config.strict then

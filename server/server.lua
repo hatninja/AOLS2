@@ -56,6 +56,7 @@ function server:reload()
 end
 
 function server:update()
+	local self = server
 	repeat
 		local client = self.socket:accept()
 		if client then
