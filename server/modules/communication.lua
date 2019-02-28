@@ -116,4 +116,13 @@ function communication:removeshowname(client)
 	client.showname = nil
 end
 
+function communication:emote(client,emote)
+	if client.room then
+		local room = client.room
+
+		if room.lmt and process.time < room.lmt+2 then return true end
+		room.lmt = process.time
+	end
+end
+
 return communication

@@ -60,6 +60,7 @@ function rooms:roomcheck(sender, receiver, data)
 end
 
 function rooms:joinroom(client,r)
+	if client.room == r then return end
 	local room = r or self.defaultroom
 	room.players[client] = client
 	room.count = room.count + 1
