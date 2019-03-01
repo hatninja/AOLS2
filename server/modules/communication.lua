@@ -15,6 +15,7 @@ function communication:init()
 	process:registerCallback(self,"music_play", 4,self.trackshowname)
 	process:registerCallback(self,"emote", 4,self.trackshowname)
 	process:registerCallback(self,"player_move", 0,self.removeshowname)
+	process:registerCallback(self,"emote", 5,self.trackshowname)
 end
 
 function communication:command(client, cmd,str,args, oocname)
@@ -120,7 +121,7 @@ function communication:emote(client,emote)
 	if client.room then
 		local room = client.room
 
-		if room.lmt and process.time < room.lmt+2 then return true end
+		if room.lmt and process.time < room.lmt+1 then return true end
 		room.lmt = process.time
 	end
 end

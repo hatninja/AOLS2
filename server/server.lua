@@ -21,8 +21,6 @@ end
 
 function server:listen()
 	self.socket = socket.tcp()
-	self.socket:setoption("reuseaddr",true)
-	self.socket:setoption("keepalive",true)
 	self.socket:settimeout(0)
 
 	assert(self.socket:bind(config.ip,config.port))
@@ -75,6 +73,7 @@ function server:update()
 				process=self.process,
 				sendraw = function(cli,msg) cli.buffer = cli.buffer .. msg end,
 				send = function(cli,...) cli.protocol:send(cli,self.process,...) end,
+				close = function(cli,...) cli.socket:close() end,
 			}
 		end
 	until not client
@@ -90,7 +89,7 @@ function server:update()
 
 					if #data > RECEIVEMAX then --Failsafe against impossibly large messages.
 						print("Receiving excessive data!",client.ip,client.port)
-						client.socket:close()
+						client:close()
 						data=""
 						return --Escape so we don't get caught in a loop, as a fail-safe.
 					end
@@ -126,7 +125,7 @@ function server:update()
 			if self.clients[k] then
 				local data = client.buffer:sub(1,SENDMAX)
 				if #data < #client.buffer then print("Sending excessive data!",client.ip,client.port) end
-				if #data > 0 then
+				if #data > 0 and client.socket then
 					client.socket:send(data)
 				end
 				client.buffer = client.buffer:sub(SENDMAX+1,-1)
