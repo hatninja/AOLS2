@@ -171,7 +171,6 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 --	if not (shout_modifier >= 0 and shout_modifier < 6) then return end
 	if not (evidence >= 0) then return end
 	if not (realization == 0 or realization == 1) then return end --WebAO cannot see messages with this value as 2
-	if (pair and not hscroll) then return end
 	--if not (text_color >= 0 and text_color < 9) then return end
 	message = self:unescape(message)
 

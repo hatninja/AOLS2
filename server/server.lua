@@ -21,6 +21,8 @@ end
 
 function server:listen()
 	self.socket = socket.tcp()
+	self.socket:setoption("reuseaddr",true)
+	self.socket:setoption("keepalive",true)
 	self.socket:settimeout(0)
 
 	assert(self.socket:bind(config.ip,config.port))
