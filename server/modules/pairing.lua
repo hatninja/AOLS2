@@ -24,7 +24,11 @@ function pairing:command(client, cmd,str,args)
 		local player = process:getPlayer(id)
 		if player then
 			client.pair = id
-			process:sendMessage(client,"Player found! Enabling pair!")
+			process:sendMessage(client,"Player found! Setting pair.")
+			if client.pair == player.id and player.pair == client.id then
+				process:sendMessage(client,"Pairing connected!")
+				process:sendMessage(player,"Pairing connected!")
+			end
 		else
 			client.pair = nil
 			process:sendMessage(client,"Player not found! Turning pair off.")
@@ -73,12 +77,16 @@ function pairing:emote(client, emote)
 		if player then
 			local otheremote = self.lastemote[player]
 
-			emote.pair = otheremote.character
-			emote.hscroll = emote.hscroll or 0
+			if otheremote
+			and client.pair == player.id
+			and player.pair == client.id then
+				emote.pair = otheremote.character
+				emote.hscroll = emote.hscroll or 0
 
-			emote.pair_emote = otheremote.emote
-			emote.pair_hscroll = otheremote.hscroll
-			emote.pair_flip = otheremote.flip
+				emote.pair_emote = otheremote.emote
+				emote.pair_hscroll = otheremote.hscroll
+				emote.pair_flip = otheremote.flip
+			end
 		else
 			client.pair = nil
 			process:sendMessage(client,"Paired player not online! Turning pair off.")
