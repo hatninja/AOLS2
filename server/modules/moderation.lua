@@ -43,7 +43,7 @@ function moderation:command(client, cmd,str,args)
 		if id then
 			local player = process:getPlayer(id)
 			if player then
-				player.socket:close()
+				player:close()
 				process:sendMessage(client,"Kicked ["..id.."]")
 				self:print("Mod["..client.id.."] kicked player with id"..id)
 			else
@@ -63,7 +63,7 @@ function moderation:command(client, cmd,str,args)
 			local player = process:getPlayer(id)
 			if player then
 				self.banned[player.ip] = true
-				player.socket:close()
+				player:close()
 
 				process:sendMessage(client,"Banned ip: "..tostring(player.ip))
 				self:print("Mod["..client.id.."] banned player with ip "..tostring(player.ip))

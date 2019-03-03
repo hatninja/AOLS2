@@ -27,12 +27,12 @@ function misc:command(client, cmd,str,args)
 			process:sendMessage(client,"Ghost found, rejoining.")
 
 			ghost.socket, client.socket = client.socket, ghost.socket
-			client.socket:close()
+			client:close()
+
+			ghost:send("CHAR_PICK",{character=ghost.character})
 
 			local room = ghost.room
 			if rooms then rooms:joinroom(ghost, ghost.room) end
-
-			ghost:send("CHAR_PICK",{character=ghost.character})
 		else
 			process:sendMessage(client,"Could not find a ghost to rejoin as!")
 		end

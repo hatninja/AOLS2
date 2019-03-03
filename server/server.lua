@@ -39,8 +39,7 @@ function server:reload()
 
 	if self.clients then
 		for k,client in pairs(self.clients) do
-			--TODO: Change to client:close()
-			client.socket:close()
+			client:close()
 		end
 	end
 	self.clients = {}
@@ -62,7 +61,7 @@ function server:update()
 		if client then
 			client:settimeout(0)
 			local cip, cport = client:getpeername()
-			--TODO: Implement client:close, good shorthand and allows protocols to do it properly.
+			verbosewrite("Accepted connection from "..cip..":"..cport.."\n")
 			self.clients[client] = {
 				socket=client,
 				buffer="",
@@ -75,13 +74,18 @@ function server:update()
 				process=self.process,
 				sendraw = function(cli,msg) cli.buffer = cli.buffer .. msg end,
 				send = function(cli,...) cli.protocol:send(cli,self.process,...) end,
-				close = function(cli,...) cli.socket:close() end,
+				close = function(cli,...)
+					if client.protocol then
+						client.protocol:close(client)
+					end
+					cli.socket:close()
+				end,
 			}
 		end
 	until not client
 
 	for k,client in pairs(self.clients) do
-		if client then
+		if client.socket then
 			--Receive data
 			local data = ""
 			repeat
@@ -93,41 +97,40 @@ function server:update()
 						print("Receiving excessive data!",client.ip,client.port)
 						client:close()
 						data=""
-						return --Escape so we don't get caught in a loop, as a fail-safe.
+						break
 					end
 				else
 					if err == "closed" then
-						if client.protocol then
-							client.protocol:close(client)
-						end
 						self.process:disconnect(client)
 						self.clients[k] = nil
+						client.socket = nil
 						break
 					end
 				end
 			until not char
-			if #data > 0 then
-				client.received = client.received .. data
-			end
+			client.received = client.received .. data
 
-			if not client.protocol then
-				for i,protocol in ipairs(self.protocols) do
-					if protocol:detect(client,self.process) then
-						self.process:accept(client)
-						break
+			if self.clients[k] then
+				--Determine protocol
+				if not client.protocol then
+					for i,protocol in ipairs(self.protocols) do
+						if protocol:detect(client,self.process) then
+							self.process:accept(client)
+							break
+						end
 					end
 				end
-			end
-			if client.protocol then
-				self.process:updateClient(client)
-				client.protocol:update(client,self.process)
-			end
 
-			--Send data
-			if self.clients[k] then
+				--Update client
+				if client.protocol then
+					self.process:updateClient(client)
+					client.protocol:update(client,self.process)
+				end
+
+				--Send data
 				local data = client.buffer:sub(1,SENDMAX)
 				if #data < #client.buffer then print("Sending excessive data!",client.ip,client.port) end
-				if #data > 0 and client.socket then
+				if #data > 0  then
 					client.socket:send(data)
 				end
 				client.buffer = client.buffer:sub(SENDMAX+1,-1)

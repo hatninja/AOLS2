@@ -132,7 +132,6 @@ function process:send(client, call, data)
 		})
 	end
 	if call == "JOIN_REQ" then
-		if client.id then return end --No duplicates!
 		if self:event("client_join",client) then
 			client:send("JOIN_ALLOW")
 			self:join(client)
@@ -255,16 +254,19 @@ function process:accept(client)
 end
 
 function process:join(client)
+	if not self.viewers[client] then return end --If so, this is a repeat.
+
+	self.viewers[client] = nil
+	self.viewercount = math.max(self.viewercount - 1, 0)
+
 	self.players[self.firstempty] = client
 	client.id = self.firstempty
-	self.playercount = self.playercount + 1
 
 	repeat
 		self.firstempty = self.firstempty+1
 	until not self.players[self.firstempty]
 
-	self.viewers[client] = nil
-	self.viewercount = self.viewercount - 1
+	self.playercount = self.playercount + 1
 
 	self:event("player_join",client)
 	self:print("Player "..client.ip ..":".. client.port .." joined with ID: ".. client.id)
