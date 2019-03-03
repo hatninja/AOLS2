@@ -65,7 +65,7 @@ function pairing:emote(client, emote)
 			emote.pair = latestemote.character
 			emote.hscroll = emote.hscroll or 0
 			emote.pair_emote = latestemote.emote
-			emote.pair_flip = latestemote.pair_flip
+			emote.pair_flip = latestemote.flip
 			emote.pair_hscroll = math.abs(latestemote.hscroll or 0)*(emote.hscroll > 0 and -1 or 1)
 		end
 	elseif client.pair then
@@ -78,7 +78,7 @@ function pairing:emote(client, emote)
 
 			emote.pair_emote = otheremote.emote
 			emote.pair_hscroll = otheremote.hscroll
-			emote.pair_flip = otheremote.pair_flip
+			emote.pair_flip = otheremote.flip
 		else
 			client.pair = nil
 			process:sendMessage(client,"Paired player not online! Turning pair off.")
@@ -98,14 +98,14 @@ function pairing:emote(client, emote)
 
 					emote.pair_emote = otheremote.emote
 					emote.pair_hscroll = otheremote.hscroll
-					emote.pair_flip = otheremote.pair_flip
+					emote.pair_flip = otheremote.flip
 					break
 				end
 			end
 		end
 	end
 
-	if not emote.pair_hscroll and emote.hscroll ~= 0 then
+	if not emote.pair_hscroll and emote.hscroll and emote.hscroll ~= 0 then
 		emote.pair = emote.character
 		emote.pair_hscroll = 100
 		emote.pair_emote = "-"

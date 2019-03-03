@@ -28,16 +28,20 @@ function rooms:welcometoroom(client,room)
 	process:sendBG(client,room.bg)
 	process:sendMessage(room,"["..client.id.."] joined this room.")
 
-	process:sendMessage(client.room,"["..client.id.."] left to "..tostring(room.name)..".")
+	if client.room then
+		process:sendMessage(client.room,"["..client.id.."] left to "..tostring(room.name)..".")
+	end
 end
 
 function rooms:connected(client)
 	local msg = "["..client.id.."] connected to the server."
+
 	process:sendMessage(client.room,msg)
 end
 
 function rooms:disconnected(client)
 	local msg = "["..client.id.."] disconnected."
+
 	if client.room then
 		process:sendMessage(client.room,msg)
 	end
