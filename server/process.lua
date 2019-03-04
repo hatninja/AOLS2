@@ -132,6 +132,7 @@ function process:send(client, call, data)
 		})
 	end
 	if call == "JOIN_REQ" then
+		if client.id then return end
 		if self:event("client_join",client) then
 			client:send("JOIN_ALLOW")
 			self:join(client)
@@ -299,6 +300,10 @@ function process:updateClient(client)
 
 		if client.loopat and process.time > client.loopat then
 			self:sendMusic(client,client.music,-1)
+		end
+	else
+		if self.time > client.jointime+60 then
+			client:close()
 		end
 	end
 end
