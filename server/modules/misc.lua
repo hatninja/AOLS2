@@ -41,8 +41,9 @@ function misc:command(client, cmd,str,args)
 	if cmd == "timer" then
 		local time = tonumber(args[1])
 		if time then
+			time = time*60
 			self.time[client] = time
-			local msg = "["..client.id.."]  started a timer for "..time.." seconds!"
+			local msg = "["..client.id.."]  started a timer for "..(time/60).." minutes!"
 			process:sendMessage(client.room or process,msg)
 		else
 			if not self.time[client] then
@@ -50,7 +51,7 @@ function misc:command(client, cmd,str,args)
 				self.time[client] = -1
 				process:sendMessage(client.room or process,msg)
 			else
-				local msg = "["..client.id.."] stopped timing at "..math.floor(math.abs(self.time[client]+1)).." seconds."
+				local msg = "["..client.id.."] stopped timing and got "..(math.floor(math.abs(self.time[client]+1)/60*100)/100).." minutes."
 				self.time[client] = nil
 				process:sendMessage(client.room or process,msg)
 			end
