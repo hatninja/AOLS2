@@ -23,7 +23,6 @@ function AO2:detect(client,process) --Simple timer, attempt to connect if nothin
 		client.version = "1.8"
 
 		client.protocol = self
-		
 		process:send(client,"INFO_REQ")
 		return true
 	end

@@ -23,7 +23,7 @@ function server:listen()
 	self.socket = socket.tcp()
 	self.socket:setoption("reuseaddr",true)
 	self.socket:setoption("keepalive",true)
-	self.socket:settimeout(0)
+	self.socket:settimeout(0.01)
 
 	assert(self.socket:bind(config.ip,config.port))
 	local ip,port = self.socket:getsockname()
@@ -46,7 +46,7 @@ function server:reload()
 
 	self.protocols = {
 		dofile(path.."server/protocols/ao2.lua"),
-		dofile(path.."server/protocols/websocket.lua")
+		dofile(path.."server/protocols/websocket.lua"),
 	}
 
 	self.process = dofile(path.."server/process.lua")
@@ -61,7 +61,11 @@ function server:update()
 		if client then
 			client:settimeout(0)
 			local cip, cport = client:getpeername()
-			verbosewrite("Accepted connection from "..cip..":"..cport.."\n")
+
+			if config.monitor then
+				print("Accepted connection from "..cip..":"..cport)
+			end
+
 			self.clients[client] = {
 				socket=client,
 				buffer="",
@@ -99,13 +103,16 @@ function server:update()
 						data=""
 						break
 					end
-				else
-					if err == "closed" then
-						self.process:disconnect(client)
-						self.clients[k] = nil
-						client.socket = nil
-						break
+
+				elseif err == "closed" then
+					if config.monitor then
+						print("Closed connection to "..client.ip..":"..client.port)
 					end
+					
+					self.process:disconnect(client)
+					self.clients[k] = nil
+					client.socket = nil
+					break
 				end
 			until not char
 			client.received = client.received .. data

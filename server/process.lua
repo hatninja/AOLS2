@@ -240,10 +240,12 @@ function process:send(client, call, data)
 		end
 	end
 
-
-	
 	if call == "MOD_CALL" then
 		self:event("call_mod", client, data)
+	end
+
+	if call == "CLOSE" then
+		client:close()
 	end
 end
 
@@ -298,11 +300,11 @@ function process:updateClient(client)
 	if client.id then
 		self:event("player_update",client)
 
-		if client.loopat and process.time > client.loopat then
+		if client.loopat and self.time > client.loopat then
 			self:sendMusic(client,client.music,-1)
 		end
 	else
-		if self.time > client.jointime+60 then
+		if self.time > client.jointime+30 then
 			client:close()
 		end
 	end

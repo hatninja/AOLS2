@@ -28,19 +28,19 @@ function websocket:detect(client,process)
 
 			client.socket:send(handshake,1,#handshake)
 
-			client.protocol = self
-			client.websocket = true
-
 			client.received = ""
 			self.received[client] = ""
 
+			client.websocket = true
+			
+			client.protocol = self
 			return true
 		end
 	end
 end
 
 function websocket:update(client,process)
-	if not self.received[client] then self.received[client] = "" end
+	if not self.received[client] then return end
 	
 	local server = process.server
 	repeat
