@@ -103,11 +103,13 @@ function whois:command(client, cmd,str,args)
 		return true
 	end
 	if cmd == "getplayers" then
-		local msg = "~~Player List~~"
+		local msg = "Total players: "..(process.playercount).."\n~~Player List~~"
 		for player in process:eachPlayer() do
 			msg=msg.."\n"..self:list(player)
 		end
-		msg=msg.."\n--"..process.playercount.." players total--"
+		if client.mod then
+			msg=msg.."\n--"..self.viewercount.." viewers--"
+		end
 
 		process:sendMessage(client,msg)
 		return true
