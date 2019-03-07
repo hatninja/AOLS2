@@ -94,6 +94,10 @@ function whois:command(client, cmd,str,args)
 					end
 				end
 			end
+			if client.mod then
+				msg=msg.."\n--"..process.viewercount.." viewers--"
+			end
+
 
 			process:sendMessage(client,msg)
 		else
@@ -108,7 +112,7 @@ function whois:command(client, cmd,str,args)
 			msg=msg.."\n"..self:list(player)
 		end
 		if client.mod then
-			msg=msg.."\n--"..self.viewercount.." viewers--"
+			msg=msg.."\n--"..process.viewercount.." viewers--"
 		end
 
 		process:sendMessage(client,msg)
