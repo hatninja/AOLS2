@@ -26,7 +26,7 @@ function websocket:detect(client,process)
 			.."Connection: Upgrade\r\n"
 			.."Sec-WebSocket-Accept: "..accept.."\r\n\r\n"
 
-			client.socket:send(handshake,1,#handshake)
+			client:sendraw(handshake)
 
 			client.received = ""
 			self.received[client] = ""
@@ -54,7 +54,7 @@ function websocket:update(client,process)
 				return
 			elseif opcode == 9 then --PING
 				local pong = self:encode(data,10,false,true)
-				client.socket:send(pong,1,#pong)
+				client:sendraw(pong)
 			end
 		end
 	until not data
@@ -87,7 +87,7 @@ function websocket:update(client,process)
 					local st,en = client.buffer:find("%%")
 					if st then
 						local sendpacket = self:encode(client.buffer:sub(1,st),1,false,true)
-						client.socket:send(sendpacket,1,#sendpacket)
+						client:sendraw(sendpacket)
 
 						client.buffer = client.buffer:sub(en+1,-1)
 					end

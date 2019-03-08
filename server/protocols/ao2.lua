@@ -87,7 +87,7 @@ AO2.input["AN"] = function(self,client,process,call, page)
 	else
 		process:send(client,"LOAD_MUSIC")
 		self:sendAssetList(client,"EM",self.state[client].music_list, 1)
-		--client:sendraw("EI#1#N&A&1&hi_there.png&#%") --Characters finished, let's move over to evidence,
+		--client:bufferraw("EI#1#N&A&1&hi_there.png&#%") --Characters finished, let's move over to evidence,
 	end
 end
 AO2.input["AE"] = function(self,client,process,call, page)
@@ -133,7 +133,7 @@ AO2.input["ZZ"] = function(self,client,process,call, reason)
 	})
 end
 AO2.input["CH"] = function(self,client,process,call)
-	client:sendraw("CHECK#%")
+	client:bufferraw("CHECK#%")
 end
 AO2.input["CT"] = function(self,client,process,call, name,message)
 	if not name or not message then return end
@@ -353,15 +353,15 @@ AO2.input["4424"] = AO2.input["DE"]
 function AO2:send(client,process, call,data)
 	if not self.state[client] then return end
 	if call == "INFO_SEND" then
-		client:sendraw("decryptor#34#%")
-		client:sendraw("PN#"..(data.players).."#"..(data.maxplayers).."#%")
-		client:sendraw("ID#0#"..(data.software).."#"..(data.version).."#%")
-		client:sendraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cccc_ic_support#arup#casing_alerts#looping_sfx#%")--noencryption,
+		client:bufferraw("decryptor#34#%")
+		client:bufferraw("PN#"..(data.players).."#"..(data.maxplayers).."#%")
+		client:bufferraw("ID#0#"..(data.software).."#"..(data.version).."#%")
+		client:bufferraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cccc_ic_support#arup#casing_alerts#looping_sfx#%")--noencryption,
 	end
 	if call == "JOIN_ALLOW" then
 		local c = #process:getCharacters(client)
 		local m = #process:getMusic(client)
-		client:sendraw("SI#"..c.."#1#"..m.."#%") --AO2 does not rely on these numbers.
+		client:bufferraw("SI#"..c.."#1#"..m.."#%") --AO2 does not rely on these numbers.
 		
 		if client.software == "AO" then
 			client.received = client.received .. "askchar2#%"
@@ -372,14 +372,14 @@ function AO2:send(client,process, call,data)
 	if call == "CHAR_PICK" then
 		local char_id = self:getCharacterId(client, data.character)
 		if char_id == -1 then
-			client:sendraw("PV#0#CID#-1#%")
+			client:bufferraw("PV#0#CID#-1#%")
 		else
-			client:sendraw("PV#0#CID#"..char_id.."#%")
+			client:bufferraw("PV#0#CID#"..char_id.."#%")
 		end
 	end
 
 	if call == "OOC" then
-		client:sendraw("CT#"..self:escape(data.name).."#"..self:escape(data.message).."#%")
+		client:bufferraw("CT#"..self:escape(data.name).."#"..self:escape(data.message).."#%")
 	end
 	if call == "IC" then
 		local ms = "MS#"
@@ -458,7 +458,7 @@ function AO2:send(client,process, call,data)
 		end
 		
 
-		client:sendraw(ms..table.concat(t,"#").."#%")
+		client:bufferraw(ms..table.concat(t,"#").."#%")
 	end
 
 	if call == "MUSIC" then
@@ -468,39 +468,39 @@ function AO2:send(client,process, call,data)
 		if data.name then
 			mc=mc..self:escape(tostring(data.name)).."#"
 		end
-		client:sendraw(mc.."%")
+		client:bufferraw(mc.."%")
 	end
 
 	if call == "BG" then
-		client:sendraw("BN#"..self:escape(data.bg).."#%")
+		client:bufferraw("BN#"..self:escape(data.bg).."#%")
 	end
 
 	if call == "EVENT" then
 		if data.event == "witness_testimony" then
-			client:sendraw("RT#testimony1#%")
+			client:bufferraw("RT#testimony1#%")
 		elseif data.event == "cross_examination" then
-			client:sendraw("RT#testimony2#%")
+			client:bufferraw("RT#testimony2#%")
 		elseif data.event == "verdict_notguilty" then
-			client:sendraw("RT#judgeruling#0#%")
+			client:bufferraw("RT#judgeruling#0#%")
 		elseif data.event == "verdict_guilty" then
-			client:sendraw("RT#judgeruling#1#%")
+			client:bufferraw("RT#judgeruling#1#%")
 		elseif data.event == "hp" then
 			if self.state[client].hp then
 				self.state[client].hp[data.side] = data.amount
 			end
-			client:sendraw("HP#"..(data.side or 0).."#"..(data.amount or 0).."#%")
+			client:bufferraw("HP#"..(data.side or 0).."#"..(data.amount or 0).."#%")
 		elseif data.event == "arup_count" then
 			local list = ""
-			client:sendraw("ARUP#0#"..table.concat(data,"#").."#%")
+			client:bufferraw("ARUP#0#"..table.concat(data,"#").."#%")
 		elseif data.event == "arup_status" then
 			local list = ""
-			client:sendraw("ARUP#1#"..table.concat(data,"#").."#%")
+			client:bufferraw("ARUP#1#"..table.concat(data,"#").."#%")
 		elseif data.event == "arup_cm" then
 			local list = ""
-			client:sendraw("ARUP#2#"..table.concat(data,"#").."#%")
+			client:bufferraw("ARUP#2#"..table.concat(data,"#").."#%")
 		elseif data.event == "arup_lock" then
 			local list = ""
-			client:sendraw("ARUP#3#"..table.concat(data,"#").."#%")
+			client:bufferraw("ARUP#3#"..table.concat(data,"#").."#%")
 		end
 	end
 
@@ -511,7 +511,7 @@ function AO2:send(client,process, call,data)
 			list=list..v.description.."&"
 			list=list..v.image.."#"
 		end
-		client:sendraw("LE#"..list.."%")
+		client:bufferraw("LE#"..list.."%")
 	end
 end
 
@@ -651,7 +651,7 @@ function AO2:sendAssetList(client,command,t,page)
 			end
 		end
 	end
-	client:sendraw(command.."#"..list.."%")
+	client:bufferraw(command.."#"..list.."%")
 end
 
 function AO2:makeNameList(t, key)
@@ -670,8 +670,8 @@ function AO2:makeNameList(t, key)
 end
 
 function AO2:finishLoad(client,process)
-	client:sendraw("CharsCheck#0#%")
-	client:sendraw("DONE#%")
+	client:bufferraw("CharsCheck#0#%")
+	client:bufferraw("DONE#%")
 	process:send(client,"DONE")
 end
 

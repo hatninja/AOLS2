@@ -14,6 +14,8 @@ local server = {
 	version = "1.0",
 }
 
+local Client = dofile(path.."server/classes/client.lua")
+
 function server:start()
 	self:listen()
 	self:reload()
@@ -57,91 +59,69 @@ end
 function server:update()
 	local self = server
 	repeat
-		local client = self.socket:accept()
-		if client then
-			client:settimeout(0)
-			local cip, cport = client:getpeername()
+		local connection = self.socket:accept()
+		if connection then
+			local client = Client:new(connection, self.process)
+			self.clients[client] = client
 
 			if config.monitor then
-				print("Accepted connection from "..cip..":"..cport)
+				print("Accepted connection from "..client:getAddress())
 			end
-
-			self.clients[client] = {
-				socket=client,
-				buffer="",
-				received="",
-
-				ip=cip,
-				port=cport,
-
-				server=self,
-				process=self.process,
-				sendraw = function(cli,msg) cli.buffer = cli.buffer .. msg end,
-				send = function(cli,...) cli.protocol:send(cli,self.process,...) end,
-				close = function(cli,...)
-					if client.protocol then
-						client.protocol:close(client)
-					end
-					cli.socket:close()
-				end,
-			}
 		end
-	until not client
+	until not connection
 
 	for k,client in pairs(self.clients) do
-		if client.socket then
-			--Receive data
-			local data = ""
-			repeat
-				local char,err = client.socket:receive(1)
-				if char then
-					data = data .. char
-
-					if #data > RECEIVEMAX then --Failsafe against impossibly large messages.
-						print("Receiving excessive data!",client.ip,client.port)
-						client:close()
-						data=""
-						break
-					end
-
-				elseif err == "closed" then
-					if config.monitor then
-						print("Closed connection to "..client.ip..":"..client.port)
-					end
-					
-					self.process:disconnect(client)
-					self.clients[k] = nil
-					client.socket = nil
+		--Receive data
+		local data = ""
+		repeat
+			local char,err = client:receive(1)
+			if char then
+				data = data .. char
+				if #data > RECEIVEMAX then --Failsafe against impossibly large messages.
+					print("Receiving excessive data!",client:getAddress())
+					client:close()
+					data=""
 					break
 				end
-			until not char
-			client.received = client.received .. data
 
-			if self.clients[k] then
-				--Determine protocol
-				if not client.protocol then
-					for i,protocol in ipairs(self.protocols) do
-						if protocol:detect(client,self.process) then
-							self.process:accept(client)
-							break
-						end
+			elseif err == "closed" then
+				if config.monitor then
+					print("Closed connection to "..client:getAddress())
+				end
+				
+				self.process:disconnect(client)
+				self.clients[k] = nil
+				break
+			end
+		until not char
+		client.received = client.received .. data
+
+		if self.clients[k] then
+			--Determine protocol
+			if not client.protocol then
+				for i,protocol in ipairs(self.protocols) do
+					if protocol:detect(client,self.process) then
+						self.process:accept(client)
+						break
 					end
 				end
-
-				--Update client
-				if client.protocol then
-					self.process:updateClient(client)
-					client.protocol:update(client,self.process)
-				end
-
-				--Send data
-				local data = client.buffer:sub(1,SENDMAX)
-				if #data < #client.buffer then print("Sending excessive data!",client.ip,client.port) end
-				if #data > 0  then
-					client.socket:send(data)
-				end
-				client.buffer = client.buffer:sub(SENDMAX+1,-1)
 			end
+
+			--Update client
+			if client.protocol then
+				self.process:updateClient(client)
+				client.protocol:update(client,self.process)
+			end
+
+			--Send data
+			local data = client.buffer:sub(1,SENDMAX)
+			if #data < #client.buffer then
+				print("Sending excessive data!",client:getAddress())
+			end
+			if #data > 0  then
+				client:sendraw(data)
+			end
+			client.buffer = client.buffer:sub(SENDMAX+1,-1)
 		end
 	end
 
