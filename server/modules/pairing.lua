@@ -72,7 +72,8 @@ function pairing:emote(client, emote)
 			emote.pair_flip = latestemote.flip
 			emote.pair_hscroll = math.abs(latestemote.hscroll or 0)*(emote.hscroll > 0 and -1 or 1)
 		end
-	elseif client.pair then
+	end
+	if client.pair then
 		local player = process:getPlayer(client.pair)
 		if player then
 			local otheremote = self.lastemote[player]
@@ -91,24 +92,23 @@ function pairing:emote(client, emote)
 			client.pair = nil
 			process:sendMessage(client,"Paired player not online! Turning pair off.")
 		end
-	else
-		for player in process:eachPlayer() do
-			if player ~= client then
-				local otheremote = self.lastemote[player]
-				if otheremote
-				and player.room == client.room
-				and emote.side == otheremote.side
-				and otheremote.pair == emote.character
-				and emote.pair == otheremote.character then
+	end
+	for player in process:eachPlayer() do
+		if player ~= client then
+			local otheremote = self.lastemote[player]
+			if otheremote
+			and player.room == client.room
+			and emote.side == otheremote.side
+			and otheremote.pair == emote.character
+			and emote.pair == otheremote.character then
 
-					emote.pair = otheremote.character
-					emote.hscroll = emote.hscroll or 0
+				emote.pair = otheremote.character
+				emote.hscroll = emote.hscroll or 0
 
-					emote.pair_emote = otheremote.emote
-					emote.pair_hscroll = otheremote.hscroll
-					emote.pair_flip = otheremote.flip
-					break
-				end
+				emote.pair_emote = otheremote.emote
+				emote.pair_hscroll = otheremote.hscroll
+				emote.pair_flip = otheremote.flip
+				break
 			end
 		end
 	end
