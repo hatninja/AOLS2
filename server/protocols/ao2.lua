@@ -670,6 +670,9 @@ function AO2:makeNameList(t, key)
 end
 
 function AO2:finishLoad(client,process)
+	if self.state[client].finished then return true end
+	self.state[client].finished = true
+
 	client:bufferraw("CharsCheck#0#%")
 	client:bufferraw("DONE#%")
 	process:send(client,"DONE")
