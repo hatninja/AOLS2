@@ -59,7 +59,7 @@ end
 function server:update()
 	local self = server
 	repeat
-		local connection = self.socket:accept()
+		local connection,err = self.socket:accept()
 		if connection then
 			local client = Client:new(connection, self.process)
 			self.clients[client] = client
@@ -67,6 +67,8 @@ function server:update()
 			if config.monitor then
 				print("Accepted connection from "..client:getAddress())
 			end
+		elseif err ~= "timeout" then
+			print("Connection error: "..tostring(err))
 		end
 	until not connection
 
