@@ -41,7 +41,7 @@ function communication:command(client, cmd,str,args, oocname)
 		local target = process:getPlayer(id)
 		if target then
 			process:sendMessage(client,msg or "","PM to ["..id.."]")
-			process:sendMessage(target,msg or "","PM from ["..id.."]")
+			process:sendMessage(target,msg or "","PM from ["..tostring(client.id).."]")
 		else
 			process:sendMessage(client,"Couldn't find player with that ID.")
 		end

@@ -7,6 +7,8 @@ function antispam:init()
 	process:registerCallback(self,"ooc",3.9,self.handle)
 	process:registerCallback(self,"emote",5,self.handle)
 
+	process:registerCallback(self,"music_play",5,self.music)
+
 	process:registerCallback(self,"ooc",0,self.strike)
 	process:registerCallback(self,"emote",0,self.strike)
 	process:registerCallback(self,"command",0,self.strike)
@@ -41,6 +43,12 @@ function antispam:handle(client, emote)
 	end
 
 	client.lastmsg = message
+end
+
+function antispam:music(client,music)
+	if music.track == "." then
+		return true
+	end
 end
 
 function antispam:strike(client,event)

@@ -462,6 +462,7 @@ function AO2:send(client,process, call,data)
 	end
 
 	if call == "MUSIC" then
+		if client.software == "webAO" then client:bufferraw("MC#-#-1#%") end
 		local mc = "MC#"
 		mc=mc .. self:escape(tostring(data.track)).."#"
 		mc=mc .. self:getCharacterId(client, data.character).."#"

@@ -54,7 +54,7 @@ function rooms:init()
 end
 
 function rooms:roomcheck(sender, receiver, data)
-	if sender.id ~= -1 and not data.global and sender.room ~= receiver.room then
+	if not data.global and sender.room ~= receiver.room then
 		return true
 	end
 end
@@ -81,6 +81,7 @@ function rooms:leaveroom(client)
 	if room then
 		room.players[client] = nil
 		room.count = math.max(room.count - 1,0)
+		client.room = nil
 	end
 end
 

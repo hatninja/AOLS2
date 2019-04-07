@@ -126,7 +126,7 @@ end
 function websocket:getbytes(str)
 	local t = {}
 	for i=1,#str do
-		table.insert(t,string.byte(str:sub(i,i)))
+		t[i] = string.byte(str:sub(i,i))
 	end
 	return unpack(t)
 end

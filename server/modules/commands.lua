@@ -48,7 +48,7 @@ function commands:handle(client,data)
 		end
 
 		if process:event("command",client,cmd,str,args, data.name) then --Means no callbacks returned.
-			process:sendMessage(client,"Command \""..tostring(cmd).."\" not recognized! See /help for list of commands.")
+			process:sendMessage(client,"Command \""..tostring(cmd).."\" not recognized! See "..self.prefix.."help for list of commands.")
 		end
 		return true
 	end
@@ -58,7 +58,7 @@ function commands:helpcmd(client, cmd,str,args)
 	if cmd == "help" then
 		local name = args[1]
 		if not name then
-			local msg = "Use /help (command) to get more detailed info.\n~~Commands List~~\n"
+			local msg = "Use "..self.prefix.."help (command) to get more detailed info.\n~~Commands List~~\n"
 			for i,v in ipairs(self.helptable) do
 				msg=msg..self.prefix..v[1]..", "
 			end
