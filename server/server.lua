@@ -67,8 +67,6 @@ function server:update()
 			if config.monitor then
 				print("Accepted connection from "..client:getAddress())
 			end
-		elseif err ~= "timeout" then
-			print("Connection error: "..tostring(err))
 		end
 	until not connection
 
