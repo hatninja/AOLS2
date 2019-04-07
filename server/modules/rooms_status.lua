@@ -56,10 +56,6 @@ function rooms:update()
 			self.cmchange = false
 			self:displaycm()
 		end
-		if self.lockchange then
-			self.lockchange = false
-			self:displaylock()
-		end
 	end
 	
 	local parent = process.modules["rooms"]
@@ -80,54 +76,48 @@ function rooms:update()
 		end
 	end
 end
-function rooms:displaycount()
+
+
+function rooms:displaycount(client)
 	local counts = {}
 	for i,v in pairs(self.roomlist) do
 		table.insert(counts,v.count)
 	end
 	counts.event = "arup_count"
-	for player in process:eachPlayer() do
-		process:sendEvent(player,counts)
+	if client then
+		process:sendEvent(client,counts)
+	else
+		for player in process:eachPlayer() do
+			process:sendEvent(player,counts)
+		end
 	end
 end
-function rooms:displaystatus()
+function rooms:displaystatus(client)
 	local statuses = {}
 	for i,v in pairs(self.roomlist) do
 		table.insert(statuses,v.status or "")
 	end
 	statuses.event = "arup_status"
-	for player in process:eachPlayer() do
-		process:sendEvent(player,statuses)
+	if client then
+		process:sendEvent(client,statuses)
+	else
+		for player in process:eachPlayer() do
+			process:sendEvent(player,statuses)
+		end
 	end
 end
-function rooms:displaycm()
+function rooms:displaycm(client)
 	local cms = {}
 	for i,v in pairs(self.roomlist) do
 		table.insert(cms,v.cm or "")
 	end
 	cms.event = "arup_cm"
-	for player in process:eachPlayer() do
-		process:sendEvent(player,cms)
-	end
-end
-function rooms:displaylock()
-	local locks = {}
-	for i,v in pairs(self.roomlist) do
-		local lock = "OPEN"
-		if v.lock then
-			lock = "LOCKED"
+	if client then
+		process:sendEvent(client,cms)
+	else
+		for player in process:eachPlayer() do
+			process:sendEvent(player,cms)
 		end
-		if v.spectate then
-			lock = "SPECTATE-ONLY"
-		end
-		if v.modlock then
-			lock = "MODS-ONLY"
-		end
-		table.insert(locks,lock)
-	end
-	locks.event = "arup_lock"
-	for player in process:eachPlayer() do
-		process:sendEvent(player,locks)
 	end
 end
 
@@ -232,10 +222,10 @@ function rooms:command(client, cmd,str,args)
 end
 
 function rooms:join(client)
-	self:displaycount()
-	self:displaystatus()
-	self:displaycm()
-	self:displaylock()
+	self:displaystatus(client)
+	self:displaycm(client)
+	--self:displaylock()
+	self.countchange = true
 end
 
 function rooms:move(client, targetroom, sourceroom)
