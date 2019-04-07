@@ -17,6 +17,7 @@ function rooms:init()
 	process:registerCallback(self,"command", 3,self.command)
 	process:registerCallback(self,"music_play", 5,self.areabutton)
 	process:registerCallback(self,"player_move", 1,self.welcometoroom)
+	process:registerCallback(self,"player_done", 4,self.arealist)
 
 	self.roomlist = {}
 	for k,room in pairs(self.parent.rooms) do
@@ -48,7 +49,7 @@ function rooms:command(client, cmd,str,args)
 		local msg = "~~Area List~~"
 
 		for k,room in pairs(self.parent.rooms) do
-			if not room.hidden or room == client.room then
+			if not (room.hidden and not client.mod) or room == client.room then
 				msg=msg.."\n"
 				if room == client.room then
 					msg=msg.."> "
@@ -113,6 +114,12 @@ function rooms:welcometoroom(client,room)
 		name=">",
 		side=client.side or SIDE_WIT,
 	})
+end
+
+function rooms:arealist(client)
+	if config.listareas then
+		self:command(client,"areas")
+	end
 end
 
 return rooms

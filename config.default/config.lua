@@ -43,6 +43,9 @@ return function(c)
 	--Module: room_status
 	c.maxrename = 30 --The maxmimum characters a renamed room can have.
 	
+	--Module: room_navigation
+	c.listareas = true --Automatically list areas when connected.
+
 	--Module: ao2advertiser
 	c.ao2msip = "master.aceattorneyonline.com"
 	c.ao2msport = 27016
