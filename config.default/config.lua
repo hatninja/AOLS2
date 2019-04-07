@@ -18,28 +18,31 @@ return function(c)
 
 	c.serverooc = "(*^v^)/"
 
-	--Module: commands
-	c.prefix = "/"
-
 	--Module: motd
 	c.motd = "Welcome to a default server!\nSee `/help` for commands."
 	c.rules = ""
 	c.files = ""
 
+	--Module: commands
+	c.prefix = "/" --The prefix of commands. All clients assume "/", so change with caution.
+
+	--Module: clientlimit
+	c.multiclients = 3 --The maximum amount of clients allowed per ip/hardwareid
+
 	--Module: charhelper
 	c.autospectate = false
 
 	--Module: misc
-	c.shuffle = false --Shuffles the character/music list.
+	c.shuffle = false
 
 	--Module: antispam
 	c.maxnamelength = 30
-	c.maxmsglength = 300
-	c.maxevidence = 18 --By default 18 is one screen's worth.
+	c.maxmsglength = 400
+	c.maxevidence = 18*2 --By default 18 is one screen's worth.
 
-	--Module: communication
+	--Module: room_status
 	c.maxrename = 30 --The maxmimum characters a renamed room can have.
-
+	
 	--Module: ao2advertiser
 	c.ao2msip = "master.aceattorneyonline.com"
 	c.ao2msport = 27016

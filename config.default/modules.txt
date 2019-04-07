@@ -9,6 +9,7 @@ rooms_lobby
 rooms_rp
 
 moderation
+clientlimit
 
 motd
 whois
