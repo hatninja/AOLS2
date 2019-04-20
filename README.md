@@ -113,8 +113,8 @@ Flips a coin. You get Heads or Tails. The result will be announced in the room.
 **/diceroll (sides)** - 
 Rolls a 6-sided die by default. You can specify how many sides the die has. The result will be announced in the room.
 
-**/timer (seconds)**
-Use without an argument to use it as a stopwatch. Use seconds to run an automatic timer.
+**/timer (minutes)**
+Use without an argument to use it as a stopwatch. Add minutes to run an automatic timer.
 
 **/lock (password)** - 
 Locks a room with a password. Users are required to use a key to enter. (See Below.)

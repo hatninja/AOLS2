@@ -415,7 +415,7 @@ function process:eachPlayer()
 	local id = 0
 	return function()
 		repeat id = id+1
-		until self.players[id] or id > #self.players
+		until self.players[id] or id > 255
 
 		return self.players[id]
 	end

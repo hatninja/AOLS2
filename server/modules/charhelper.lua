@@ -22,7 +22,7 @@ function charhelper:command(client, cmd,str,args)
 		for i,char in ipairs(characters) do
 			local name = char:getName()
 			if string.lower(name) == string.lower(str) then
-				client:send("CHAR_PICK",{character=name})
+				process:send(client,"CHAR_REQ",{character=name})
 				process:sendMessage(client,"Picked '"..name.."'")
 				return true
 			end
@@ -46,7 +46,7 @@ function charhelper:command(client, cmd,str,args)
 		local rand = math.random(1,#characters)
 		local char = characters[rand]
 		local name = char:getName()
-		client:send("CHAR_PICK",{character=name})
+		process:send(client,"CHAR_REQ",{character=name})
 		process:sendMessage(client,"Picked '"..name.."'")
 		return true
 	end
