@@ -447,10 +447,10 @@ function AO2:send(client,process, call,data)
 		t[#t+1] = data.name or ""
 		--Character pairing.
 		local pair_id = self:getCharacterId(client, data.pair) or -1
-		if pair_id ~= -1 and data.pair_emote then
+		if pair_id ~= -1 and data.pair and data.pair_emote then
 			t[#t+1] = pair_id
 			t[#t+1] = data.pair
-			t[#t+1] = data.pair_emote
+			t[#t+1] = data.pair_emote or "-"
 			t[#t+1] = data.hscroll or 0
 			t[#t+1] = data.pair_hscroll or 0
 			t[#t+1] = data.pair_flip or 0
