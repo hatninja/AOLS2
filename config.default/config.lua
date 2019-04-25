@@ -1,4 +1,5 @@
-return function(c)
+return function(c) --Note: Every variable here is printable as a command, via misc.
+	
 	--Server information
 	c.name = "AOLS2 Server" --Server's name.
 	c.desc = "This is a default server." --Description.

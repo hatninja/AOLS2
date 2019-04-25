@@ -8,7 +8,7 @@ local misc = {
 }
 
 function misc:init(process)
-	process:registerCallback(self,"command",3,self.command)
+	process:registerCallback(self,"command",1,self.command)
 
 	process:registerCallback(self,"list_characters",3,self.shuffle)
 	process:registerCallback(self,"list_music",3,self.shuffle_music)
@@ -56,6 +56,11 @@ function misc:command(client, cmd,str,args)
 				process:sendMessage(client.room or process,msg)
 			end
 		end
+		return true
+	end
+	--Config print
+	if config[cmd] then
+		process:sendMessage(client, tostring(config[cmd]))
 		return true
 	end
 end
