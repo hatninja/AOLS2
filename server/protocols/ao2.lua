@@ -440,7 +440,7 @@ function AO2:send(client,process, call,data)
 		end
 		--data:getRealization() and :getColor() would be smart right now.
 		t[#t+1] = data.realization and 1 or 0
-		local text_color = data.text_color or 0
+		local text_color = self:tointeger(data.text_color) or 0
 		if client.software == "AO" and text_color == 5 then text_color = 3 end
 		t[#t+1] = text_color
 		--Shownames.
@@ -453,8 +453,8 @@ function AO2:send(client,process, call,data)
 			t[#t+1] = data.pair_emote or "-"
 			t[#t+1] = data.hscroll or 0
 			t[#t+1] = data.pair_hscroll or 0
-			t[#t+1] = data.pair_flip or 0
-			t[#t+1] = data.no_interrupt
+			t[#t+1] = data.pair_flip and 1 or 0
+			t[#t+1] = data.no_interrupt and 1 or 0
 		end
 		
 
