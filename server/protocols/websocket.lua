@@ -124,7 +124,8 @@ end
 
 
 function websocket:getbytes(str)
-	local t = {}
+	if type(str) ~= "string" then return end
+	local t = {0,0,0,0,0,0,0,0}
 	for i=1,#str do
 		t[i] = string.byte(str:sub(i,i))
 	end

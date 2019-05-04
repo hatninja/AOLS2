@@ -15,7 +15,7 @@ function communication:init()
 	process:registerCallback(self,"music_play", 4,self.trackshowname)
 	process:registerCallback(self,"emote", 4,self.trackshowname)
 	process:registerCallback(self,"player_move", 0,self.removeshowname)
-	process:registerCallback(self,"emote", 5,self.emote)
+	process:registerCallback(self,"emote", 6,self.emote)
 end
 
 function communication:command(client, cmd,str,args, oocname)
@@ -94,7 +94,7 @@ function communication:trackshowname(client, emote)
 		for player in process:eachPlayer() do
 			if player ~= client
 			and ((player.room == client.room and emote.name == player.showname)
-			or (emote.name == player.name)) then
+			or (emote.name == player.showname)) then
 				process:sendMessage(client,"Your showname is already in use!")
 				return true
 			end

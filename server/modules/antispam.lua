@@ -6,6 +6,7 @@ local antispam = {}
 function antispam:init()
 	process:registerCallback(self,"ooc",3.9,self.handle)
 	process:registerCallback(self,"emote",5,self.handle)
+	process:registerCallback(self,"emote",0,self.trackemote)
 
 	process:registerCallback(self,"music_play",5,self.music)
 
@@ -41,7 +42,8 @@ function antispam:handle(client, emote)
 		process:sendMessage(client,"Your name is "..tostring(#emote.name - config.maxnamelength).." characters too long.")
 		return true
 	end
-
+end
+function antispam:trackemote(client, emote)
 	client.lastmsg = message
 end
 
