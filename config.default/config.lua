@@ -40,6 +40,7 @@ return function(c) --Note: Every variable here is printable as a command, via mi
 	c.maxnamelength = 30
 	c.maxmsglength = 400
 	c.maxevidence = 18*2 --By default 18 is one screen's worth.
+	c.IClock = false --Locks IC until the player sends an OOC message.
 
 	--Module: room_status
 	c.maxrename = 30 --The maxmimum characters a renamed room can have.

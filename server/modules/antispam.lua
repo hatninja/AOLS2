@@ -29,6 +29,11 @@ end
 function antispam:handle(client, emote)
 	local message = emote.dialogue or emote.message
 
+	if emote.dialogue and config.IClock and not client.name then
+		process:sendMessage(client,"Please use the OOC to unlock in-character messaging.")
+		return true
+	end
+
 	if message == client.lastmsg then return true end
 	if message and #message == 0 then return true end
 
