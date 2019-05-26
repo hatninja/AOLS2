@@ -45,7 +45,7 @@ function AO2:update(client,process)
 		if self.input[args[1]] then
 			self.input[args[1]](self,client,process,unpack(args))
 		else
-			print("Unknown message: "..args[1],bit and self:decryptStr(self:hexToString(args[1]),5))
+			print("Unknown message: "..tostring(args[1]),bit and self:decryptStr(self:hexToString(tostring(args[1])),5))
 		end
 	end
 end
@@ -462,7 +462,9 @@ function AO2:send(client,process, call,data)
 	end
 
 	if call == "MUSIC" then
-		if client.software == "webAO" then client:bufferraw("MC#-#-1#%") end
+		--WebAO looping fix.
+		if client.software == "webAO" then client:bufferraw("MC#~stop.mp3#-1#%") end
+
 		local mc = "MC#"
 		mc=mc .. self:escape(tostring(data.track)).."#"
 		mc=mc .. self:getCharacterId(client, data.character).."#"
