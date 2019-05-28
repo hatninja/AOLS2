@@ -1,0 +1,26 @@
+#Spacer rules. These can help your character list look nice and tidy.
+#
+# Format:
+# (Pattern Match), (Character), (Span)
+#
+# Pattern Match:
+# 	The pattern to match. If this rule is satisfied, the server will insert the spacer at it's location.
+#	
+#	- Put in a Character's name to insert spacers after their occurance.
+#	- Put in a Number to insert spacers after that specific count.
+#	- Alternatively, you can use the format of (row):(column).
+#	  To select pages after 1, add 10 to the column number.
+#
+# Character:
+#
+#	Simply, the character to use as a spacer. They will show up on clients that use spacers. Whether they are selectable or not is up to your configuration.
+# 
+# Span:
+#
+#	The number of times to insert the character. 
+#	
+#	- Put a positive number to repeat the character that number of times.
+#	   E.g. ("Phoenix, Miles, 2" Puts in 2 occurances of Miles after Phoenix.)
+#	- Put a negative number to have the character repeat until the end of the that number of rows.
+#	   E.g. ("Phoenix, Miles, -1" Inserts as many miles as needed until the next row is reached.)
+#	- Put in "page" to have the character span until the next page.
