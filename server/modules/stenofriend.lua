@@ -4,7 +4,6 @@ local process = ...
 local stenofriend = {
 	help = {
 		{"steno","","Toggles steno mode.","Steno mode fixes common mistakes and makes chat easier to copy-paste."},
-		{"accumulate","","Toggles accumulating.","Accumulate mode accumulates messages together."}
 	}
 }
 
@@ -25,16 +24,6 @@ function stenofriend:command(client, cmd,str,args)
 		if not client.steno then msg = "Steno mode disabled." end
 
 		process:sendMessage(client,msg)
-		return true
-	end
-	if cmd == "accumulate" then
-		if self.lastreceive[client] then
-			self.lastreceive[client] = nil
-			process:sendMessage(client,"Accumulate mode disabled.")
-		else
-			self.lastreceive[client] = true
-			process:sendMessage(client,"Accumulate mode enabled.")
-		end
 		return true
 	end
 end
@@ -70,25 +59,6 @@ function stenofriend:handle(sender, receiver, emote)
 
 		--The AO2 client only clears text box when message content is exactly the same.
 		emote.dialogue = (sender==receiver) and message or fixed
-	end
-
-	
-	--Accumulate mode
-	--TODO: Omit.
-	local lastreceive = self.lastreceive[receiver]
-	if lastreceive then
-		local author = emote.name or emote.character
-
-		if lastreceive == true or lastreceive.name ~= author then --Someone else spoke, send what we've accumulated.
-			if lastreceive ~= true then
-				process:sendEmote(receiver,lastreceive)
-			end
-			self.lastreceive[receiver] = emote
-			self.lastreceive[receiver].name = author
-		else --Same author, accumulate it.
-			lastreceive.dialogue = lastreceive.dialogue .. " " ..emote.dialogue
-		end
-		return true
 	end
 end
 
@@ -129,7 +99,5 @@ function stenofriend:autocolor(client, emote)
 		end
 	end
 end
-
-
 
 return stenofriend
