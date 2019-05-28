@@ -253,6 +253,7 @@ end
 
 AO2.input["MC"] = function(self,client,process,call, track, id, cc_showname)
 	if not track or not self:tointeger(id) then return end
+	if track == "" then return end
 	process:send(client,"MUSIC", {
 		track = self:unescape(tostring(track)),
 		character = self:getCharacterName(client, self:tointeger(id)),
