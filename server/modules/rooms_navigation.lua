@@ -110,9 +110,15 @@ function rooms:welcometoroom(client,room)
 	process:sendMessage(client,msg)
 	
 	process:sendEmote(client,{
-		dialogue="}}"..tostring(room.name),
+		dialogue=tostring(room.name),
 		name=">",
 		side=client.side or SIDE_WIT,
+
+		pair = "Phoenix",
+		pair_hscroll = 100,
+		pair_emote = "-",
+		pair_flip = 0,
+		hscroll = 100,
 	})
 end
 
