@@ -5,6 +5,7 @@ local communication = {
 	help = {
 		{"g","(msg)","Sends a message to everybody in the server."},
 		{"pm","(id) (msg)","Sends a private message to a player."},
+		{"self","(suffix)","Affixes a status to your name."}
 	}
 }
 
@@ -47,6 +48,11 @@ function communication:command(client, cmd,str,args, oocname)
 		end
 		return true
 	end
+	if cmd == "self" then
+		client.status = str
+		process:sendMessage(client,"Changed self-status to \""..str.."\"")
+		return true
+	end
 end
 
 function communication:prefix(client, ooc)
@@ -54,18 +60,17 @@ function communication:prefix(client, ooc)
 	if client.mod then
 		ooc.name = "[Mod]".. ooc.name
 	end
+	if client.status then
+		ooc.name = ooc.name .." ".. client.status
+	end
 end
 function communication:trackOOCname(client, ooc)
 	if ooc.name then
 		ooc.name = ooc.name:match("^%s*(.-)%s*$")
 
 		for player in process:eachPlayer() do
-			if player ~= client
-
-			and player.ip ~= client.ip
-			and player.hardwareid ~= client.hardwareid
-
-			and (ooc.name == player.name or ooc.name == player.showname) then
+			if player ~= client	and player.ip ~= client.ip
+			and (ooc.name == player.name) then
 				process:sendMessage(client,"Your nickname is already in use!")
 				return true
 			end
@@ -92,24 +97,14 @@ function communication:trackshowname(client, emote)
 
 		--Allow same shownames if in different rooms, but never allow a showname of a username.
 		for player in process:eachPlayer() do
-			if player ~= client
+			if player ~= client	and player.ip ~= client.ip
 			and ((player.room == client.room and emote.name == player.showname)
-			or (emote.name == player.showname)) then
-				process:sendMessage(client,"Your showname is already in use!")
+			or (emote.name == player.name)) then
+				process:sendMessage(client,"Your character/showname is already in use!")
 				return true
 			end
 		end
 
-		--Prevent using a showname to remotely block other characters.
-		if emote.name ~= emote.character then
-			for i,char in ipairs(process.characters) do
-				local charname = char:getName()
-				if charname == emote.name then
-					return
-				end
-			end
-		end
-	
 		client.showname = emote.name
 	end
 end
