@@ -23,7 +23,7 @@ end
 
 function lobby:command(client, cmd,str,args)
 	if client.room and client.room.kind ~= "lobby" then return end
-	if cmd == "bg" then
+	if cmd == "bg" or cmd == "bd" or cmd == "cr"  then
 		process:sendMessage(client,"You cannot change the BG in this room!")
 		return true
 	end

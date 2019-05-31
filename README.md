@@ -97,6 +97,21 @@ Sets the background for the room.
 **/bglist** - 
 Shows list of the backgrounds that the server supports.
 
+**/localbg (dir)** -
+Changes the background locally. I.e. Nobody else can see it, and is not restricted to the list.
+
+**/bd (name)** - 
+Sets a backdrop background  for the room.
+
+**/bdlist** - 
+Shows list of the backdrops.
+
+**/cr (name)** - 
+Sets a court background for the room.
+
+**/crlist** - 
+Shows list of the courts.
+
 **/status** - 
 Sets the status of a courtroom.
 

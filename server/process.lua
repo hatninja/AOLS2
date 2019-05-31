@@ -30,8 +30,8 @@ local process = {
 	id = -1
 }
 
-local Music = dofile(path.."server/classes/music.lua")
-local Character = dofile(path.."server/classes/character.lua")
+local Music = require(path.."server/classes/music")
+local Character = require(path.."server/classes/character")
 
 function process:start(server)
 	math.randomseed(os.time())
@@ -53,7 +53,6 @@ function process:start(server)
 
 	self.characters = {}
 	self.music = {}
-	self.backgrounds = {}
 
 	self.time = 0
 
@@ -79,10 +78,6 @@ function process:start(server)
 		)
 	end
 	verbosewrite(#self.music.." music tracks loaded!\n")
-
-	self.backgrounds = self:loadList(path.."config/backgrounds.txt")
-	verbosewrite(#self.backgrounds.." backgrounds loaded!\n")
-
 
 	
 	verbosewrite("--Loading Modules--\n")
@@ -143,10 +138,10 @@ function process:send(client, call, data)
 	if not client.id then return end
 
 	if call == "LOAD_CHARS" then
-		client:send("SEND_CHARS",self:getCharacters())
+		client:send("SEND_CHARS",self:getCharacters(client))
 	end
 	if call == "LOAD_MUSIC" then
-		client:send("SEND_MUSIC",self:getMusic())
+		client:send("SEND_MUSIC",self:getMusic(client))
 	end
 
 	if call == "DONE" then
@@ -376,17 +371,20 @@ function process:loadList(dir)
 				table.insert(t,line)
 			end
 		end
+		file:close()
 	end
 	return t
 end
 function process:saveList(list,dir)
 	local file = io.open(dir,"w")
-	for i=1,#list do local v = list[i]
-		if v then
-			file:write(v.."\n")
+	if file then
+		for i=1,#list do local v = list[i]
+			if v then
+				file:write(v.."\n")
+			end
 		end
+		file:close()
 	end
-	file:close()
 end
 
 function process:getCharacters(client)
@@ -428,13 +426,6 @@ function process:sendMessage(receiver,message,ooc_name)
 	}
 	
 	if type(receiver) ~= "table" then error("A receiving object is required for arg #1!",2) end
-
-	--Seamless message
-	local ls,le = message:find("|: ")
-	if ls then
-		ooc.name = ooc.name .. message:sub(1,ls-1)
-		ooc.message = message:sub(le+1,-1)
-	end
 	
 	if receiver.players then
 		for k,player in pairs(receiver.players) do
@@ -490,6 +481,7 @@ function process:getSideName(side)
 	elseif side == SIDE_HLD then return "Co-Defense"
 	elseif side == SIDE_HLP then return "Co-Prosecution"
 	elseif side == SIDE_JUR then return "Juror"
+	elseif side == SIDE_SEA then return "Seance"
 	else return "N/A"
 	end
 end
