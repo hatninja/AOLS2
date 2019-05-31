@@ -4,7 +4,7 @@ local process = ...
 local spacers = {
 }
 
-local Character = dofile(path.."server/classes/character.lua")
+local Character = require(path.."server/classes/character")
 
 function spacers:init()
 	process:registerCallback(self,"list_characters",3,self.list_characters)

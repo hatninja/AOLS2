@@ -1,6 +1,6 @@
 local process = ...
 
-local Music = dofile(path.."server/classes/music.lua")
+local Music = require(path.."server/classes/music")
 
 local rooms = {
 	name = "Rooms",

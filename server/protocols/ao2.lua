@@ -356,7 +356,7 @@ function AO2:send(client,process, call,data)
 	if call == "INFO_SEND" then
 		client:bufferraw("decryptor#34#%")
 		client:bufferraw("PN#"..(data.players).."#"..(data.maxplayers).."#%")
-		client:bufferraw("ID#0#"..(data.software).."#"..(data.version).."#%")
+		client:bufferraw("ID#"..(process.firstempty).."#"..(data.software).."#"..(data.version).."#%")
 		client:bufferraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cccc_ic_support#arup#casing_alerts#looping_sfx#%")--noencryption,
 	end
 	if call == "JOIN_ALLOW" then

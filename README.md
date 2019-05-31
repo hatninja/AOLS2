@@ -1,6 +1,8 @@
 # AOLS2
 The successor to AOls. AOLS2 is an Attorney Online server written entirely with Lua.
 
+AOLS2 is designed to be very modular compared to it's predecessor, and to make the addition of new features easy. 
+
 If you have any feedback on it's implementation, it would be greatly appreciated!
 
 ## Requirements
@@ -14,20 +16,18 @@ Bit operations are required for WebSocket support.
 ## Running
 
 1. Clone the source to any location.
-2. Rename `config.default` to `config`, and configure as you like.
+2. Rename `config.default/` to `config/`, and configure as you like.
 3. Run using `lua /path/to/init.lua` or `luajit /path/to/init.lua`
 
 ## Features
-* Modular design.
-* AO 1.x/2.x supported.
-* 2.6.0 feature support.
-* Websockets.
-* Automatic restart.
-* Anti-Spam features.
+* Very modular/configurable design.
+* AO 1.0 to 2.6.0 supported, as well as Websockets.
+* Automatic restart on crashes.
+* Spam checking features.
 * Web-fixer, fixes content for web users.
-* Stenographing modes.
+* Many useful commands.
+* Stenographing mode.
 * Ghost rejoining.
-* Many more useful commands.
 
 ## List of Commands
 **/motd, /rules, /files** -
@@ -61,6 +61,9 @@ Sends a global message. Anyone in the server can see it.
 **/pm (user id) (message)** - 
 Sends a private message to a user.
 
+**/self (status)**-
+Appends a status tag to your nickname.
+
 **/char (name)** - 
 Selects a character by name.
 
@@ -82,6 +85,12 @@ No arguments sets it back to default.
 **/zoom** - 
 Toggles speedlines when using an emote.
 
+**/userpair (user id)** -
+Sets your pair to a specific user. If your pair connects, you will be paired together regardless of character.
+
+**/autopair** -
+Toggles autopair mode. You automatically pair with players who have autopair enabled.
+
 **/bg (name)** - 
 Sets the background for the room.
 
@@ -101,9 +110,6 @@ Use with no arguments to return the doc.
 **/steno** -
 Toggles steno mode. Steno mode fixes common capitialization and punctuation errors. It also hides messages in double brackets.
 
-**/accumulate** -
-Toggles accumulate mode. Accumulate mode collects all a character's messages into a single one.
-
 **/rejoin** -
 Reconnects you as your ghost player if it exists.
 
@@ -121,6 +127,9 @@ Locks a room with a password. Users are required to use a key to enter. (See Bel
 
 **/key (password)** -
 Allows you to enter any room that uses the same password.
+
+**/server** -
+Returns the server software and version.
 
 #### Mod commands
 **/modpass (passcode)** - 

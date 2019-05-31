@@ -37,9 +37,14 @@ function whois:command(client, cmd,str,args)
 			local msg = "~~Whois~~"
 			msg=msg.."\nPlayer ID: "..tostring(player.id)
 			msg=msg.."\nSoftware: "..tostring(player.software).." ("..tostring(player.version)..")"
-			msg=msg.."\nNickname: '"..tostring(player.name or "N/A").."'"
-			msg=msg.."\nShowname: '"..tostring(player.showname or "N/A").."'"
-			msg=msg.."\nStatus: '"..tostring(player.status or "N/A").."'"
+			msg=msg.."\nNickname: "..(player.name and ("'"..tostring(player.name).."'") or "N/A")
+
+			if player.showname then
+				msg=msg.."\nShowname: '"..tostring(player.showname).."'"
+			end
+			if player.status then
+				msg=msg.."\nStatus: '"..tostring(player.status).."'"
+			end
 			
 			if player.mod then
 				msg=msg.."\nModerator: Yes"
@@ -125,7 +130,7 @@ end
 
 function whois:list(player)
 	local msg = ""
-	msg=msg.."["..player.id.."] "..tostring(player.name or "N/A").." "..(player.status or "")
+	msg=msg.."["..player.id.."] "..tostring(player.name or "N/A").." - "..(player.status or "")
 	msg=msg.."\n \\ "..(player.character or "Spectator")
 	msg=msg.." - "..process:getSideName(player.side)
 	if player.mod then

@@ -35,12 +35,7 @@ while not server.kill do
 			end
 		end
 	end
-
-	if interface then
-		interface:getch()
-		interface:print()
-	end
-
+	
 	local time = os.clock()-st
 	if time < config.rate then
 		socket.sleep(config.rate-time)

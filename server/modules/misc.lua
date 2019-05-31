@@ -3,7 +3,8 @@ local misc = {
 	help = {
 		{"coinflip","","Flips a coin."},
 		{"diceroll","(sides)","Rolls an N-sided die."},
-		{"timer","(time)","Starts and stops a timer."}
+		{"timer","(time)","Starts and stops a timer."},
+		{"server","","Returns information about the server."}
 	}
 }
 
@@ -56,6 +57,13 @@ function misc:command(client, cmd,str,args)
 				process:sendMessage(client.room or process,msg)
 			end
 		end
+		return true
+	end
+	if cmd == "server" then
+		local msg = tostring(process.server.software)
+		msg = msg .. " server version "
+		msg = msg .. tostring(process.server.version)
+		process:sendMessage(client,msg)
 		return true
 	end
 	--Config print

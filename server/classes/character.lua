@@ -12,7 +12,7 @@ end
 
 function Character:init(name, side)
 	self.name = name
-	self.side = length
+	self.side = side
 end
 
 function Character:getSide()
