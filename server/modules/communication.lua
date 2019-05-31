@@ -49,8 +49,17 @@ function communication:command(client, cmd,str,args, oocname)
 		return true
 	end
 	if cmd == "self" then
-		client.status = str
-		process:sendMessage(client,"Changed self-status to \""..str.."\"")
+		if str ~= "" then
+			if #str <= config.maxselflength then
+				client.status = str
+				process:sendMessage(client,"Changed self-status to '"..str.."'")
+			else
+				process:sendMessage(client,"Your self-status is too long!")
+			end
+		else
+			client.status = nil
+			process:sendMessage(client,"Cleared self-status!")
+		end
 		return true
 	end
 end
@@ -61,9 +70,10 @@ function communication:prefix(client, ooc)
 		ooc.name = "[Mod]".. ooc.name
 	end
 	if client.status then
-		ooc.name = ooc.name .." ".. client.status
+		ooc.name = ooc.name .." - ".. client.status
 	end
 end
+
 function communication:trackOOCname(client, ooc)
 	if ooc.name then
 		ooc.name = ooc.name:match("^%s*(.-)%s*$")

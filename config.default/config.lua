@@ -30,6 +30,9 @@ return function(c) --Note: Every variable here is printable as a command, via mi
 	--Module: clientlimit
 	c.multiclients = 3 --The maximum amount of clients allowed per ip/hardwareid
 
+	--Module: communication
+	c.maxselflength = 20
+
 	--Module: charhelper
 	c.autospectate = false
 
@@ -47,6 +50,10 @@ return function(c) --Note: Every variable here is printable as a command, via mi
 	
 	--Module: room_navigation
 	c.listareas = true --Automatically list areas when connected.
+
+	--Module: bghelper
+	c.backdropdir = "" --Location of backdrop bgs.
+	c.courtdir = "" --Location of court bgs.
 
 	--Module: ao2advertiser
 	c.ao2msip = "master.aceattorneyonline.com"
