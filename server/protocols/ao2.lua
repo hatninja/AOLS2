@@ -205,7 +205,10 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	else side = SIDE_JUR
 	end
 
-	if emote_modifier == 0 or emote_modifier > 4 or pre_emote == "-" or zoom then
+	no_interrupt=no_interrupt == 1
+
+	if not no_interrupt and emote_modifier == 0 or emote_modifier > 4 
+	or pre_emote == "-" or zoom then
 		pre_emote = nil
 		sfx_name = 1
 		sfx_delay = 0
@@ -219,6 +222,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	if showname == "" or showname == "0" then
 		showname = nil
 	end
+
 
 	process:send(client,"IC", {
 		dialogue=message,
@@ -412,14 +416,16 @@ function AO2:send(client,process, call,data)
 		t[#t+1] = data.sfx_name or 1
 		--Emote modification
 		local emote_modifier = 0
-		if data.pre_emote then
-			emote_modifier = 1
-		end
-		if data.bg then
-			emote_modifier = 5
-		end
-		if data.interjection and data.interjection ~= 0 then
-			emote_modifier = emote_modifier + 1
+		if not data.no_interrupt then
+			if data.pre_emote then
+				emote_modifier = 1
+			end
+			if data.bg then
+				emote_modifier = 5
+			end
+			if data.interjection and data.interjection ~= 0 then
+				emote_modifier = emote_modifier + 1
+			end
 		end
 		t[#t+1] = emote_modifier
 		local char_id = self:getCharacterId(client, data.character)
@@ -449,15 +455,22 @@ function AO2:send(client,process, call,data)
 		--Character pairing.
 		local pair_id = self:getCharacterId(client, data.pair) or -1
 		if pair_id ~= -1 and data.pair and data.pair_emote then
-			t[#t+1] = pair_id
-			t[#t+1] = data.pair
+			t[#t+1] = pair_id or -1
+			t[#t+1] = pair_id ~= -1 and pair or ""
 			t[#t+1] = data.pair_emote or "-"
 			t[#t+1] = data.hscroll or 0
 			t[#t+1] = data.pair_hscroll or 0
 			t[#t+1] = data.pair_flip and 1 or 0
 			t[#t+1] = data.no_interrupt and 1 or 0
+		elseif data.no_interrupt then
+			t[#t+1] = -1
+			t[#t+1] = ""
+			t[#t+1] = ""
+			t[#t+1] = 0
+			t[#t+1] = 0
+			t[#t+1] = 0
+			t[#t+1] = 1
 		end
-		
 
 		client:bufferraw(ms..table.concat(t,"#").."#%")
 	end
