@@ -11,10 +11,10 @@ local SENDMAX = 4096
 
 local server = {
 	software = "AOLS2",
-	version = "1.0",
+	version = "2.0",
 }
 
-local Client = dofile(path.."server/classes/client.lua")
+local Client = require("classes/client")
 
 function server:start()
 	self:listen()
@@ -58,6 +58,8 @@ end
 
 function server:update()
 	local self = server
+
+	--Accept new connections
 	repeat
 		local connection,err = self.socket:accept()
 		if connection then
@@ -83,45 +85,40 @@ function server:update()
 					data=""
 					break
 				end
-
-			elseif err == "closed" then
-				if config.monitor then
-					print("Closed connection to "..client:getAddress())
-				end
-				
-				self.process:disconnect(client)
-				self.clients[k] = nil
-				break
 			end
 		until not char
 		client.received = client.received .. data
 
-		if self.clients[k] then
-			--Determine protocol
-			if not client.protocol then
-				for i,protocol in ipairs(self.protocols) do
-					if protocol:detect(client,self.process) then
-						self.process:accept(client)
-						break
-					end
+		--Determine protocol
+		if not client.protocol then
+			for i,protocol in ipairs(self.protocols) do
+				if protocol:detect(client,self.process) then
+					self.process:accept(client)
+					break
 				end
 			end
+		end
 
-			--Update client
-			if client.protocol then
-				self.process:updateClient(client)
-				client.protocol:update(client,self.process)
-			end
+		--Update client
+		if client.protocol then
+			self.process:updateClient(client)
+			client.protocol:update(client,self.process)
+		end
 
-			--Send data
-			local data = client.buffer:sub(1,SENDMAX)
-			if #data < #client.buffer then
-				print("Sending excessive data!",client:getAddress())
-			end
-			if #data > 0  then
-				client:sendraw(data)
-			end
-			client.buffer = client.buffer:sub(SENDMAX+1,-1)
+		--Send data
+		local data = client.buffer:sub(1,SENDMAX)
+		if #data < #client.buffer then
+			print("Sending excessive data!",client:getAddress())
+		end
+		if #client.buffer > 0 then
+			client:sendraw(data)
+		end
+		client.buffer = client.buffer:sub(SENDMAX+1,-1)
+
+
+		--Remove closed clients.
+		if not client.socket then
+			self.clients[k] = nil
 		end
 	end
 

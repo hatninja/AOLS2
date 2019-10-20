@@ -1,5 +1,4 @@
 --Client, handles and stores everything related to a client connection.
-
 local Client = {}
 Client.__index=Client
 
@@ -23,18 +22,35 @@ end
 
 
 function Client:sendraw(msg)
-	self.socket:send(msg,1,#msg)
+	if self.socket then
+		self.socket:send(msg,1,#msg)
+	end
 end
 
 function Client:receive(bytes)
-	return self.socket:receive(bytes)
+	local dat,err = self.socket:receive(bytes)
+	--Automatically close this client if socket is closed.
+	if err == "closed" then
+		self:close()
+	end
+	return dat, err
 end
 
 function Client:close(...)
+	if not self.socket then return end --Can't close a client twice :P
+
+	self.process:disconnect(self)
+
+	if config.monitor then
+		print("Closed connection to "..self:getAddress())
+	end
+
 	if self.protocol then
 		self.protocol:close(self)
 	end
+
 	self.socket:close()
+	self.socket = nil
 end
 
 

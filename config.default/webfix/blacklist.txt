@@ -1,0 +1,1 @@
+#Blacklist characters that you do not want to appear selectable for web players.

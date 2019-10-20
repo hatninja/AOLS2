@@ -30,8 +30,8 @@ local process = {
 	id = -1
 }
 
-local Music = require(path.."server/classes/music")
-local Character = require(path.."server/classes/character")
+local Music = require("classes/music")
+local Character = require("classes/character")
 
 function process:start(server)
 	math.randomseed(os.time())
@@ -79,7 +79,7 @@ function process:start(server)
 	end
 	verbosewrite(#self.music.." music tracks loaded!\n")
 
-	
+
 	verbosewrite("--Loading Modules--\n")
 	local modules = self:loadList(path.."config/modules.txt")
 	for i,name in ipairs(modules) do
@@ -166,7 +166,7 @@ function process:send(client, call, data)
 		if self:event("ooc", client, data) then
 			for receiver in self:eachPlayer() do
 				local ooc_received = self:clone(data)
-				
+
 				if self:event("ooc_received", client, receiver, ooc_received) then
 					self:sendMessage(receiver,ooc_received.message,ooc_received.name)
 				end
@@ -276,7 +276,7 @@ function process:disconnect(client)
 			self.players[client.id] = nil
 			self.playercount =  math.max(self.playercount - 1, 0)
 			self.firstempty = math.min(client.id,self.firstempty)
-			
+
 			self:print("Player with ID "..client.id.." disconnected.")
 		end
 	else
@@ -287,7 +287,7 @@ end
 
 function process:update()
 	self:event("update",client)
-	
+
 	self.time = self.time + config.rate
 end
 
@@ -424,9 +424,9 @@ function process:sendMessage(receiver,message,ooc_name)
 		name=ooc_name or config.serverooc,
 		message=message
 	}
-	
+
 	if type(receiver) ~= "table" then error("A receiving object is required for arg #1!",2) end
-	
+
 	if receiver.players then
 		for k,player in pairs(receiver.players) do
 			player:send("OOC", ooc)

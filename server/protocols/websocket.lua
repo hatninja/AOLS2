@@ -3,7 +3,7 @@
 local websocket = {
 	name = "WebSocket",
 	guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11",
-	
+
 	received = {},
 	protocol = {},
 }
@@ -20,7 +20,7 @@ function websocket:detect(client,process)
 		local key = client.received:match("Sec%-WebSocket%-Key: (%S+)")
 		if key then
 			local accept = mime.b64(sha1.binary(key..self.guid)):sub(1,-2).."="
-			
+
 			local handshake = "HTTP/1.1 101 Switching Protocols\r\n"
 			.."Upgrade: websocket\r\n"
 			.."Connection: Upgrade\r\n"
@@ -32,7 +32,7 @@ function websocket:detect(client,process)
 			self.received[client] = ""
 
 			client.websocket = true
-			
+
 			client.protocol = self
 			return true
 		end
@@ -41,7 +41,7 @@ end
 
 function websocket:update(client,process)
 	if not self.received[client] then return end
-	
+
 	local server = process.server
 	repeat
 		local data, opcode, masked, fin, packetlength = self:decode(client.received)
@@ -122,11 +122,10 @@ function websocket:close(client)
 	self.protocol[client] = nil
 end
 
-
 function websocket:getbytes(str)
 	if type(str) ~= "string" then return end
-	local t = {0,0,0,0,0,0,0,0}
-	for i=1,#str do
+	local t = {}
+	for i=#str,1,-1 do
 		t[i] = string.byte(str:sub(i,i))
 	end
 	return unpack(t)
@@ -148,13 +147,13 @@ function websocket:decode(dat)
 		local a,b = self:getbytes(dat:sub(p+1,p+2))
 		LENGTH = bit.bor(bit.lshift(a,8),b)
 		p = p + 2
-		
-	elseif LENGTH == 127 then 
+
+	elseif LENGTH == 127 then
 		local a,b,c,d,e,f,g,h = self:getbytes(dat:sub(p+1,p+8))
 		LENGTH = bit.bor(bit.lshift(e,24),bit.lshift(f,16),bit.lshift(g,8),h) --Lua doesn't use 64-bit integers
 		p = p + 8
 	end
-	
+
 	local MASKKEY
 	if MASKED then
 		local a,b,c,d = self:getbytes(dat:sub(p+1,p+4))
