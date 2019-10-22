@@ -1,10 +1,11 @@
---[[Here's an overview of how this software is structured.
-Server - Handles server socket and client communication.
-Protocol - Translates client messages into process-readable objects and vice-versa.
-Process - Handles all the basic behaviour of an AO server. Characters, Messages, Music, etc.
-Modules - Extends process via callbacks and can add any functionality.
+--[[Overview of the software structure:
+Server
+	Handles the server socket and and the low level of client connections.
+Process
+	Runs the basic behaviour of the server. Modules extend functionality.
+Protocols
+	Translates raw client messages into process-readable objects and vice-versa.
 ]]
---Server: Handles all communciation, delegates to process and protocols (via client objects).
 
 local RECEIVEMAX = 2048
 local SENDMAX = 4096
@@ -56,9 +57,13 @@ function server:reload()
 	print("--Finished, now running--")
 end
 
-function server:update()
-	local self = server
+function server:close()
+	self.socket:close()
+	self.kill = true
+end
 
+local self = server
+function server:update()
 	--Accept new connections
 	repeat
 		local connection,err = self.socket:accept()
@@ -89,7 +94,7 @@ function server:update()
 		until not char
 		client.received = client.received .. data
 
-		--Determine protocol
+		--Detect and assign a client's protocol
 		if not client.protocol then
 			for i,protocol in ipairs(self.protocols) do
 				if protocol:detect(client,self.process) then
@@ -116,18 +121,13 @@ function server:update()
 		client.buffer = client.buffer:sub(SENDMAX+1,-1)
 
 
-		--Remove closed clients.
+		--Remove closed clients
 		if not client.socket then
 			self.clients[k] = nil
 		end
 	end
 
 	self.process:update()
-end
-
-function server:close()
-	self.socket:close()
-	self.kill = true
 end
 
 return server

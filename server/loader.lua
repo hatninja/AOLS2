@@ -1,6 +1,8 @@
 verbosewrite("Lua Version - 👍 ("..(jit and jit.version or _VERSION)..")\n")
 
+
 verbosewrite "Luasocket - "
+
 local found,d = pcall(require,"socket")
 if found then
 	verbosewrite("👍 ("..d._VERSION..")\n")
@@ -11,7 +13,9 @@ else
 	return
 end
 
+
 verbosewrite "Bit - "
+
 local found,d = pcall(require,"bit")
 if found then
 	verbosewrite "👍 (LuaJIT/5.1 BitOp)\n"
@@ -19,12 +23,13 @@ if found then
 else
 	local found2,d = pcall(require,"bit32")
 	if found2 then
-		verbosewrite("👍 (Lua 5.2 Bit32)\n")
+		verbosewrite "👍 (Lua 5.2 Bit32)\n"
 		bit = d
 	else
 		verbosewrite "👎\n"
 		print "Warning: AOLS2 requires a bit operation library for websocket support!"
 	end
 end
+
 
 return true
