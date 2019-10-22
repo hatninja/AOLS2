@@ -1,30 +1,5 @@
 --Process: Handles basic server behaviour, provides the modules functionality.
---[[
-	Implemented events:
-	"client_join"
-	"player_join"
-	"player_done"
-	"player_leave"
-	"character_pick"
-	"ooc"
-	"ooc_received"
-	"emote"
-	"emote_received"
-	"music_play"
-	"music_received"
-	"event_play"
-	"event_received"
-	"bg_received"
-	"call_mod"
-	"update"
-	"player_update"
-	"list_characters"
-	"list_music"
-	"item_add"
-	"item_remove"
-	"item_edit"
-	"item_list"
-]]
+
 local process = {
 	name = "Server",
 	id = -1
@@ -39,6 +14,8 @@ function process:start(server)
 
 	self.server = server
 
+	self.mod = true
+
 	self.viewers = {}
 	self.viewercount = 0
 
@@ -48,7 +25,9 @@ function process:start(server)
 
 	self.rooms = {}
 
+	self.events = {}
 	self.callbacks = {}
+
 	self.modules = {}
 
 	self.characters = {}
@@ -78,6 +57,37 @@ function process:start(server)
 		)
 	end
 	verbosewrite(#self.music.." music tracks loaded!\n")
+
+
+	self:registerEvent("client_join")
+	self:registerEvent("player_join")
+	self:registerEvent("player_done")
+	self:registerEvent("player_leave")
+	self:registerEvent("player_update")
+
+	self:registerEvent("update")
+	self:registerEvent("close")
+
+	self:registerEvent("ooc")
+	self:registerEvent("ooc_received")
+	self:registerEvent("emote")
+	self:registerEvent("emote_received")
+	self:registerEvent("music_play")
+	self:registerEvent("music_received")
+	self:registerEvent("event_play")
+	self:registerEvent("event_received")
+	self:registerEvent("bg_received")
+	self:registerEvent("command")
+	self:registerEvent("call_mod")
+	self:registerEvent("character_pick")
+
+	self:registerEvent("list_characters")
+	self:registerEvent("list_music")
+
+	self:registerEvent("item_add")
+	self:registerEvent("item_remove")
+	self:registerEvent("item_edit")
+	self:registerEvent("item_list")
 
 
 	verbosewrite("--Loading Modules--\n")
@@ -305,6 +315,10 @@ function process:updateClient(client)
 	end
 end
 
+function process:close()
+	self:event("close")
+end
+
 --Protocol handling functions
 function process:protocolStringAssert(call,data,...)
 	local list = {...}
@@ -344,7 +358,11 @@ end
 function process:print(text)
 	print(os.date("%x %H:%M",os.time()).." ["..(self.name or "N/A").."] "..text)
 end
+
 function process:event(name,...)
+	if not self.events[name] then
+		print("Warning: Sent unregistered event: '"..name.."'")
+	end
 	if self.callbacks[name] then
 		for i,callback in ipairs(self.callbacks[name]) do
 			if callback[1](callback[3],...) then return false end
@@ -358,10 +376,19 @@ function process:registerCallback(module,name,priority,func)
 	if not tonumber(priority) then error("Expected priority number at arg #3!",2) end
 	if type(func) ~= "function" then error("Expected function at arg #4!",2) end
 
-	if not self.callbacks[name] then self.callbacks[name] = {} end
+	if not self.callbacks[name] then
+		print("Warning: Registered callback to unregistered event: '"..name.."'")
+		self.callbacks[name] = {}
+	end
 	table.insert(self.callbacks[name],{func,priority,module})
 	table.sort(self.callbacks[name],function(a,b) return a[2] > b[2] end)
 end
+function process:registerEvent(name)
+	verbosewrite("Registered event: "..name.."\n")
+	self.events[name] = true
+	self.callbacks[name] = {}
+end
+
 function process:loadList(dir)
 	local t = {}
 	local file = io.open(dir)

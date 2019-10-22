@@ -1,29 +1,35 @@
---Handles room management and ARUP.
+--Handles the room status display. Room status, name, and doc commands are also handled.
 local process = ...
 
-local Music = dofile(path.."server/classes/music.lua")
+local DISPLAY_RATE = 3
 
 local rooms = {
 	name = "Rooms",
 
 	help = {
-		{"doc","(link)","Shows the document for the room.","Add a link to change the room's doc."},
+		{"doc","(link)","Shows the document for the room.","Add a link to change the room's doc.\n'clear' can be used to remove the doc.",},
 		{"status","(status)","Change the status of the room."},
-		{"rename","(name)","Changes the name of your area."},
-		{"lock","(pass)","Locks a room with a passcode."},
-		{"key","(pass)","Sets your key. Allows you to enter rooms with the same passcode."},
+		{"rename","(name)","Changes the name of your room."},
 	}
 }
 
 function rooms:init()
 	self.parent = process.modules["rooms"]
 
+	process:registerEvent("room_doc")
+	process:registerEvent("room_status")
+
 	process:registerCallback(self,"command", 3,self.command)
 	process:registerCallback(self,"update", 3,self.update)
 
-	process:registerCallback(self,"player_done", 3,self.join)
-	process:registerCallback(self,"player_move", 4,self.move)
-	process:registerCallback(self,"player_leave", 0,self.leave)
+	process:registerCallback(self,"player_done", 0,self.join)
+	process:registerCallback(self,"player_move", 0,self.count_update)
+	process:registerCallback(self,"player_leave", 0,self.count_update)
+
+	process:registerCallback(self,"room_lock", 0,self.lock_update)
+	process:registerCallback(self,"room_status", 0,self.status_update)
+	process:registerCallback(self,"room_cm", 0,self.cm_update)
+
 
 	--Must match the area list in the area selector
 	self.roomlist = {}
@@ -33,7 +39,7 @@ function rooms:init()
 		end
 	end
 
-	self.updatetimer = 1
+	self.updatetimer = DISPLAY_RATE
 	self.countchange = false
 	self.statuschange = false
 	self.cmchange = false
@@ -43,7 +49,7 @@ end
 function rooms:update()
 	self.updatetimer = self.updatetimer - config.rate
 	if self.updatetimer < 0 then
-		self.updatetimer = self.updatetimer + 1
+		self.updatetimer = self.updatetimer + DISPLAY_RATE
 		if self.countchange then
 			self.countchange = false
 			self:displaycount()
@@ -56,18 +62,18 @@ function rooms:update()
 			self.cmchange = false
 			self:displaycm()
 		end
+		if self.lockchange then
+			self.lockchange = false
+			self:displaylock()
+		end
 	end
-	
+
 	local parent = process.modules["rooms"]
 	for k,v in pairs(parent.rooms) do
 		if v.count == 0 then
 			if v.status then
 				v.status = nil
 				self.statuschange = true
-			end
-			if v.lock then
-				v.lock = nil
-				self.lockchange = true
 			end
 			v.doc = nil
 			if v.basename then
@@ -109,7 +115,11 @@ end
 function rooms:displaycm(client)
 	local cms = {}
 	for i,v in pairs(self.roomlist) do
-		table.insert(cms,v.cm or "")
+		local cm = "None"
+		if v.cm then
+			cm = "["..tostring(v.cm).."]"
+		end
+		table.insert(cms, cm)
 	end
 	cms.event = "arup_cm"
 	if client then
@@ -121,17 +131,45 @@ function rooms:displaycm(client)
 	end
 end
 
+function rooms:displaylock(client)
+	local locks = {}
+	for i,v in pairs(self.roomlist) do
+		local lock = "OPEN"
+		if v.lock then
+			lock = "LOCKED"
+		end
+		if v.whitelist then
+			lock = "SPECTATE"
+		end
+		if v.modlock then
+			lock = "MODS-ONLY"
+		end
+
+		table.insert(locks,lock)
+	end
+	locks.event = "arup_lock"
+	if client then
+		process:sendEvent(client,locks)
+	else
+		for player in process:eachPlayer() do
+			process:sendEvent(player,locks)
+		end
+	end
+end
+
 function rooms:command(client, cmd,str,args)
 	if cmd == "doc" then
 		local room = client.room
 		if room then
 			if args[1] then
-				if args[1] == "clear" then
-					room.doc = nil
-					process:sendMessage(room,"["..client.id.."] cleared the doc.")
-				else
-					room.doc = args[1]
-					process:sendMessage(room,"["..client.id.."] changed the room's doc!")
+				if process:event("room_doc",client,room,args[1]) then
+					if args[1] == "clear" then
+						room.doc = nil
+						process:sendMessage(room,"["..client.id.."] cleared the doc.")
+					else
+						room.doc = args[1]
+						process:sendMessage(room,"["..client.id.."] changed the room's doc!")
+					end
 				end
 			else
 				process:sendMessage(client,room.doc or "No doc set!")
@@ -143,53 +181,20 @@ function rooms:command(client, cmd,str,args)
 		local room = client.room
 		if room then
 			if args[1] then
-				if #args[1] <= #("LOOKING-FOR-PLAYERS") then
-					room.status = string.upper(args[1])
-					process:sendMessage(room,"["..client.id.."] changed the room's status to '"..room.status.."'")
-				else
-					process:sendMessage(client,"Your staus name is too long!")
+				local status = string.upper(args[1])
+				if process:event("room_status",room,status) then
+					if #args[1] <= #("LOOKING-FOR-PLAYERS") then
+						room.status = status
+						process:sendMessage(room,"["..client.id.."] changed the room's status to '"..room.status.."'")
+					else
+						process:sendMessage(client,"Your staus name is too long!")
+					end
 				end
 			else
 				room.status = nil
 				process:sendMessage(room,"["..client.id.."] removed the room's status.")
 			end
-			self.statuschange = true
-			return true
-		end
-	end
-	if cmd == "lock" then
-		local room = client.room
-		if room then
-			if args[1] then
-				room.lock = args[1]
-				process:sendMessage(room,"["..client.id.."] locked the room with passcode '"..room.lock.."'")
-			else
-				room.lock = nil
-				process:sendMessage(room,"["..client.id.."] removed the room's lock.")
-			end
-			self.lockchange = true
-			return true
-		end
-	end
-	if cmd == "key" then
-		if args[1] then
-			client.key = args[1]
-			process:sendMessage(client,"Key set to '"..args[1].."'")
-		else
-			process:sendMessage(client,"Please enter a passcode to use as a key!")
-		end
-		return true
-	end
-	if cmd == "modlock" then
-		local room = client.room
-		if room and client.mod then
-			room.modlock = not room.modlock
-			if room.modlock then
-				process:sendMessage(client,"Room is now mod-locked.")
-			else
-				process:sendMessage(client,"Room is no longer mod-locked.")
-			end
-			self.lockchange = true
+
 			return true
 		end
 	end
@@ -215,35 +220,52 @@ function rooms:command(client, cmd,str,args)
 				room.name = room.basename
 				process:sendMessage(room,"["..client.id.."] unnamed the room!")
 			end
-			self.statuschange = true
 			return true
 		end
+	end
+	if cmd == "cm" then
+		local id = tonumber(args[1])
+		local name = not id and str
+		local player
+		if id then
+			player = process:getPlayer(id)
+		else
+			player = client
+		end
+
+		if player.room then
+			local room = client.room
+			if not room.cm or client == room.cm then
+				room.cm = player
+				process:sendMessage(room,"["..client.id.."] set the CM of the room to ["..tostring(player.id).."]!")
+			end
+			if client == room.cm then
+				room.cm = nil
+				process:sendMessage(room,"["..client.id.."] reset the room's CM!")
+			end
+		end
+		return true
 	end
 end
 
 function rooms:join(client)
 	self:displaystatus(client)
 	self:displaycm(client)
-	--self:displaylock()
+	self:displaylock(client)
 	self.countchange = true
 end
 
-function rooms:move(client, targetroom, sourceroom)
-	if targetroom.lock and targetroom.lock ~= client.key then
-		process:sendMessage(client,"Cannot enter! Please enter with the right passcode via /key")
-		return true
-	end
-	if targetroom.modlock and not client.mod then
-		process:sendMessage(client,"This room is moderator-only!")
-		return true
-	end
-
+function rooms:count_update()
 	self.countchange = true
 end
-
-function rooms:leave()
-	self.countchange = true
+function rooms:cm_update()
+	self.cmchange = true
 end
-
+function rooms:lock_update()
+	self.lockchange = true
+end
+function rooms:status_update()
+	self.statuschange = true
+end
 
 return rooms

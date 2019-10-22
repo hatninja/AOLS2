@@ -2,33 +2,33 @@
 commands
 
 rooms
-rooms_logging
 rooms_navigation
+rooms_locks
 rooms_status
-rooms_lobby
-rooms_rp
-
-moderation
-clientlimit
+rooms_logging
 
 motd
-whois
-misc
+clientlimit
+rejoiner
+spectator
 
+moderation
+antispam
+whois
+
+webfixer
+bghelper
 emotehelper
 charhelper
-bghelper
-
 spacers
 
 pairing
 communication
-
 stenofriend
-rejoiner
 
-spectator
-antispam
-webfixer
+misc
+
+rooms_lobby
+rooms_rp
 
 ao2advertiser

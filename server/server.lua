@@ -58,12 +58,14 @@ function server:reload()
 end
 
 function server:close()
+	self.process:close()
+
 	self.socket:close()
 	self.kill = true
 end
 
 local self = server
-function server:update()
+function server.update()
 	--Accept new connections
 	repeat
 		local connection,err = self.socket:accept()

@@ -7,9 +7,13 @@ local lobby = {
 function lobby:init()
 	self.parent = process.modules["rooms"]
 
+	--process:registerCallback(self,"command", 4,self.command)
 
-	process:registerCallback(self,"command", 4,self.command)
-	
+	process:registerCallback(self,"room_bg", 3,self.bg_block)
+	process:registerCallback(self,"room_doc", 3,self.doc_block)
+	process:registerCallback(self,"room_status", 3,self.status_block)
+	process:registerCallback(self,"room_lock", 3,self.lock_block)
+
 	process:registerCallback(self,"event_play", 3,self.block)
 	process:registerCallback(self,"item_add", 3,self.block)
 	process:registerCallback(self,"item_edit", 3,self.block)
@@ -20,25 +24,29 @@ function lobby:block(client, event)
 	if client.room and client.room.kind == "lobby" and not client.mod then return true end
 end
 
+function lobby:bg_block(client,room,bg)
+	if client.room and client.room.kind ~= "lobby" or client.mod then return end
+	process:sendMessage(client,"You cannot change the background in this room!")
+	return true
+end
+function lobby:doc_block(client,room,doc)
+	if client.room and client.room.kind ~= "lobby" or client.mod then return end
+	process:sendMessage(client,"You cannot change the doc in this room!")
+	return true
+end
+function lobby:status_block(client,room,doc)
+	if client.room and client.room.kind ~= "lobby" or client.mod then return end
+	process:sendMessage(client,"You cannot change the status in this room!")
+	return true
+end
+function lobby:lock_block(client,room,doc)
+	if client.room and client.room.kind ~= "lobby" or client.mod then return end
+	process:sendMessage(client,"You cannot change the lock in this room!")
+	return true
+end
 
 function lobby:command(client, cmd,str,args)
-	if client.room and client.room.kind ~= "lobby" then return end
-	if cmd == "bg" or cmd == "bd" or cmd == "cr"  then
-		process:sendMessage(client,"You cannot change the BG in this room!")
-		return true
-	end
-	if cmd == "doc" and args[1] then
-		process:sendMessage(client,"You cannot change the doc in this room!")
-		return true
-	end
-	if cmd == "status" then
-		process:sendMessage(client,"You cannot change the status in this room!")
-		return true
-	end
-	if cmd == "lock" then
-		process:sendMessage(client,"You cannot change the lock in this room!")
-		return true
-	end
+	if client.room and client.room.kind ~= "lobby" or client.mod then return end
 end
 
 return lobby

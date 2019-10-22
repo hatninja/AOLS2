@@ -8,6 +8,9 @@ function rooms:reload()
 	self.rooms = {}
 	self.defaultroom = dofile(path.."config/rooms.lua")(self.rooms)
 
+	process:registerEvent("player_move")
+	process:registerEvent("room_make")
+
 	for k,room in pairs(self.rooms) do
 		room.name = room.name or k
 		room.kind = room.kind or "court"
@@ -21,7 +24,7 @@ function rooms:reload()
 
 		process:event("room_make",room)
 	end
-	
+
 	for player in process:eachPlayer() do
 		self:joinroom(client,self.defaultroom)
 	end
@@ -90,7 +93,7 @@ function rooms:getRoom(id)
 end
 
 function rooms:moveto(client,targetroom,override)
-	if override 
+	if override
 	or client.room ~= targetroom and process:event("player_move", client, targetroom, client.room) then
 		self:leaveroom(client)
 		self:joinroom(client,targetroom)
