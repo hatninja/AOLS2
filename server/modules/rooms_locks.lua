@@ -26,10 +26,10 @@ function rooms:command(client, cmd,str,args)
 		if room then
 			if args[1] then
 				room.lock = args[1]
-				process:sendMessage(room,"["..client.id.."] locked the room with passcode '"..room.lock.."'")
+				process:sendMessage(room,client:getIdent().." locked the room with passcode '"..room.lock.."'")
 			else
 				room.lock = nil
-				process:sendMessage(room,"["..client.id.."] removed the room's lock.")
+				process:sendMessage(room,client:getIdent().." removed the room's lock.")
 			end
 			process:event("room_lock",room)
 			return true
@@ -71,11 +71,11 @@ function rooms:command(client, cmd,str,args)
 			local room = client.room
 			if not room.cm or client == room.cm then
 				room.cm = player
-				process:sendMessage(room,"["..client.id.."] set the CM of the room to ["..tostring(player.id).."]!")
+				process:sendMessage(room,client:getIdent().." set the CM of the room to ["..tostring(player.id).."]!")
 			end
 			if client == room.cm then
 				room.cm = nil
-				process:sendMessage(room,"["..client.id.."] reset the room's CM!")
+				process:sendMessage(room,client:getIdent().." reset the room's CM!")
 			end
 		end
 		return true

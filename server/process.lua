@@ -5,6 +5,7 @@ local process = {
 	id = -1
 }
 
+local Player = require("classes/player")
 local Music = require("classes/music")
 local Character = require("classes/character")
 
@@ -275,6 +276,8 @@ function process:join(client)
 	until not self.players[self.firstempty]
 
 	self.playercount = self.playercount + 1
+
+	Player.init(client)
 
 	self:event("player_join",client)
 	self:print("Player "..client.ip ..":".. client.port .." joined with ID: ".. client.id)

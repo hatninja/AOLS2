@@ -165,10 +165,10 @@ function rooms:command(client, cmd,str,args)
 				if process:event("room_doc",client,room,args[1]) then
 					if args[1] == "clear" then
 						room.doc = nil
-						process:sendMessage(room,"["..client.id.."] cleared the doc.")
+						process:sendMessage(room,client:getIdent().." cleared the doc.")
 					else
 						room.doc = args[1]
-						process:sendMessage(room,"["..client.id.."] changed the room's doc!")
+						process:sendMessage(room,client:getIdent().." changed the room's doc!")
 					end
 				end
 			else
@@ -185,14 +185,14 @@ function rooms:command(client, cmd,str,args)
 				if process:event("room_status",room,status) then
 					if #args[1] <= #("LOOKING-FOR-PLAYERS") then
 						room.status = status
-						process:sendMessage(room,"["..client.id.."] changed the room's status to '"..room.status.."'")
+						process:sendMessage(room,client:getIdent().." changed the room's status to '"..room.status.."'")
 					else
 						process:sendMessage(client,"Your staus name is too long!")
 					end
 				end
 			else
 				room.status = nil
-				process:sendMessage(room,"["..client.id.."] removed the room's status.")
+				process:sendMessage(room,client:getIdent().." removed the room's status.")
 			end
 
 			return true
@@ -212,39 +212,16 @@ function rooms:command(client, cmd,str,args)
 			if str ~= "" then
 				if #str <= config.maxrename then
 					room.name = str
-					process:sendMessage(room,"["..client.id.."] renamed the room to '"..room.name.."'")
+					process:sendMessage(room,client:getIdent().." renamed the room to '"..room.name.."'")
 				else
 					process:sendMessage(client,"Your room name is too long!")
 				end
 			else
 				room.name = room.basename
-				process:sendMessage(room,"["..client.id.."] unnamed the room!")
+				process:sendMessage(room,client:getIdent().." unnamed the room!")
 			end
 			return true
 		end
-	end
-	if cmd == "cm" then
-		local id = tonumber(args[1])
-		local name = not id and str
-		local player
-		if id then
-			player = process:getPlayer(id)
-		else
-			player = client
-		end
-
-		if player.room then
-			local room = client.room
-			if not room.cm or client == room.cm then
-				room.cm = player
-				process:sendMessage(room,"["..client.id.."] set the CM of the room to ["..tostring(player.id).."]!")
-			end
-			if client == room.cm then
-				room.cm = nil
-				process:sendMessage(room,"["..client.id.."] reset the room's CM!")
-			end
-		end
-		return true
 	end
 end
 

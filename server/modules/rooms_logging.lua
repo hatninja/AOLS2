@@ -6,7 +6,7 @@ local rooms = {
 
 function rooms:init()
 	self.parent = process.modules["rooms"]
-	
+
 	process:registerCallback(self,"emote",0,function(self,client,emote)
 		self:print(string.format("[%s] %s %s: %s",
 			client.room and client.room.name,
@@ -26,21 +26,21 @@ end
 
 function rooms:welcometoroom(client,room)
 	process:sendBG(client,room.bg)
-	process:sendMessage(room,"["..client.id.."] joined this room.")
+	process:sendMessage(room,client:getIdent().." joined this room.")
 
 	if client.room then
-		process:sendMessage(client.room,"["..client.id.."] left to "..tostring(room.name)..".")
+		process:sendMessage(client.room,client:getIdent().." left to "..tostring(room.name)..".")
 	end
 end
 
 function rooms:connected(client)
-	local msg = "["..client.id.."] connected to the server."
+	local msg = client:getIdent().." connected to the server."
 
 	process:sendMessage(client.room,msg)
 end
 
 function rooms:disconnected(client)
-	local msg = "["..client.id.."] disconnected."
+	local msg = client:getIdent().." disconnected."
 
 	if client.room then
 		process:sendMessage(client.room,msg)

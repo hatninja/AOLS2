@@ -45,7 +45,7 @@ function whois:command(client, cmd,str,args)
 			if player.status then
 				msg=msg.."\nStatus: '"..tostring(player.status).."'"
 			end
-			
+
 			if player.mod then
 				msg=msg.."\nModerator: Yes"
 			end
@@ -70,7 +70,7 @@ function whois:command(client, cmd,str,args)
 				check = client.room
 			end
 		else
-			local key = tonumber(args[1]) or str 
+			local key = tonumber(args[1]) or str
 			local rooms_module = process.modules["rooms"]
 			local room = rooms_module and rooms_module.rooms[key]
 			if room then
@@ -111,7 +111,7 @@ function whois:command(client, cmd,str,args)
 		else
 
 			self:command(client,"getplayers",str,args)
-		end 
+		end
 		return true
 	end
 	if cmd == "getplayers" then
@@ -130,12 +130,9 @@ end
 
 function whois:list(player)
 	local msg = ""
-	msg=msg.."["..player.id.."] "..tostring(player.name or "N/A").." - "..(player.status or "")
-	msg=msg.."\n \\ "..(player.character or "Spectator")
-	msg=msg.." - "..process:getSideName(player.side)
-	if player.mod then
-		msg = "[Mod]".. msg
-	end
+	msg=msg.. player:getIdent() .. (player.status and " - "..player.status or "")
+	msg=msg.. "\n" ..(player.character or "Spectator")
+	msg=msg.. " - " ..process:getSideName(player.side)
 	return msg
 end
 

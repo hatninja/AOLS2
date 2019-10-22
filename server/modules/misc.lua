@@ -24,8 +24,8 @@ function misc:command(client, cmd,str,args)
 		local result = "Heads"
 		local rand = math.random(1,2)
 		if rand == 2 then result = "Tails" end
-		
-		local msg = "["..client.id.."] flipped a coin and got "..result.."!"
+
+		local msg = client:getIdent().." flipped a coin and got "..result.."!"
 		process:sendMessage(client.room or process,msg)
 		self:print(msg)
 		return true
@@ -33,8 +33,8 @@ function misc:command(client, cmd,str,args)
 	if cmd == "diceroll" then
 		local range = tonumber(args[1]) or 6
 		local result = math.random(1,math.max(range,1))
-		
-		local msg = "["..client.id.."] rolled a "..range.."-sided die and got "..result.."!"
+
+		local msg = client:getIdent().." rolled a "..range.."-sided die and got "..result.."!"
 		process:sendMessage(client.room or process,msg)
 		self:print(msg)
 		return true
@@ -44,15 +44,15 @@ function misc:command(client, cmd,str,args)
 		if time then
 			time = time*60
 			self.time[client] = time
-			local msg = "["..client.id.."]  started a timer for "..(time/60).." minutes!"
+			local msg = client:getIdent().." started a timer for "..(time/60).." minutes!"
 			process:sendMessage(client.room or process,msg)
 		else
 			if not self.time[client] then
-				local msg = "["..client.id.."] started timing!"
+				local msg = client:getIdent().." started timing!"
 				self.time[client] = -1
 				process:sendMessage(client.room or process,msg)
 			else
-				local msg = "["..client.id.."] stopped timing and got "..(math.floor(math.abs(self.time[client]+1)/60*100)/100).." minutes."
+				local msg = client:getIdent().." stopped timing and got "..(math.floor(math.abs(self.time[client]+1)/60*100)/100).." minutes."
 				self.time[client] = nil
 				process:sendMessage(client.room or process,msg)
 			end
@@ -63,6 +63,9 @@ function misc:command(client, cmd,str,args)
 		local msg = tostring(process.server.software)
 		msg = msg .. " server version "
 		msg = msg .. tostring(process.server.version)
+		if client.mod then
+			msg = msg .. (collectgarbage("count")/1024) .. "MiB"
+		end
 		process:sendMessage(client,msg)
 		return true
 	end
@@ -94,7 +97,7 @@ function misc:shuffle_music(client, list)
 			list[rand], list[count] = list[count], list[rand]
 			count=count-1
 		end
-		
+
 		table.insert(list,1,Music:new("-"))
 		table.insert(list,2,Music:new("-.mp3"))
 	end

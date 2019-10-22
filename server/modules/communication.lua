@@ -21,15 +21,10 @@ end
 
 function communication:command(client, cmd,str,args, oocname)
 	if cmd == "g" then
-		local name = "["..client.id.."]"
+		local name = client:getIdent()
 		local msg = str
 		if client.room then
-			name=name.."["..tostring(client.room.name).."]"
-		end
-		if client.name then
-			name = name .." ".. client.name
-		else
-			name = name .." ".. tostring(oocname or client.character)
+			name="["..tostring(client.room.name).."]"..name
 		end
 		for player in process:eachPlayer() do
 			process:sendMessage(player,msg,name)
@@ -41,8 +36,8 @@ function communication:command(client, cmd,str,args, oocname)
 		id = tonumber(id)
 		local target = process:getPlayer(id)
 		if target then
-			process:sendMessage(client,msg or "","PM to ["..id.."] "..(client.name or ""))
-			process:sendMessage(target,msg or "","PM from ["..tostring(client.id).."] "..(oocname or ""))
+			process:sendMessage(client,msg or "To "..target:getIdent())
+			process:sendMessage(target,msg or "From "..client:getIdent())
 		else
 			process:sendMessage(client,"Couldn't find player with that ID.")
 		end
@@ -65,10 +60,7 @@ function communication:command(client, cmd,str,args, oocname)
 end
 
 function communication:prefix(client, ooc)
-	ooc.name = "["..client.id.."] ".. ooc.name
-	if client.mod then
-		ooc.name = "[Mod]".. ooc.name
-	end
+	ooc.name = client:getIdent()
 	if client.status then
 		ooc.name = ooc.name .." - ".. client.status
 	end
@@ -102,7 +94,7 @@ function communication:trackshowname(client, emote)
 	if not emote.name then
 		emote.name = emote.character
 	end
-	if emote.name then 
+	if emote.name then
 		emote.name = emote.name:match("^%s*(.-)%s*$")
 
 		--Allow same shownames if in different rooms, but never allow a showname of a username.

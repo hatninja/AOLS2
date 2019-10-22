@@ -71,7 +71,7 @@ function rooms:joinroom(client,r)
 	room.count = room.count + 1
 	client.room = room
 
-	self:print("Player["..client.id.."] joined room: "..room.name)
+	self:print(client:getIdent().." joined room: "..room.name)
 
 	process:sendMusic(client,room.music)
 	process:sendBG(client,room.bg)

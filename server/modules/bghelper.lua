@@ -47,7 +47,7 @@ function bghelper:command(client, cmd,str,args)
 			local name = bg
 			if string.lower(name) == string.lower(str) then
 				if process:event("room_bg",client, client.room or process, name) then
-					process:sendMessage(client.room or process,"["..client.id.."] changed the background to '"..name.."'")
+					process:sendMessage(client.room or process,client:getIdent().." changed the background to '"..name.."'")
 				end
 				return true
 			end
@@ -73,7 +73,7 @@ function bghelper:command(client, cmd,str,args)
 		local rand = math.random(1,#backgrounds)
 		local name = backgrounds[rand]
 		if process:event("room_bg", client, client.room or process, name) then
-			process:sendMessage(client.room or process,"["..client.id.."] changed the background to '"..name.."' by random.")
+			process:sendMessage(client.room or process,client:getIdent().." changed the background to '"..name.."' by random.")
 		end
 		return true
 	end
@@ -89,7 +89,7 @@ function bghelper:command(client, cmd,str,args)
 			local name = bg
 			if string.lower(name) == string.lower(str) then
 				if process:event("room_bg",client, client.room or process, (config.backdropdir or "")..name) then
-					process:sendMessage(client.room or process,"["..client.id.."] changed the background to backdrop '"..name.."'")
+					process:sendMessage(client.room or process,client:getIdent().." changed the background to backdrop '"..name.."'")
 				end
 				return true
 			end
@@ -115,7 +115,7 @@ function bghelper:command(client, cmd,str,args)
 		local rand = math.random(1,#backgrounds)
 		local name = backgrounds[rand]
 		if process:event("room_bg", client, client.room or process, (config.backdropdir or "")..name) then
-			process:sendMessage(client.room or process,"["..client.id.."] changed the background to backdrop '"..name.."' by random.")
+			process:sendMessage(client.room or process,client:getIdent().." changed the background to backdrop '"..name.."' by random.")
 		end
 		return true
 	end
@@ -125,7 +125,7 @@ function bghelper:command(client, cmd,str,args)
 			local name = bg
 			if string.lower(name) == string.lower(str) then
 				if process:event("room_bg",client, client.room or process, (config.courtdir or "")..name) then
-					process:sendMessage(client.room or process,"["..client.id.."] changed the background to court '"..name.."'")
+					process:sendMessage(client.room or process,client:getIdent().." changed the background to court '"..name.."'")
 				end
 				return true
 			end
@@ -151,7 +151,7 @@ function bghelper:command(client, cmd,str,args)
 		local rand = math.random(1,#backgrounds)
 		local name = backgrounds[rand]
 		if process:event("room_bg", client, client.room or process, (config.courtdir or "")..name) then
-			process:sendMessage(client.room or process,"["..client.id.."] changed the background to court '"..name.."' by random.")
+			process:sendMessage(client.room or process,client:getIdent().." changed the background to court '"..name.."' by random.")
 		end
 		return true
 	end
