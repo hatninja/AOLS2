@@ -108,7 +108,6 @@ function moderation:command(client, cmd,str,args)
 		local id = tonumber(args[1])
 		local player = process:getPlayer(id)
 		if player then
-			
 			if room then
 				rooms:moveto(player,room,true)
 				player.trapped = true
@@ -207,5 +206,17 @@ function moderation:notify(msg)
 	end
 end
 
+function moderation:load()
+	local banned = {}
+	local t = process:loadList(path.."data/bans.txt")
+end
+
+function moderation:save()
+	local t = {}
+	for ip, dat in pairs(self.banned) do
+		table.insert(t,ip..":"..table.concat(dat,":"))
+	end
+	process:saveList(path.."data/bans.txt")
+end
 
 return moderation
