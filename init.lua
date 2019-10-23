@@ -7,7 +7,14 @@ function verbosewrite(msg)
 	end
 end
 
-print(path)
+local f = io.open(path.."config/config.lua")
+if not f then
+	print("Configuration not found at 'config/', unable to start.")
+	return
+end
+f:close()
+
+
 print "--Loading configuration--"
 
 	dofile(path.."config/config.lua")(config)
