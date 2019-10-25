@@ -36,8 +36,8 @@ function communication:command(client, cmd,str,args, oocname)
 		id = tonumber(id)
 		local target = process:getPlayer(id)
 		if target then
-			process:sendMessage(client,msg or "To "..target:getIdent())
-			process:sendMessage(target,msg or "From "..client:getIdent())
+			process:sendMessage(client,msg,"To "..target:getIdent())
+			process:sendMessage(target,msg,"From "..client:getIdent())
 		else
 			process:sendMessage(client,"Couldn't find player with that ID.")
 		end
