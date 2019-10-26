@@ -182,12 +182,12 @@ function rooms:command(client, cmd,str,args)
 		if room then
 			if args[1] then
 				local status = string.upper(args[1])
-				if process:event("room_status",room,status) then
+				if process:event("room_status",client,room,status) then
 					if #args[1] <= #("LOOKING-FOR-PLAYERS") then
 						room.status = status
 						process:sendMessage(room,client:getIdent().." changed the room's status to '"..room.status.."'")
 					else
-						process:sendMessage(client,"Your staus name is too long!")
+						process:sendMessage(client,"Your status name is too long!")
 					end
 				end
 			else

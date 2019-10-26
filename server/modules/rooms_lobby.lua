@@ -25,28 +25,28 @@ function lobby:block(client, event)
 end
 
 function lobby:bg_block(client,room,bg)
-	if client.room and client.room.kind ~= "lobby" or client.mod then return end
+	if (client.room and client.room.kind ~= "lobby") or client.mod then return end
 	process:sendMessage(client,"You cannot change the background in this room!")
 	return true
 end
 function lobby:doc_block(client,room,doc)
-	if client.room and client.room.kind ~= "lobby" or client.mod then return end
+	if (client.room and client.room.kind ~= "lobby") or client.mod then return end
 	process:sendMessage(client,"You cannot change the doc in this room!")
 	return true
 end
 function lobby:status_block(client,room,doc)
-	if client.room and client.room.kind ~= "lobby" or client.mod then return end
+	if (client.room and client.room.kind ~= "lobby") or client.mod then return end
 	process:sendMessage(client,"You cannot change the status in this room!")
 	return true
 end
 function lobby:lock_block(client,room,doc)
-	if client.room and client.room.kind ~= "lobby" or client.mod then return end
+	if (client.room and client.room.kind ~= "lobby") or client.mod then return end
 	process:sendMessage(client,"You cannot change the lock in this room!")
 	return true
 end
 
 function lobby:command(client, cmd,str,args)
-	if client.room and client.room.kind ~= "lobby" or client.mod then return end
+	if (client.room and client.room.kind ~= "lobby") or client.mod then return end
 end
 
 return lobby
