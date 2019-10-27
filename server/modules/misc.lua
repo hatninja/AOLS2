@@ -42,19 +42,21 @@ function misc:command(client, cmd,str,args)
 	if cmd == "timer" then
 		local time = tonumber(args[1])
 		if time then
-			time = time*60
-			self.time[client] = time
-			local msg = client:getIdent().." started a timer for "..(time/60).." minutes!"
+			local msg = client:getIdent().." started a timer for "..(time).." minutes!"
 			process:sendMessage(client.room or process,msg)
+
+			self.time[client] = time*60
 		else
 			if not self.time[client] then
 				local msg = client:getIdent().." started timing!"
+				process:sendMessage(client.room or process,msg)
+
 				self.time[client] = -1
-				process:sendMessage(client.room or process,msg)
 			else
-				local msg = client:getIdent().." stopped timing and got "..(math.floor(math.abs(self.time[client]+1)/60*100)/100).." minutes."
-				self.time[client] = nil
+				local msg = client:getIdent().." stopped timing and got "..(math.floor((self.time[client]+1)/60*100)/100).." minutes."
 				process:sendMessage(client.room or process,msg)
+
+				self.time[client] = nil
 			end
 		end
 		return true
@@ -64,7 +66,8 @@ function misc:command(client, cmd,str,args)
 		msg = msg .. " server version "
 		msg = msg .. tostring(process.server.version)
 		if client.mod then
-			msg = msg .. (collectgarbage("count")/1024) .. "MiB"
+			msg = msg .. "\nMemory: " ..(collectgarbage("count")/1024) .. "MiB"
+			msg = msg .. "\nAlive: " ..(process.time/60/60) .. " hours"
 		end
 		process:sendMessage(client,msg)
 		return true
