@@ -30,6 +30,8 @@ end
 
 --Update a client.
 function AO2:update(client,process)
+	if not self.state[client] then return end
+
 	local st,en = client.received:find("%%")
 	if st then
 		local subcommand = client.received:sub(1,st-1)
@@ -185,7 +187,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 		desk = true
 	else
 		desk = false
-	end	
+	end
 	local bg
 	if zoom then
 		desk = false
@@ -207,7 +209,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 
 	no_interrupt=no_interrupt == 1
 
-	if not no_interrupt and emote_modifier == 0 or emote_modifier > 4 
+	if not no_interrupt and emote_modifier == 0 or emote_modifier > 4
 	or pre_emote == "-" or zoom then
 		pre_emote = nil
 		sfx_name = 1
@@ -367,7 +369,7 @@ function AO2:send(client,process, call,data)
 		local c = #process:getCharacters(client)
 		local m = #process:getMusic(client)
 		client:bufferraw("SI#"..c.."#1#"..m.."#%") --AO2 does not rely on these numbers.
-		
+
 		if client.software == "AO" then
 			client.received = client.received .. "askchar2#%"
 		end
@@ -405,7 +407,7 @@ function AO2:send(client,process, call,data)
 		if data.side == SIDE_DEF then side = "def"
 		elseif data.side == SIDE_PRO then side = "pro"
 		elseif data.side == SIDE_JUD then side = "jud"
-		elseif data.side == SIDE_HLD then side = "hld" 
+		elseif data.side == SIDE_HLD then side = "hld"
 		elseif data.side == SIDE_HLP then side = "hlp"
 		elseif data.side == SIDE_JUR then side = "jur"
 		end
@@ -688,6 +690,7 @@ end
 
 function AO2:finishLoad(client,process)
 	if self.state[client].finished then return true end
+
 	self.state[client].finished = true
 
 	client:bufferraw("CharsCheck#0#%")
