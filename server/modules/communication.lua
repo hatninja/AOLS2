@@ -16,7 +16,6 @@ function communication:init()
 	process:registerCallback(self,"music_play", 4,self.trackshowname)
 	process:registerCallback(self,"emote", 4,self.trackshowname)
 	process:registerCallback(self,"player_move", 0,self.removeshowname)
-	process:registerCallback(self,"emote", 6,self.emote)
 end
 
 function communication:command(client, cmd,str,args, oocname)
@@ -112,12 +111,6 @@ function communication:trackshowname(client, emote)
 end
 function communication:removeshowname(client)
 	client.showname = nil
-end
-
-function communication:emote(client,emote)
-	if client.room then
-		local room = client.room
-	end
 end
 
 return communication

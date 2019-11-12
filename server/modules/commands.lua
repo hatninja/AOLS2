@@ -16,6 +16,8 @@ local commands = {
 }
 
 function commands:init()
+	process:registerEvent("command")
+
 	--Generate help menu.
 	self.helptable = {}
 	for k,module in pairs(process.modules) do
@@ -26,7 +28,7 @@ function commands:init()
 		end
 	end
 	self.prefix = config.prefix or "/"
-	
+
 	process:registerCallback(self,"ooc",4,self.handle)
 	process:registerCallback(self,"emote",4,self.handle)
 	process:registerCallback(self,"command",4,self.helpcmd)
@@ -47,7 +49,7 @@ function commands:handle(client,data)
 			table.insert(args,argument)
 		end
 
-		if process:event("command",client,cmd,str,args, data.name) then --Means no callbacks returned.
+		if process:event("command",client,cmd,str,args, data.name) then --Means no callbacks returned true.
 			process:sendMessage(client,"Command \""..tostring(cmd).."\" not recognized! See "..self.prefix.."help for list of commands.")
 		end
 		return true
@@ -83,7 +85,7 @@ function commands:helpcmd(client, cmd,str,args)
 			msg=msg.."Could not find help page for \""..name.."\""
 			process:sendMessage(client,msg)
 			return true
-		end		
+		end
 	end
 end
 
