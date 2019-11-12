@@ -3,7 +3,13 @@ local process = ...
 
 local stenofriend = {
 	help = {
-		{"steno","","Toggles steno mode.","Steno mode fixes common mistakes and makes chat easier to copy-paste."},
+		{"steno","","Toggles steno mode.",
+			  "Steno mode makes chat log cleaner and easier to copy-paste."
+			.."\n((Double brackets move to OOC))"
+			.."\nMusic changes are hidden."
+			.."\n*Corrections are hidden"
+			.."\nCommon typing/punctuation mistakes are fixed."
+		},
 	}
 }
 
@@ -93,7 +99,7 @@ function stenofriend:autocolor(client, emote)
 		end
 		if msg:find("^%*.-%*$") then --*Is Orange*
 			emote.text_color = COLOR_ORANGE
-		end 
+		end
 		if msg:find("^%s-[%=%-%~][%=%-%~]+.-[%=%-%~][%=%-%~]+%s-$") then --Start and end cards--
 			emote.text_color = COLOR_ORANGE
 		end
