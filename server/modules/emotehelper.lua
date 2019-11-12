@@ -10,6 +10,8 @@ local emotehelper = {
 }
 
 function emotehelper:init()
+	process:registerEvent("pos")
+
 	process:registerCallback(self,"command",3,self.command)
 	process:registerCallback(self,"emote",3,self.handle)
 	process:registerCallback(self,"character_pick",3,self.resetside)
@@ -26,6 +28,7 @@ function emotehelper:command(client, cmd,str,args)
 		elseif arg == "hld" or arg == "helper" then side = SIDE_HLD
 		elseif arg == "hlp" then side = SIDE_HLP
 		elseif arg:sub(1,3) == "jur" then side = SIDE_JUR
+		elseif arg:sub(1,3) == "sea" then side = SIDE_SEA
 		end
 		if side then
 			if process:event("pos",client,side) then
