@@ -11,7 +11,7 @@ local commands = {
 	name = "Command",
 
 	help = {
-		{"help","(page)","Get help with commands.","Put in any command name to read more about it."},
+		{"help","[page]","Get help with commands.","Put in any command name to read more about it."},
 	},
 }
 

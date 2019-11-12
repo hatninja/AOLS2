@@ -3,10 +3,10 @@ local process = ...
 local whois = {
 
 	help = {
-		{"whois","(id)","Get player information."},
-		{"getarea","","Gets list of people in a room."},
-		{"getareas","","Gets a list of all people in areas."},
-		{"getplayers","","Gets a list of all people."},
+		{"whois","[id]","Show information on a player."},
+		{"getarea","[id]","Show the list of people in the room."},
+		{"getareas","","Gets a list of all areas and players."},
+		{"getplayers","","Gets a list of all the people on the server."},
 	}
 }
 

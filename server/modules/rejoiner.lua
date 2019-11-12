@@ -2,7 +2,7 @@
 local process = ...
 local misc = {
 	help = {
-		{"rejoin","","Reconnects you if you have a ghost player on the server."},
+		{"rejoin","","Reconnects you as your ghost player if it exists on the server."},
 	}
 }
 

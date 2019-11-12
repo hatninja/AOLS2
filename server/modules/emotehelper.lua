@@ -4,8 +4,8 @@ local process = ...
 local emotehelper = {
 	help = {
 		{"pos","(def, pro, jud, wit, hld, hlp, jur)","Change the character's position."},
-		{"desk","(1, 0, chat)","Changes desk status."},
-		{"zoom","","Toggles zoom effect."},
+		{"desk","(1, 0, chat)","Changes your character's visible desk status."},
+		{"zoom","","Toggles the background zoom effect."},
 	}
 }
 

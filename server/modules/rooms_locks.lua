@@ -5,7 +5,7 @@ local rooms = {
 	name = "Rooms",
 
 	help = {
-		{"lock","(pass)","Locks a room with a passcode."},
+		{"lock","[pass]","Locks your room with a passcode."},
 		{"key","(pass)","Sets your key. Allows you to enter rooms with the same passcode."},
 	}
 }

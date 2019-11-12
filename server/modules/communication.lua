@@ -3,9 +3,9 @@ local process = ...
 
 local communication = {
 	help = {
-		{"g","(msg)","Sends a message to everybody in the server."},
-		{"pm","(id) (msg)","Sends a private message to a player."},
-		{"self","(suffix)","Affixes a status to your name."}
+		{"g","(msg)","Send a message to everybody in the server."},
+		{"pm","(id) (msg)","Send a private message to a player."},
+		{"self","[suffix]","Affix a status to your name."}
 	}
 }
 

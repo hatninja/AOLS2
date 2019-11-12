@@ -2,8 +2,8 @@ local process = ...
 local misc = {
 	help = {
 		{"coinflip","","Flips a coin."},
-		{"diceroll","(sides)","Rolls an N-sided die."},
-		{"timer","(time)","Starts and stops a timer."},
+		{"diceroll","[sides]","Rolls an N-sided die."},
+		{"timer","[time]","Starts and stops a timer."},
 		{"server","","Returns information about the server."}
 	}
 }

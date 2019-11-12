@@ -2,8 +2,8 @@ local process = ...
 
 local pairing = {
 	help = {
-		{"userpair","","Pair manually with a user."},
-		{"autopair","","Toggles automatic pairing."},
+		{"userpair","[user]","Pair manually with a user.","For manual pairing to work, your target must have also set you as their pair.\nEnter no user id to disable the manual pair."},
+		{"autopair","","Toggles automatic pairing.","If enabled, your emotes will pair automatically with the last autopairer's emote."},
 	}
 }
 
