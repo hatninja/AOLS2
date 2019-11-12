@@ -2,7 +2,7 @@
 local process = ...
 local misc = {
 	help = {
-		{"rejoin","","Reconnects you if you have a ghost player."},
+		{"rejoin","","Reconnects you if you have a ghost player on the server."},
 	}
 }
 
@@ -17,7 +17,6 @@ function misc:command(client, cmd,str,args)
 		local ghost
 		for player in process:eachPlayer() do
 			if client ~= player
-			and client.hardwareid == player.hardwareid
 			and client.ip == player.ip then
 				ghost = player
 				break
