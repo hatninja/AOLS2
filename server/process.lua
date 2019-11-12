@@ -78,7 +78,6 @@ function process:start(server)
 	self:registerEvent("event_play")
 	self:registerEvent("event_received")
 	self:registerEvent("bg_received")
-	self:registerEvent("command")
 	self:registerEvent("call_mod")
 	self:registerEvent("character_pick")
 
