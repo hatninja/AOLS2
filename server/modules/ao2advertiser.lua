@@ -9,6 +9,7 @@ local ao2advertiser = {
 function ao2advertiser:init(process)
 	self:connect(config.ao2msip,config.ao2msport)
 	process:registerCallback(self,"update", 0,self.update)
+	process:registerCallback(self,"close", 0,self.close)
 end
 
 function ao2advertiser:connect(ip,port)
@@ -42,6 +43,13 @@ function ao2advertiser:update()
 			self.lastupdate = process.time
 		end
 	until not c
+end
+
+function ao2advertiser:close()
+	if self.client then
+		self.client:close()
+		self.client = nil
+	end
 end
 
 return ao2advertiser
