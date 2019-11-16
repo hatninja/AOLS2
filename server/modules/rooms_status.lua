@@ -7,9 +7,9 @@ local rooms = {
 	name = "Rooms",
 
 	help = {
-		{"doc","(link)","Shows the document for the room.","Add a link to change the room's doc.\n'clear' can be used to remove the doc.",},
-		{"status","(status)","Change the status of the room."},
-		{"rename","(name)","Changes the name of your room."},
+		{"doc","[link, 'clear']","Show/change the document for the room.","Add a link to change the room's doc.\n'clear' can be used to remove the doc.",},
+		{"status","[status]","Change the status of the room."},
+		{"rename","[name]","Changes the name of your room."},
 	}
 }
 
