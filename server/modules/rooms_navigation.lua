@@ -6,8 +6,8 @@ local rooms = {
 	name = "Rooms",
 
 	help = {
-		{"areas","","Shows list of areas."},
-		{"area","(id)","Move to an area."},
+		{"areas","","Show a navigational list of all the areas.","IDs are listed with every area name.\n'/area' exists as a legacy shorthand."},
+		{"area","(id)","Move to an area via it's corresponding ID.","The area list can be shown by providing no ID as an argument."},
 	}
 }
 
@@ -45,6 +45,7 @@ function rooms:areabutton(client, music)
 end
 
 function rooms:command(client, cmd,str,args)
+	if not self.parent then return end
 	if cmd == "areas" then
 		local msg = "~~Area List~~"
 
@@ -76,7 +77,10 @@ function rooms:command(client, cmd,str,args)
 
 
 	if cmd == "area" then
-		if str == "" then self:command(client, "areas",str,args);return true end 
+		if str == "" then
+			self:command(client, "areas",str,args)
+			return true
+		end
 
 		local target
 		for k,room in pairs(self.parent.rooms) do
@@ -87,7 +91,7 @@ function rooms:command(client, cmd,str,args)
 				target = room
 				break
 			end
-			
+
 		end
 
 		if target then
@@ -108,7 +112,7 @@ function rooms:welcometoroom(client,room)
 		msg = msg .."\n"..room.desc
 	end
 	process:sendMessage(client,msg)
-	
+
 	process:sendEmote(client,{
 		dialogue=tostring(room.name),
 		name=">",
