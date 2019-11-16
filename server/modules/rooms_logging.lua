@@ -51,9 +51,10 @@ function rooms:command(client, cmd,str,args)
 				end
 			end
 		end
-		local room = self.parent.rooms[id]
+		local room = self.parent.rooms[id] or client.room
 		if not room then
 			process:sendMessage(client,"Couldn't find area with that ID!")
+			return true
 		end
 		local msg = "~~Area Info~~"
 		msg=msg.."\nName: '"..tostring(room.name).."'"
