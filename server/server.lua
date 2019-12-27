@@ -107,8 +107,8 @@ function server.update()
 		end
 
 		--Update client
+		self.process:updateClient(client)
 		if client.protocol then
-			self.process:updateClient(client)
 			client.protocol:update(client,self.process)
 		end
 
