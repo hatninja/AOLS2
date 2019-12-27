@@ -23,7 +23,7 @@ end
 function rooms:command(client, cmd,str,args)
 	if cmd == "lock" then
 		local room = client.room
-		if room then
+		if room and process:event("room_lock",room) then
 			if args[1] then
 				room.lock = args[1]
 				process:sendMessage(room,client:getIdent().." locked the room with passcode '"..room.lock.."'")
@@ -31,7 +31,7 @@ function rooms:command(client, cmd,str,args)
 				room.lock = nil
 				process:sendMessage(room,client:getIdent().." removed the room's lock.")
 			end
-			process:event("room_lock",room)
+
 			return true
 		end
 	end

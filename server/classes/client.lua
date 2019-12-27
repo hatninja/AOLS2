@@ -28,6 +28,8 @@ function Client:sendraw(msg)
 end
 
 function Client:receive(bytes)
+	if not self.socket then return end
+
 	local dat,err = self.socket:receive(bytes)
 	--Automatically close this client if socket is closed.
 	if err == "closed" then
@@ -47,6 +49,7 @@ function Client:close(...)
 
 	if self.protocol then
 		self.protocol:close(self)
+		self.protocol = nil
 	end
 
 	self.socket:close()
