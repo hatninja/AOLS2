@@ -33,12 +33,17 @@ function spacers:list_characters(client, list)
 	if client and client.software ~= "AO2" then return end
 
 	for i, rule in ipairs(self.rules) do
-		if type(str) == "string" then break end
+		local columns = 10
+		local rows = 9
 
 		local targets = {}
 		if tonumber(rule[1]) then
 			targets[1] = tonumber(rule[1])
 		elseif rule[1]:find(":") then
+			local s,e = rule[1]:find(":")
+			local r = tonumber(rule[1]:sub(1,s-1))
+			local c = tonumber(rule[1]:sub(e+1,-1))
+			targets[1] = (r-1)*columns + ((c-1)%columns) + math.floor((c-1)/columns)*rows*columns
 		else
 			for i2,char in ipairs(list) do
 				if char:getName() == rule[1] then
@@ -47,12 +52,9 @@ function spacers:list_characters(client, list)
 			end
 		end
 
-		local columns = 10
-		local rows = 9
-
 		for i2, tpos in ipairs(targets) do
 			local char = self.cache[rule[2]]
-			
+
 			local count = tonumber(rule[3])
 			if not count then --"page"
 				count = math.ceil(tpos/(columns*rows))*(columns*rows) - tpos
