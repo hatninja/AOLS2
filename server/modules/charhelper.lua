@@ -53,7 +53,12 @@ function charhelper:command(client, cmd,str,args)
 end
 
 function charhelper:character_pick(client, name)
-
+	for i,v in ipairs(process.characters) do
+		if name == v:getName() then
+			return false
+		end
+	end
+	return true
 end
 
 function charhelper:emote(sender, emote)
