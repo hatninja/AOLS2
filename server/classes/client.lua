@@ -61,6 +61,8 @@ function Client:bufferraw(msg)
 	self.buffer = self.buffer .. msg
 end
 function Client:send(...)
+	if not self.socket then return end
+
 	self.protocol:send(self,self.process,...)
 end
 
