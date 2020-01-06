@@ -64,7 +64,9 @@ function rooms:command(client, cmd,str,args)
 		end
 		msg=msg.."\nDescription: '"..tostring(room.desc).."'"
 		msg=msg.."\nPlayers: "..tostring(room.count)
-		msg=msg.."\nStatus: "..tostring(room.status)
+		if room.status then
+			msg=msg.."\nStatus: "..tostring(room.status)
+		end
 		msg=msg.."\nBackground: '"..tostring(room.bg).."'"
 		msg=msg.."\nMusic: '"..tostring(room.music).."'"
 		if client.room == room and room.lock then
