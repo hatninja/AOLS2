@@ -4,19 +4,21 @@ local process = ...
 local moderation = {}
 
 function moderation:init()
-	process:registerCallback(self,"client_join",5,self.join)
+	process:registerCallback(self,"client_join",5,self.check)
 	process:registerCallback(self,"call_mod",3,self.call_mod)
 	process:registerCallback(self,"command",3,self.command)
 	process:registerCallback(self,"player_move",4,self.player_move)
+
+	--process:registerCallback(self,"close", 0,self.save)
 
 	local mute = {"emote","event_play","music_play","item_add","item_edit","item_remove"}
 	for i,v in ipairs(mute) do
 		process:registerCallback(self,v,5, self.mutehandle)
 	end
 
-	self.passwords = process:loadList(path.."config/passwords.txt")
+	self:load()
 
-	self.banned = {}
+	self.passwords = process:loadList(path.."config/passwords.txt")
 end
 
 function moderation:command(client, cmd,str,args)
@@ -38,6 +40,11 @@ function moderation:command(client, cmd,str,args)
 		process.server:reload()
 		return true
 	end
+	if cmd == "reloadbans" then
+		self:print("Reloading the server bans!")
+		self:load()
+		return true
+	end
 	if cmd == "kick" then
 		local id = tonumber(args[1])
 		if id then
@@ -45,7 +52,7 @@ function moderation:command(client, cmd,str,args)
 			if player then
 				player:close()
 				process:sendMessage(client,"Kicked ["..id.."]")
-				self:print("Mod["..client.id.."] kicked player with id"..id)
+				self:print(client:getIdent().."kicked player with id"..id)
 			else
 				process:sendMessage(client,"No player is online with ID "..id)
 			end
@@ -56,23 +63,35 @@ function moderation:command(client, cmd,str,args)
 	end
 	if cmd == "ban" then
 		local id = tonumber(args[1])
-		local reason = args[2]
-		--if not reason then process:sendMessage(client,"Please enter a reason to ban!") return end
+		local player = process:getPlayer(id)
+		local reason = str:match("%d+ (.-)$")
 
-		if id then
-			local player = process:getPlayer(id)
-			if player then
-				self.banned[player.ip] = true
-				player:close()
-
-				process:sendMessage(client,"Banned ip: "..tostring(player.ip))
-				self:print("Mod["..client.id.."] banned player with ip "..tostring(player.ip))
-			else
-				process:sendMessage(client,"No player is online with ID "..id)
-			end
-		else
+		if not id then
 			process:sendMessage(client,"Please enter the ID of the player to ban.")
+			return true
 		end
+		if not player then
+			process:sendMessage(client,"No player is online with ID "..id)
+			return true
+		end
+		if not reason then
+			process:sendMessage(client,"Please enter a reason for banning!")
+			return true
+		end
+
+		local target = player.ip
+		--[[if player.hardwareid and player.software == "AO2" then
+			target = player.hardwareid
+		end]]
+
+		self.banned[target] = {os.time(),client.name,player.name,-1,reason}
+		player:close()
+
+		process:sendMessage(client,"Banned target: "..tostring(target))
+		self:print(client:getIdent().." banned player with target "..tostring(target))
+
+		self:save()
+
 		return true
 	end
 	if cmd == "unban" then
@@ -81,7 +100,7 @@ function moderation:command(client, cmd,str,args)
 			self.banned[ip]=nil
 			process:sendMessage(client,"Unbanned "..ip.."!")
 		else
-			process:sendMessage(client,"Could not find ban with that IP!")
+			process:sendMessage(client,"Could not find ban with that target!")
 		end
 		return true
 	end
@@ -173,9 +192,12 @@ function moderation:command(client, cmd,str,args)
 	end
 end
 
-function moderation:join(client)
-	if self.banned[client.ip] then
-		return true
+function moderation:check(client)
+	for k,v in pairs(self.banned) do
+		if k == client.ip then
+			self:print("Attempt to connect by '"..tostring(v[3]).."' "..tostring(client.ip))
+			return true
+		end
 	end
 end
 
@@ -207,16 +229,35 @@ function moderation:notify(msg)
 end
 
 function moderation:load()
-	local banned = {}
+	self.banned = {}
+
 	local t = process:loadList(path.."data/bans.txt")
+	for i,v in ipairs(t) do
+		local target = v:match("^(.-) ; ")or""
+		local timebanned = tonumber(v:match(" ; (.-) ; ")or"")
+		local moderator = v:match(" ; .- ; (.-) ; ") or "N/A"
+		local bannedname = v:match(" ; .- ; .- ; (.-) ; ") or "N/A"
+		local bannedfor = tonumber(v:match(" ; .- ; .- ; .- ; (.-) ; ")or"")
+		local reason = v:match(" ; ([^;]-)$")or"N/A"
+
+		self.banned[target] = {timebanned,moderator,bannedname,bannedfor,reason}
+		self:print("Loaded ban: "
+			..tostring(target).."\t"
+			..tostring(timebanned).."\t"
+			..tostring(moderator).."\t"
+			..tostring(bannedname).."\t"
+			..tostring(bannedfor).."\t"
+			..tostring(reason).."\t")
+	end
+	self:print("Loaded "..#self.banned.." bans.")
 end
 
 function moderation:save()
 	local t = {}
 	for ip, dat in pairs(self.banned) do
-		table.insert(t,ip..":"..table.concat(dat,":"))
+		table.insert(t,ip.." ; "..table.concat(dat," ; "))
 	end
-	process:saveList(path.."data/bans.txt")
+	process:saveList(t,path.."data/bans.txt")
 end
 
 return moderation
