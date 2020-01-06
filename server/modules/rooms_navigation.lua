@@ -19,6 +19,11 @@ function rooms:init()
 	process:registerCallback(self,"player_move", 1,self.welcometoroom)
 	process:registerCallback(self,"player_done", 4,self.arealist)
 
+	process:registerCallback(self,"done", 3,self.done)
+	process:registerCallback(self,"rooms_reload", 3,self.done)
+end
+
+function rooms:done()
 	self.roomlist = {}
 	for k,room in pairs(self.parent.rooms) do
 		if not room.hidden then
@@ -28,8 +33,18 @@ function rooms:init()
 		end
 	end
 
+	if self.buttons then
+		for i=1,#self.buttons do
+			table.remove(process.music,1)
+		end
+	end
+	self.buttons = 0
+
 	for i=#self.roomlist,1,-1 do
 		table.insert(process.music, 1, self.roomlist[i])
+
+		--Count buttons for clean reload.
+		self.buttons = self.buttons + 1
 	end
 end
 

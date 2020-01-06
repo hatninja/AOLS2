@@ -4,36 +4,34 @@ local rooms = {
 	name = "Rooms"
 }
 
+local Room = require(path.."server/classes/room")
+
 function rooms:reload()
 	self.rooms = {}
-	self.defaultroom = dofile(path.."config/rooms.lua")(self.rooms)
-
-	process:registerEvent("player_move")
-	process:registerEvent("room_make")
+	local id = dofile(path.."config/rooms.lua")(self.rooms)
 
 	for k,room in pairs(self.rooms) do
-		room.name = room.name or k
-		room.kind = room.kind or "court"
-		room.music = room.music or "No Music"
-		room.bg = room.bg or "gs4"
-		room.hp = room.hp or room.kind ~= "lobby" and {10,10} or {0,0}
-		room.evidence = room.evidence or {}
-
-		room.players = {}
-		room.count = 0
-
-		process:event("room_make",room)
+		local newroom = Room:new(room, k)
+		self.rooms[k] = newroom
+		process:event("room_make",newroom)
 	end
+
+	self.defaultroom = self.rooms[id]
+	assert(self.defaultroom,"Invalid default room ID.")
 
 	for player in process:eachPlayer() do
 		self:joinroom(client,self.defaultroom)
 	end
 
+	process:event("room_reload")
+
 	self:print("Reloaded all rooms.")
 end
 
 function rooms:init()
-	self:reload()
+	process:registerEvent("player_move")
+	process:registerEvent("room_make")
+	process:registerEvent("room_reload")
 
 	process:registerCallback(self,"music_play",1,function(self,client,music) --Track last played music.
 		if client.room then
@@ -54,6 +52,12 @@ function rooms:init()
 	process:registerCallback(self,"item_edit", 4,self.item_edit)
 	process:registerCallback(self,"item_remove", 4,self.item_remove)
 	process:registerCallback(self,"item_list", 4,self.item_list)
+
+	process:registerCallback(self,"done", 5,self.done)
+end
+
+function rooms:done()
+	self:reload()
 end
 
 function rooms:roomcheck(sender, receiver, data)
@@ -75,8 +79,10 @@ function rooms:joinroom(client,r)
 
 	process:sendMusic(client,room.music)
 	process:sendBG(client,room.bg)
-	process:sendEvent(client,{event="hp",side=1,amount=room.hp[1]})
-	process:sendEvent(client,{event="hp",side=2,amount=room.hp[2]})
+	if room.hp then
+		process:sendEvent(client,{event="hp",side=1,amount=room.hp[1]})
+		process:sendEvent(client,{event="hp",side=2,amount=room.hp[2]})
+	end
 	process:sendItems(client,{})
 end
 function rooms:leaveroom(client)

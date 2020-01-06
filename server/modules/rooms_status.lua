@@ -30,7 +30,17 @@ function rooms:init()
 	process:registerCallback(self,"room_status", 0,self.status_update)
 	process:registerCallback(self,"room_cm", 0,self.cm_update)
 
+	process:registerCallback(self,"done", 3,self.done)
+	process:registerCallback(self,"rooms_reload", 3,self.done)
 
+	self.updatetimer = DISPLAY_RATE
+	self.countchange = false
+	self.statuschange = false
+	self.cmchange = false
+	self.lockchange = false
+end
+
+function rooms:done()
 	--Must match the area list in the area selector
 	self.roomlist = {}
 	for k,room in pairs(self.parent.rooms) do
@@ -38,12 +48,6 @@ function rooms:init()
 			table.insert(self.roomlist, room)
 		end
 	end
-
-	self.updatetimer = DISPLAY_RATE
-	self.countchange = false
-	self.statuschange = false
-	self.cmchange = false
-	self.lockchange = false
 end
 
 function rooms:update()
