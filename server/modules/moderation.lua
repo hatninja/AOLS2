@@ -241,13 +241,13 @@ function moderation:load()
 		local reason = v:match(" ; ([^;]-)$")or"N/A"
 
 		self.banned[target] = {timebanned,moderator,bannedname,bannedfor,reason}
-		self:print("Loaded ban: "
+		--[[self:print("Loaded ban: "
 			..tostring(target).."\t"
 			..tostring(timebanned).."\t"
 			..tostring(moderator).."\t"
 			..tostring(bannedname).."\t"
 			..tostring(bannedfor).."\t"
-			..tostring(reason).."\t")
+			..tostring(reason).."\t")]]
 	end
 	self:print("Loaded "..#self.banned.." bans.")
 end
