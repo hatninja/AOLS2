@@ -37,6 +37,10 @@ function server:listen()
 end
 
 function server:reload()
+	if self.process then
+		self.process:close()
+	end
+
 	config = {}
 	dofile(path.."config/config.lua")(config)
 

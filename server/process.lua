@@ -66,6 +66,7 @@ function process:start(server)
 	self:registerEvent("player_leave")
 	self:registerEvent("player_update")
 
+	self:registerEvent("done")
 	self:registerEvent("update")
 	self:registerEvent("close")
 
@@ -120,6 +121,7 @@ function process:start(server)
 			end
 		end
 	end
+	self:event("done",process)
 end
 
 --Message sent from client to process via protocol
@@ -298,7 +300,7 @@ function process:disconnect(client)
 end
 
 function process:update()
-	self:event("update",client)
+	self:event("update",process)
 
 	self.time = self.time + config.rate
 end
