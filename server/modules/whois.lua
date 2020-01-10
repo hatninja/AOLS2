@@ -81,10 +81,12 @@ function whois:command(client, cmd,str,args)
 			end
 		end
 
-		local msg = "Total players: "..(check.count)
+		local msg = "Total players: "..tostring(check.count)
 		msg = msg.."\n~~"..tostring(check.name).."~~"
-		for k,player in pairs(check.players) do
-			msg=msg.."\n"..self:list(player)
+		if check.players then
+			for k,player in pairs(check.players) do
+				msg=msg.."\n"..self:list(player)
+			end
 		end
 
 		process:sendMessage(client,msg)
