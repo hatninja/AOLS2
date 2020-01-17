@@ -147,7 +147,7 @@ end
 AO2.input["MS"] = function(self,client,process,call, ...) --No server is complete without tons of hours spent on MS
 	local desk, pre_emote, character, emote, message, side, sfx_name,
 		  emote_modifier, char_id, sfx_delay, shout_modifier, evidence,
-		  flip, realization, text_color, showname, pair, hscroll, no_interrupt = ...
+		  flip, realization, text_color, showname, pair_id, hscroll, no_interrupt = ...
 
 	emote_modifier = self:tointeger(emote_modifier)
 	char_id = self:tointeger(char_id)
@@ -157,7 +157,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	flip = self:tointeger(flip)
 	realization = self:tointeger(realization)
 	text_color = self:tointeger(text_color)
-	pair = self:tointeger(pair)
+	pair_id = self:tointeger(pair_id)
 	hscroll = self:tointeger(hscroll)
 	no_interrupt = self:tointeger(no_interrupt)
 
@@ -217,8 +217,9 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	end
 
 	character = self:getCharacterName(client,char_id)
-	if pair then
-		pair = self:getCharacterName(client,pair)
+	local pair
+	if pair_id then
+		pair = self:getCharacterName(client,pair_id)
 	end
 
 	if showname == "" or showname == "0" then
@@ -458,7 +459,7 @@ function AO2:send(client,process, call,data)
 		local pair_id = self:getCharacterId(client, data.pair) or -1
 		if pair_id ~= -1 and data.pair and data.pair_emote then
 			t[#t+1] = pair_id or -1
-			t[#t+1] = pair_id ~= -1 and pair or ""
+			t[#t+1] = data.pair or ""
 			t[#t+1] = data.pair_emote or "-"
 			t[#t+1] = data.hscroll or 0
 			t[#t+1] = data.pair_hscroll or 0
