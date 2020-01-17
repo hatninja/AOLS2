@@ -147,7 +147,7 @@ end
 AO2.input["MS"] = function(self,client,process,call, ...) --No server is complete without tons of hours spent on MS
 	local desk, pre_emote, character, emote, message, side, sfx_name,
 		  emote_modifier, char_id, sfx_delay, shout_modifier, evidence,
-		  flip, realization, text_color, showname, pair_id, hscroll, no_interrupt = ...
+		  flip, realization, text_color, showname, pair, hscroll, no_interrupt = ...
 
 	emote_modifier = self:tointeger(emote_modifier)
 	char_id = self:tointeger(char_id)
@@ -157,7 +157,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	flip = self:tointeger(flip)
 	realization = self:tointeger(realization)
 	text_color = self:tointeger(text_color)
-	pair_id = self:tointeger(pair_id)
+	pair = self:tointeger(pair)
 	hscroll = self:tointeger(hscroll)
 	no_interrupt = self:tointeger(no_interrupt)
 
@@ -217,9 +217,8 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	end
 
 	character = self:getCharacterName(client,char_id)
-	local pair
-	if pair_id then
-		pair = self:getCharacterName(client,pair_id)
+	if pair then
+		pair = self:getCharacterName(client,pair)
 	end
 
 	if showname == "" or showname == "0" then
