@@ -14,7 +14,7 @@ function rp:init()
 end
 
 function rp:make(room)
-	room.hp = room.hp or {10,10}
+	room.hp = {10,10} or room.hp
 end
 
 function rp:emote(client, emote)

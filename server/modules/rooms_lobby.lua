@@ -39,12 +39,12 @@ function lobby:doc_block(client,room,doc)
 	process:sendMessage(client,"You cannot change the doc in this room!")
 	return true
 end
-function lobby:status_block(client,room,doc)
+function lobby:status_block(client,room,status)
 	if (client.room and client.room.kind ~= "lobby") or client.mod then return end
 	process:sendMessage(client,"You cannot change the status in this room!")
 	return true
 end
-function lobby:lock_block(client,room,doc)
+function lobby:lock_block(client,room,key)
 	if (client.room and client.room.kind ~= "lobby") or client.mod then return end
 	process:sendMessage(client,"You cannot change the lock in this room!")
 	return true
