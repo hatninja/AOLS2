@@ -396,7 +396,7 @@ function AO2:send(client,process, call,data)
 		else
 			t[#t+1] = data.fg and 1 or 0
 		end
-		t[#t+1] = self:escape(data.pre_emote or "-")
+		t[#t+1] = self:escape(data.pre_emote or "none") --"-" completely disables sound.
 		t[#t+1] = self:escape(data.character or " ")
 		t[#t+1] = self:escape(data.emote or "normal")
 		--Dialogue
@@ -427,6 +427,9 @@ function AO2:send(client,process, call,data)
 			end
 			if data.interjection and data.interjection ~= 0 then
 				emote_modifier = emote_modifier + 1
+			end
+			if data.sfx_name and data.bg then
+				emote_modifier = 6
 			end
 		end
 		t[#t+1] = emote_modifier
