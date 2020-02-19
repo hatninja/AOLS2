@@ -17,6 +17,7 @@ function rooms:init()
 
 	process:registerCallback(self,"command", 3,self.command)
 	process:registerCallback(self,"player_move", 4,self.move)
+	process:registerCallback(self,"player_leave", 4,self.leave)
 end
 
 
@@ -92,6 +93,14 @@ function rooms:move(client, targetroom, room)
 	end
 
 	if room.count == 0 then
+		room.lock = nil
+		process:event("room_lock",room)
+	end
+end
+
+function rooms:leave(client)
+	local room = client.room
+	if room and room.count == 0 then
 		room.lock = nil
 		process:event("room_lock",room)
 	end
