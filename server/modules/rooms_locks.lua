@@ -92,7 +92,7 @@ function rooms:move(client, targetroom, room)
 		return true
 	end
 
-	if room.count == 0 then
+	if room and room.count == 0 then
 		room.lock = nil
 		process:event("room_lock",room)
 	end
