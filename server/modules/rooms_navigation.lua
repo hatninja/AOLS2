@@ -34,7 +34,7 @@ function rooms:done()
 	end
 
 	if self.buttons then
-		for i=1,#self.buttons do
+		for i=1,self.buttons do
 			table.remove(process.music,1)
 		end
 	end
