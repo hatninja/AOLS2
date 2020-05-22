@@ -22,7 +22,7 @@ function moderation:init()
 end
 
 function moderation:command(client, cmd,str,args)
-	if cmd == "modpass" and not client.mod then
+	if (cmd == "modpass" or cmd == "login") and not client.mod then
 		for i,v in ipairs(self.passwords) do
 			if v == str then
 				client.mod = true

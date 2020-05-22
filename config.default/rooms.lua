@@ -9,15 +9,23 @@ return function(t)
 	t[2] = {
 		name="Courtroom",
 		bg="gs4",
-		kind="court",
+		kind="rp",
 		renamable=true,
+	}
+	t[2] = {
+		name="Random",
+		bg="gs4",
+		kind="rp",
+		renamable=true,
+		iniswap=true,
 	}
 	t[3] = {
 		name="Secret Court",
 		bg="gs4night",
-		kind="court",
+		kind="rp",
 		hidden=true,
 	}
 
-	return t[1]
+	--The default room id that players will join.
+	return 1
 end

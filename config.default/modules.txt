@@ -6,6 +6,7 @@ rooms_navigation
 rooms_locks
 rooms_status
 rooms_logging
+rooms_cm
 
 motd
 clientlimit
@@ -20,11 +21,14 @@ webfixer
 bghelper
 emotehelper
 charhelper
+iniswap
 spacers
 
 pairing
 communication
 stenofriend
+reactions
+chatbuffer
 
 misc
 

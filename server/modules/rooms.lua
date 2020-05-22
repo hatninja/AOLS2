@@ -23,15 +23,15 @@ function rooms:reload()
 		self:joinroom(client,self.defaultroom)
 	end
 
-	process:event("room_reload")
+	process:event("rooms_reload")
 
 	self:print("Reloaded all rooms.")
 end
 
 function rooms:init()
+	process:registerEvent("rooms_reload")
 	process:registerEvent("player_move")
 	process:registerEvent("room_make")
-	process:registerEvent("room_reload")
 
 	process:registerCallback(self,"music_play",1,function(self,client,music) --Track last played music.
 		if client.room then

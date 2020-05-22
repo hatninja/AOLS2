@@ -1,5 +1,5 @@
 return function(c) --Note: Every variable here is printable as a command, via misc.
-	
+
 	--Server information
 	c.name = "AOLS2 Server" --Server's name.
 	c.desc = "This is a default server." --Description.
@@ -47,13 +47,25 @@ return function(c) --Note: Every variable here is printable as a command, via mi
 
 	--Module: room_status
 	c.maxrename = 30 --The maxmimum characters a renamed room can have.
-	
+
 	--Module: room_navigation
 	c.listareas = true --Automatically list areas when connected.
 
 	--Module: bghelper
 	c.backdropdir = "" --Location of backdrop bgs.
 	c.courtdir = "" --Location of court bgs.
+
+	--Module: reactions
+	c.reactions = {
+		"drama","sfx-dramapound",
+		"collect","sfx-evidencecollect",
+		"penalty","sfx-explosion",
+		"gallery","sfx-gallery",
+		"present","sfx-shoop",
+		"save","sfx-saveblip",
+		"dog","sfx-yip",
+		"cat","sfx-meow",
+	}
 
 	--Module: ao2advertiser
 	c.ao2msip = "master.aceattorneyonline.com"
