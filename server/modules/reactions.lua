@@ -27,6 +27,8 @@ function reactions:handle(client, emote)
 		if not emote.pre_emote then
 			emote.pre_emote = "sfx"
 		end
+
+		client.nextreact = nil
 	end
 end
 
