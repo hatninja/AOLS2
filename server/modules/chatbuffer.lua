@@ -6,7 +6,9 @@ local CHAT_DELAY = 1
 local CHAT_MAX = 5
 
 local chatbuffer = {
-	help = {"/buffer","","Toggles buffer mode. Delays WT/CE and music until a message is sent."}
+	help = {
+		{"buffer","","Toggles buffer mode. Delays WT/CE and music until a message is sent."}
+	}
 
 }
 
