@@ -25,10 +25,10 @@ end
 
 function chatbuffer:command(client, cmd,str,args)
 	if cmd == "buffer" then
-		client.buffer = not client.buffer
+		client.buffermode = not client.buffermode
 
 		local msg = "Buffer mode enabled."
-		if not client.buffer then msg = "Buffer mode disabled." end
+		if not client.buffermode then msg = "Buffer mode disabled." end
 
 		process:sendMessage(client,msg)
 		return true
@@ -72,7 +72,7 @@ function chatbuffer:handle(client, emote)
 end
 
 function chatbuffer:music(client, music)
-	if not client.buffer then return end
+	if not client.buffermode then return end
 	local room = client.room or "nil"
 
 	if not music.buffered and character ~= -1 then
@@ -85,7 +85,7 @@ function chatbuffer:music(client, music)
 end
 
 function chatbuffer:event(client, event)
-	if not client.buffer then return end
+	if not client.buffermode then return end
 	local room = client.room or "nil"
 
 	if not event.buffered
