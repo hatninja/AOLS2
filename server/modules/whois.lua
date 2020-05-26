@@ -56,6 +56,7 @@ function whois:command(client, cmd,str,args)
 
 			msg=msg.."\nRoom: "..tostring(player.room and player.room.name)
 			msg=msg.."\nCharacter: "..(player.character or "Spectator")
+			if player.iniswapped then msg=msg.."*" end
 			msg=msg.."\nPosition: "..process:getSideName(player.side)
 			process:sendMessage(client,msg)
 		else
@@ -127,6 +128,7 @@ function whois:list(player)
 	local msg = ""
 	msg=msg.. player:getIdent() .. (player.status and " - "..player.status or "")
 	msg=msg.. "\n" ..(player.character or "Spectator")
+	if player.iniswapped then msg=msg.."*" end
 	msg=msg.. " - " ..process:getSideName(player.side)
 	return msg
 end

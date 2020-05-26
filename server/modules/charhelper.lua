@@ -12,7 +12,7 @@ local charhelper = {
 function charhelper:init()
 	process:registerCallback(self,"player_done",3,self.player_done)
 	process:registerCallback(self,"command",3,self.command)
-	process:registerCallback(self,"emote",3,self.emote)
+	process:registerCallback(self,"emote",4,self.emote)
 	process:registerCallback(self,"character_pick",3,self.character_pick)
 end
 
@@ -20,10 +20,9 @@ function charhelper:command(client, cmd,str,args)
 	if cmd == "char" then
 		local characters = process.characters
 		for i,char in ipairs(characters) do
-			local name = char:getName()
-			if string.lower(name) == string.lower(str) then
-				process:send(client,"CHAR_REQ",{character=name})
-				process:sendMessage(client,"Picked '"..name.."'")
+			if string.lower(str) == string.lower(char:getName()) then
+				process:send(client,"CHAR_REQ",{character=str})
+				process:sendMessage(client,"Picked '"..str.."'")
 				return true
 			end
 		end
@@ -53,16 +52,19 @@ function charhelper:command(client, cmd,str,args)
 end
 
 function charhelper:character_pick(client, name)
+	--Block if a character isn't found in the character list.
 	for i,v in ipairs(process.characters) do
-		if name == v:getName() then
-			return false
+		if string.lower(name) == string.lower(v:getName()) then
+			return
 		end
 	end
 	return true
 end
 
-function charhelper:emote(sender, emote)
-
+function charhelper:emote(client, emote)
+	if not config.iniswap then
+		emote.character = client.character
+	end
 end
 
 

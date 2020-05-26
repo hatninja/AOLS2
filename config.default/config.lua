@@ -16,6 +16,7 @@ return function(c) --Note: Every variable here is printable as a command, via mi
 	c.autorestart = true --Automatically restart when the server experiences a crash.
 	c.strict = true --If the server isn't strict, it will ignore errors and keep running.
 	c.monitor = false --Reading of client-sent packets.
+	c.iniswap = true --Allow iniswaps to work or not.
 
 	c.serverooc = "(*^v^)/"
 

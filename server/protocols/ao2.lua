@@ -171,7 +171,8 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	if not (sfx_delay >= 0) then return end
 --	if not (shout_modifier >= 0 and shout_modifier < 6) then return end
 	if not (evidence >= 0) then return end
-	if not (realization == 0 or realization == 1) then return end --WebAO cannot see messages with this value as 2
+--TODO: Test if shake works yet.
+--	if not (realization == 0 or realization == 1) then return end --WebAO cannot see messages with this value as 2
 	--if not (text_color >= 0 and text_color < 9) then return end
 	message = self:unescape(message)
 
@@ -216,7 +217,6 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 		sfx_delay = 0
 	end
 
-	character = self:getCharacterName(client,char_id)
 	if pair then
 		pair = self:getCharacterName(client,pair)
 	end
@@ -377,11 +377,24 @@ function AO2:send(client,process, call,data)
 	if call == "JOIN_DENY" then end
 
 	if call == "CHAR_PICK" then
-		local char_id = self:getCharacterId(client, data.character)
-		if char_id == -1 then
-			client:bufferraw("PV#0#CID#-1#%")
-		else
+		if type(data.character) == "string" then
+			local char_id = self:getCharacterId(client, data.character)
+
+			if char_id == -1 then
+				--Character not found in the client list!
+				--AO2 does not (yet) support picking by string unfortunately.
+
+				--Sending a new character list results in no change or a seg fault, may have to revisit.
+				local char_list = self.state[client].char_list
+				--client:sendraw("CI#0#" .. data.character .. "&&0&&&0#%")
+
+				char_id = 0
+			end
+
 			client:bufferraw("PV#0#CID#"..char_id.."#%")
+		else
+			--Set client as spectator.
+			client:bufferraw("PV#0#CID#-1#%")
 		end
 	end
 
@@ -410,6 +423,7 @@ function AO2:send(client,process, call,data)
 		elseif data.side == SIDE_HLD then side = "hld"
 		elseif data.side == SIDE_HLP then side = "hlp"
 		elseif data.side == SIDE_JUR then side = "jur"
+		elseif data.side == SIDE_SEA then side = "sea"
 		end
 		if data.bg == "defense_speedlines" then side = "def" end
 		if data.bg == "prosecution_speedlines" then side = "pro" end
@@ -482,8 +496,6 @@ function AO2:send(client,process, call,data)
 
 	if call == "MUSIC" then
 		--WebAO looping fix.
-		if client.software == "webAO" then client:bufferraw("MC#~stop.mp3#-1#%") end
-
 		local mc = "MC#"
 		mc=mc .. self:escape(tostring(data.track)).."#"
 		mc=mc .. self:getCharacterId(client, data.character).."#"
@@ -534,6 +546,13 @@ function AO2:send(client,process, call,data)
 			list=list..v.image.."#"
 		end
 		client:bufferraw("LE#"..list.."%")
+	end
+
+	if call == "LOAD_CHARS" then
+		self:sendAssetList(client,"SC",self.state[client].char_list)
+	end
+	if call == "LOAD_MUSIC" then
+		self:sendAssetList(client,"REFMUSIC",self.state[client].music_list)
 	end
 end
 
