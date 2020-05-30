@@ -254,6 +254,8 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 
 		realization=realization,
 		text_color=text_color,
+
+		char_id=char_id,
 	})
 end
 
@@ -447,7 +449,7 @@ function AO2:send(client,process, call,data)
 			end
 		end
 		t[#t+1] = emote_modifier
-		local char_id = self:getCharacterId(client, data.character)
+		local char_id = data.char_id or self:getCharacterId(client, data.character)
 		if char_id == -1 then
 			char_id = 0
 		end
