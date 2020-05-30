@@ -14,8 +14,8 @@ local chatbuffer = {
 
 function chatbuffer:init()
 	process:registerCallback(self,"emote",5.1,self.handle)
-	process:registerCallback(self,"music_play",5.1,self.music)
-	process:registerCallback(self,"event_play",5.1,self.event)
+	process:registerCallback(self,"music_play",2,self.music) --Rooms.lua:36
+	process:registerCallback(self,"event_play",1,self.event)
 	process:registerCallback(self,"update",3,self.update)
 
 	process:registerCallback(self,"command", 3,self.command)
@@ -64,11 +64,24 @@ function chatbuffer:handle(client, emote)
 		end
 	end
 	if self.musicbuffer[room] then
-		process:send(client, "MUSIC", self.musicbuffer[room])
+		for player in process:eachPlayer() do
+			if room == player.room then
+				player:send("MUSIC",self.musicbuffer[room])
+			end
+		end
+		if client.room then
+			client.room.music = self.musicbuffer[room].track
+		end
+
 		self.musicbuffer[room] = nil
 	end
 	if self.eventbuffer[room] then
-		process:send(client, "EVENT", self.eventbuffer[room])
+		for player in process:eachPlayer() do
+			if room == player.room then
+				player:send("EVENT",self.eventbuffer[room])
+			end
+		end
+
 		self.eventbuffer[room] = nil
 	end
 end
