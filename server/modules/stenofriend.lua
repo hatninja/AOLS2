@@ -80,9 +80,9 @@ function stenofriend:fix(text) --Taken from my custom client. Fixes all common e
 	:gsub("([?!,.;:])%s*(%l)",function(p,l) return p.." "..string.upper(l) end)
 	:gsub("(%l)$","%1.")
 	:gsub("%si%s"," I ")
-	:gsub("^%s*(%([^%)]*)$","%1%)")
-	:gsub("^%s*(%[[^%]]*)$","%1%]")
-	:gsub("^%s*(%(%([^%)]*)%)?$","%1%)%)")
+	:gsub("^%s*(%([^%)]*)$","%1)")
+	:gsub("^%s*(%[[^%]]*)$","%1]")
+	:gsub("^%s*(%(%([^%)]*)%)?$","%1))")
 
 	if t:find("^%s*$") then t = " " end
 
