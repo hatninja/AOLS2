@@ -1,4 +1,4 @@
---Chatbuffer. Handles buffering of events.
+--Chatbuffer. Handles buffering of chat and events.
 local process = ...
 
 local CHAT_RATE = 0--0.06
@@ -13,7 +13,7 @@ local chatbuffer = {
 }
 
 function chatbuffer:init()
-	process:registerCallback(self,"emote",4.9,self.handle)
+	process:registerCallback(self,"emote",5.1,self.handle)
 	process:registerCallback(self,"music_play",5.1,self.music)
 	process:registerCallback(self,"event_play",5.1,self.event)
 	process:registerCallback(self,"update",3,self.update)
