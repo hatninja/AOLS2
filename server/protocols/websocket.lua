@@ -49,13 +49,14 @@ function websocket:update(client,process)
 			if opcode < 3 then
 				self.received[client] = self.received[client] .. data
 				client.received = client.received:sub(packetlength+1,-1)
-			elseif opcode == 8 then --Client wants to close
-				process:send(client,"CLOSE")
-				return
 			elseif opcode == 9 then --PING
 				local pong = self:encode(data,10,false,true)
 				client:sendraw(pong)
 			end
+		end
+		if opcode == 8 then --Client wants to close
+			process:send(client,"CLOSE")
+			return
 		end
 	until not data
 
