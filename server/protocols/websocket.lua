@@ -160,19 +160,23 @@ function websocket:decode(dat)
 		MASKKEY = {a,b,c,d}
 		p = p + 4
 	end
-	local PAYLOAD = dat:sub(p+1,p+LENGTH)
 
-	local data = ""
-	if MASKED then
-		for i=1,LENGTH do
-			local j = (i-1) % 4 + 1
-			local byte = string.byte(PAYLOAD:sub(i,i))
-			if byte then
-				data = data .. string.char(bit.bxor(byte,MASKKEY[j]))
+	local data
+	if LENGTH ~= 0 then
+		local PAYLOAD = dat:sub(p+1,p+LENGTH)
+
+		data = ""
+		if MASKED then
+			for i=1,LENGTH do
+				local j = (i-1) % 4 + 1
+				local byte = string.byte(PAYLOAD:sub(i,i))
+				if byte then
+					data = data .. string.char(bit.bxor(byte,MASKKEY[j]))
+				end
 			end
+		else
+			data = PAYLOAD
 		end
-	else
-		data = PAYLOAD
 	end
 	return data,OPCODE,MASKED,FIN,p+LENGTH
 end
