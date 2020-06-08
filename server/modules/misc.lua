@@ -20,7 +20,7 @@ function misc:init(process)
 end
 
 function misc:command(client, cmd,str,args)
-	if cmd == "coinflip" then
+	if cmd == "coinflip" or cmd == "coin" then
 		local result = "Heads"
 		local rand = math.random(1,2)
 		if rand == 2 then result = "Tails" end
@@ -30,11 +30,21 @@ function misc:command(client, cmd,str,args)
 		self:print(msg)
 		return true
 	end
-	if cmd == "diceroll" then
-		local range = tonumber(args[1]) or 6
-		local result = math.random(1,math.max(range,1))
+	if cmd == "diceroll" or cmd == "roll" then
+		local low = tonumber(args[1]) or 6
+		local high = tonumber(args[2])
 
-		local msg = client:getIdent().." rolled a "..range.."-sided die and got "..result.."!"
+		local result
+		local msg
+
+		if not high then
+			result = math.random(1,math.max(low,1))
+			msg = client:getIdent().." rolled a "..low.."-sided die and got "..result.."!"
+		else
+			result = math.random(low,math.max(high,low))
+			msg = client:getIdent().." rolled for a range of "..low.."-"..high.." and got "..result.."!"
+		end
+
 		process:sendMessage(client.room or process,msg)
 		self:print(msg)
 		return true
