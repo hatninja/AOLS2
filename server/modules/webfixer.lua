@@ -5,14 +5,10 @@ local webfixer = {}
 
 function webfixer:init()
 	process:registerCallback(self,"bg_received",1,self.bg)
-	process:registerCallback(self,"emote_received",1,self.emote)
-	process:registerCallback(self,"music_received",1,self.music)
+	--process:registerCallback(self,"emote_received",1,self.emote)
+	process:registerCallback(self,"music_received",1,self.handlemusic)
+	process:registerCallback(self,"list_characters",1,self.handlecharlist)
 
-	self.characters = process:loadList(path.."config/webfix/characters.txt")
-	for i,char in ipairs(self.characters) do
-		local s, e = char:find(" > ")
-		self.characters[i] = {s and char:sub(1,s-1) or char, e and char:sub(e+1,-1)}
-	end
 	self.backgrounds = process:loadList(path.."config/webfix/backgrounds.txt")
 	for i,bg in ipairs(self.backgrounds) do
 		local s, e = bg:find(" > ")
@@ -23,20 +19,11 @@ function webfixer:init()
 		local s, e = music:find(" > ")
 		self.music[i] = {s and music:sub(1,s-1) or music, e and music:sub(e+1,-1)}
 	end
+
+	self.blacklist = process:loadList(path.."config/webfix/blacklist.txt")
 end
 
-function webfixer:emote(sender, receiver, emote)
-	if receiver.software ~= "webAO" then return end
-	for i,v in pairs(self.characters) do
-		if v[2] == emote.character then
-			emote.character = v[1]
-			return
-		end
-	end
-end
-
-
-function webfixer:music(sender, receiver, music)
+function webfixer:handlemusic(sender, receiver, music)
 	if receiver.software ~= "webAO" then return end
 	local track = music.track:gsub("%.%w%w%w$","")
 	for i,v in pairs(self.music) do
@@ -53,6 +40,23 @@ function webfixer:bg(receiver, bg)
 		if v[2] == bg.bg then
 			bg.bg = v[1]
 			return
+		end
+	end
+end
+
+function webfixer:handlecharlist(client, list)
+	if client.software ~= "webAO" then return end
+
+	for i,v in pairs(list) do
+		local blacklisted = false
+		for i2,v2 in pairs(self.blacklist) do
+			if v == v2 then
+				blacklisted=true
+				break
+			end
+		end
+		if blacklisted then
+			table.remove(list,i)
 		end
 	end
 end
