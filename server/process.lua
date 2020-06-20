@@ -94,21 +94,8 @@ function process:start(server)
 	verbosewrite("--Loading Modules--\n")
 	local modules = self:loadList(path.."config/modules.txt")
 	for i,name in ipairs(modules) do
-		local chunk,err = loadfile(path.."server/modules/"..name..".lua")
-		if chunk then
-			local suc, module = pcall(chunk, self)
-			if suc then
-				if type(module) == "table" then
-					if not module.name then module.name = name end
-					module.print = self.print
-					self.modules[name] = module
-				else
-					verbosewrite("👎 Warning: No module object in '"..name.."'\n")
-				end
-			else
-				print("👎 Error with "..name..": "..module)
-			end
-		else
+		local suc, err = self:loadModule(name)
+		if not suc then
 			print("👎 Error with "..name..": "..err)
 		end
 	end
@@ -150,10 +137,10 @@ function process:send(client, call, data)
 	if not client.id then return end
 
 	if call == "LOAD_CHARS" then
-		client:send("SEND_CHARS",self:getCharacters(client))
+		client:send("SEND_CHARS",data and self:clone(data) or self:getCharacters(client))
 	end
 	if call == "LOAD_MUSIC" then
-		client:send("SEND_MUSIC",self:getMusic(client))
+		client:send("SEND_MUSIC",data and self:clone(data) or self:getMusic(client))
 	end
 
 	if call == "DONE" then
@@ -350,12 +337,45 @@ function process:clone(tc)
 	return clone
 end
 
+function process:loadModule(name)
+	local chunk,err = loadfile(path.."server/modules/"..name..".lua")
+	if not chunk then return nil,err end
+
+	local suc, module = pcall(chunk, self)
+	if not suc then return nil,module end
+
+	if type(module) == "table" then
+		if not module.name then module.name = name end
+		module.print = self.print
+		self.modules[name] = module
+	else
+		verbosewrite("👎 Warning: No module object in '"..name.."'\n")
+	end
+	return module
+end
+
+function process:removeModule(name)
+	local module = self.modules[name]
+	if not module then
+		verbosewrite("👎 Warning: Module '"..name.."' already removed!\n")
+		return
+	end
+
+	self.modules[name] = nil
+	for event,callbacks in pairs(self.callbacks) do
+		for i=#callbacks,1,-1 do
+			if callbacks[i][3] == module then
+				table.remove(callbacks,i)
+			end
+		end
+	end
+	return true
+end
+
 --API helpers
 function process:assertValue(value,kind,argi)
 	if type(value) ~= kind then error("Error: Expected "..kind.." value at argument #"..argi.."! Got "..type(value).." instead.",3) end
 end
-
-
 -----------------------
 --General API functions
 -----------------------
@@ -388,6 +408,10 @@ function process:registerCallback(module,name,priority,func)
 	table.sort(self.callbacks[name],function(a,b) return a[2] > b[2] end)
 end
 function process:registerEvent(name)
+	if self.callbacks[name] then
+		print("Warning: Tried to register '"..name.."' twice!")
+		return
+	end
 	verbosewrite("Registered event: "..name.."\n")
 	self.events[name] = true
 	self.callbacks[name] = {}

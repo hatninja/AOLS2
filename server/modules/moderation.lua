@@ -84,7 +84,7 @@ function moderation:command(client, cmd,str,args)
 			target = player.hardwareid
 		end]]
 
-		self.banned[target] = {os.time(),client.name,player.name,-1,reason}
+		self.banned[target] = {os.time(),tostring(client.name),tostring(player.name),-1,reason}
 		player:close()
 
 		process:sendMessage(client,"Banned target: "..tostring(target))
@@ -190,6 +190,37 @@ function moderation:command(client, cmd,str,args)
 		process:sendMessage(client,"Moderator status disabled.")
 		return true
 	end
+
+	if cmd == "load" then
+		local modules = args
+		if #modules == 0 then
+			modules = process:loadList(path.."config/modules.txt")
+		end
+
+		for i,name in ipairs(modules) do
+			process:removeModule(name)
+			local suc, err = process:loadModule(name)
+			if not suc then
+				process:sendMessage(client, "👎 Error with "..name..": "..err)
+			end
+		end
+		for i,name in ipairs(modules) do
+			local module = process.modules[name]
+			if module then
+				if type(module.init) == "function" then
+					local suc, err = pcall(module.init,module,process)
+					if suc then
+						process:sendMessage(client,"👍 '"..name.."' loaded!")
+					else
+						process:sendMessage(client,"👎 Error initializing '"..name.."': "..err.."")
+					end
+				end
+			end
+		end
+
+		self:print("A mod loaded modules: "..str)
+		return true
+	end
 end
 
 function moderation:check(client)
@@ -234,10 +265,10 @@ function moderation:load()
 	local t = process:loadList(path.."data/bans.txt")
 	for i,v in ipairs(t) do
 		local target = v:match("^(.-) ; ")or""
-		local timebanned = tonumber(v:match(" ; (.-) ; ")or"")
+		local timebanned = tonumber(v:match(" ; (.-) ; ")or"") or -1
 		local moderator = v:match(" ; .- ; (.-) ; ") or "N/A"
 		local bannedname = v:match(" ; .- ; .- ; (.-) ; ") or "N/A"
-		local bannedfor = tonumber(v:match(" ; .- ; .- ; .- ; (.-) ; ")or"")
+		local bannedfor = tonumber(v:match(" ; .- ; .- ; .- ; (.-) ; ")or"") or -1
 		local reason = v:match(" ; ([^;]-)$")or"N/A"
 
 		self.banned[target] = {timebanned,moderator,bannedname,bannedfor,reason}
