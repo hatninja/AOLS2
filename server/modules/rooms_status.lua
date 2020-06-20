@@ -18,6 +18,12 @@ function rooms:init()
 
 	process:registerEvent("room_doc")
 	process:registerEvent("room_status")
+	process:registerEvent("room_cm")
+
+	process:registerCallback(self,"room_doc", 1,self.send_info)
+	process:registerCallback(self,"room_status", 1,self.send_info)
+	process:registerCallback(self,"room_cm", 1,self.send_info)
+	process:registerCallback(self,"player_move", 1,self.send_info)
 
 	process:registerCallback(self,"command", 3,self.command)
 	process:registerCallback(self,"update", 3,self.update)
@@ -52,7 +58,7 @@ end
 
 function rooms:update()
 	self.updatetimer = self.updatetimer - config.rate
-	if self.updatetimer < 0 then
+	if self.updatetimer <= 0 then
 		self.updatetimer = self.updatetimer + DISPLAY_RATE
 		if self.countchange then
 			self.countchange = false
@@ -87,7 +93,6 @@ function rooms:update()
 	end
 end
 
-
 function rooms:displaycount(client)
 	local counts = {}
 	for i,v in pairs(self.roomlist) do
@@ -121,7 +126,7 @@ function rooms:displaycm(client)
 	for i,v in pairs(self.roomlist) do
 		local cm = "None"
 		if v.cm then
-			cm = "["..tostring(v.cm).."]"
+			cm = v.cm:getIdent()
 		end
 		table.insert(cms, cm)
 	end
@@ -159,6 +164,10 @@ function rooms:displaylock(client)
 			process:sendEvent(player,locks)
 		end
 	end
+end
+
+function rooms:send_info()
+	self.updatetimer = 0
 end
 
 function rooms:command(client, cmd,str,args)

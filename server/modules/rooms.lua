@@ -1,7 +1,8 @@
 local process = ...
 
 local rooms = {
-	name = "Rooms"
+	name = "Rooms",
+	rooms = {},
 }
 
 local Room = require(path.."server/classes/room")
