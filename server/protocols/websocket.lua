@@ -48,10 +48,16 @@ function websocket:update(client,process)
 		if data then
 			if opcode < 3 then
 				self.received[client] = self.received[client] .. data
-				client.received = client.received:sub(packetlength+1,-1)
+
 			elseif opcode == 9 then --PING
 				local pong = self:encode(data,10,false,true)
 				client:sendraw(pong)
+			end
+
+			if #client.received-packetlength >= 0 then
+				client.received = client.received:sub(packetlength+1,-1)
+			else
+				break
 			end
 		end
 		if opcode == 8 then --Client wants to close
@@ -164,11 +170,11 @@ function websocket:decode(dat)
 
 	local data
 	if LENGTH ~= 0 then
-		local PAYLOAD = dat:sub(p+1,p+LENGTH)
+		local PAYLOAD = dat:sub(p+1,math.min(p+LENGTH,#dat))
 
 		data = ""
 		if MASKED then
-			for i=1,LENGTH do
+			for i=1,#PAYLOAD do
 				local j = (i-1) % 4 + 1
 				local byte = string.byte(PAYLOAD:sub(i,i))
 				if byte then
