@@ -124,7 +124,7 @@ AO2.input["CC"] = function(self,client,process,call, playerid,id)
 	if not char_id then return end
 
 	process:send(client,"CHAR_REQ", {
-		character = self.state[client].char_list[char_id+1]
+		character = tostring(self.state[client].char_list[char_id+1])
 	})
 end
 AO2.input["FC"] = function(self,client,process,call) --WebAO sends this while opening character list.
