@@ -69,7 +69,7 @@ function antispam:strike(client,event)
 	--self:print("["..client.id.."] struck!\t"..client.spam)
 
 	if client.spam > 1 then
-		client.socket:close()
+		client:close()
 		self:print("["..client.id.."] sent too many messages at once!")
 		return true
 	end
