@@ -160,7 +160,7 @@ end
 function bghelper:room_bg(client,room,bgname)
 	room.bg = bgname
 	for i,v in pairs(room.players) do
-		process:sendBG(client,bgname)
+		process:sendBG(v,bgname)
 	end
 end
 function bghelper:player_bg(client,bgname,islocal)
