@@ -29,7 +29,7 @@ function antispam:handle(client, emote)
 	local message = emote.dialogue or emote.message
 
 	if emote.dialogue and config.IClock and not client.name then
-		process:sendMessage(client,"Please use OOC or a command to unlock in-character actions.")
+		process:sendMessage(client,"Please chat here or use a command to unlock in-character actions.")
 		return true
 	end
 
@@ -52,7 +52,7 @@ end
 
 function antispam:music(client,music)
 	if config.IClock and not client.name then
-		process:sendMessage(client,"Please use OOC or a command to unlock in-character actions.")
+		process:sendMessage(client,"Please chat here or use a command to unlock in-character actions.")
 		return true
 	end
 	if music.track == "." then
