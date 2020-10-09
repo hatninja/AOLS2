@@ -476,9 +476,14 @@ end
 
 function process:sendMessage(receiver,message,ooc_name)
 	local ooc = {
-		name=ooc_name or config.serverooc,
+		name=ooc_name,
 		message=message
 	}
+
+	if ooc.name then
+		ooc.name = config.serverooc
+		ooc.server = true
+	end
 
 	if type(receiver) ~= "table" then error("A receiving object is required for arg #1!",2) end
 

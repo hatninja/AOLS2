@@ -1,6 +1,6 @@
---The Attorney Online 1.x/2.x protocol. Supports up to 2.6.0.
+--The Attorney Online 1.x/2.x protocol. Supports up to 2.8.5.
 --The AO protocol documentation can be found here:
---https://github.com/AttorneyOnline/AO2Protocol/blob/master/Attorney%20Online%20Client-Server%20Network%20Specification.md
+--https://github.com/AttorneyOnline/docs/blob/master/docs/development/network.md
 local AO2 = {
 	name = "AO2",
 
@@ -45,7 +45,7 @@ function AO2:update(client,process)
 		end
 
 		if self.input[args[1]] then
-			self.input[args[1]](self,client,process,unpack(args))
+			self.input[args[1]](self,client,process,table.unpack(args))
 		else
 			print("Unknown message: "..tostring(args[1]),bit and self:decryptStr(self:hexToString(tostring(args[1])),5))
 		end
@@ -147,19 +147,26 @@ end
 AO2.input["MS"] = function(self,client,process,call, ...) --No server is complete without tons of hours spent on MS
 	local desk, pre_emote, character, emote, message, side, sfx_name,
 		  emote_modifier, char_id, sfx_delay, shout_modifier, evidence,
-		  flip, realization, text_color, showname, pair, hscroll, no_interrupt = ...
+		  flip, realization, text_color, showname, pair, hscroll, no_interrupt,
+		  sfx_looping, shake, frames_shake, frames_realization, frames_sfx,
+		  append, effect = ...
 
 	emote_modifier = self:tointeger(emote_modifier)
 	char_id = self:tointeger(char_id)
 	sfx_delay = self:tointeger(sfx_delay)
+
 	shout_modifier = self:tointeger(shout_modifier)
 	evidence = self:tointeger(evidence)
-	flip = self:tointeger(flip)
-	realization = self:tointeger(realization)
 	text_color = self:tointeger(text_color)
 	pair = self:tointeger(pair)
 	hscroll = self:tointeger(hscroll)
-	no_interrupt = self:tointeger(no_interrupt)
+
+	flip = self:tointeger(flip) == 1
+	realization = self:tointeger(realization) == 1
+	shake = self:tointeger(shake) == 1
+	no_interrupt = self:tointeger(no_interrupt)  == 1
+	sfx_looping = self:tointeger(sfx_looping) == 1
+	append = self:tointeger(sfx_append) == 1
 
 	--Make sure the message is safe.
 	if not (desk and pre_emote and character and emote and message and side and sfx_name
@@ -178,8 +185,6 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 
 	--Update values for processing
 	local zoom = emote_modifier == 5 or emote_modifier == 6
-	flip = flip == 1
-	realization = realization == 1
 
 	if desk == "chat" then
 		desk = false
@@ -205,6 +210,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	elseif side == "jud" then side = SIDE_JUD
 	elseif side == "hld" then side = SIDE_HLD
 	elseif side == "hlp" then side = SIDE_HLP
+	elseif side == "sea" then side = SIDE_SEA
 	else side = SIDE_JUR
 	end
 
@@ -225,7 +231,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 		showname = nil
 	end
 
-
+	--sfx_looping, shake, frames_shake, frames_realization, frames_sfx, additive, effect
 	process:send(client,"IC", {
 		dialogue=message,
 		character=character,
@@ -251,21 +257,30 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 
 		sfx_name=sfx_name,
 		sfx_delay=sfx_delay,
+		sfx_looping=sfx_looping,
 
 		realization=realization,
+		shake=shake,
+
 		text_color=text_color,
+		append=append,
 
 		char_id=char_id,
+
+		effect=effect,
 	})
 end
 
-AO2.input["MC"] = function(self,client,process,call, track, id, cc_showname)
+AO2.input["MC"] = function(self,client,process,call, track, id, cc_showname, looping, channel, effects)
 	if not track or not self:tointeger(id) then return end
 	if track == "" then return end
 	process:send(client,"MUSIC", {
 		track = self:unescape(tostring(track)),
 		character = self:getCharacterName(client, self:tointeger(id)),
 		name = cc_showname and cc_showname ~= "0" and self:unescape(tostring(cc_showname)),
+		looping = self:tointeger(looping) == 1,
+		channel = self:tointeger(channel),
+		effects = effects and string.byte(effects)
 	})
 end
 
@@ -365,7 +380,7 @@ function AO2:send(client,process, call,data)
 		client:bufferraw("decryptor#34#%")
 		client:bufferraw("PN#"..(data.players).."#"..(data.maxplayers).."#%")
 		client:bufferraw("ID#"..(process.firstempty).."#"..(data.software).."#"..(data.version).."#%")
-		client:bufferraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cccc_ic_support#arup#casing_alerts#looping_sfx#%")--noencryption,
+		client:bufferraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cccc_ic_support#arup#casing_alerts#looping_sfx#evidence#looping_sfx#additive#effects#%")--noencryption,
 	end
 	if call == "JOIN_ALLOW" then
 		local c = #process:getCharacters(client)
@@ -401,7 +416,13 @@ function AO2:send(client,process, call,data)
 	end
 
 	if call == "OOC" then
-		client:bufferraw("CT#"..self:escape(data.name).."#"..self:escape(data.message).."#%")
+		local msg = "CT#"
+		msg=msg..self:escape(data.name).."#"
+		msg=msg..self:escape(data.message).."#"
+		if data.server then
+			msg=msg.."1#"
+		end
+		client:bufferraw(msg.."%")
 	end
 	if call == "IC" then
 		local ms = "MS#"
@@ -492,6 +513,13 @@ function AO2:send(client,process, call,data)
 			t[#t+1] = 0
 			t[#t+1] = 1
 		end
+		t[#t+1] = data.sfx_looping and 1 or 0
+		t[#t+1] = data.screenshake and 1 or 0
+		t[#t+1] = ""
+		t[#t+1] = ""
+		t[#t+1] = ""
+		t[#t+1] = data.append and 1 or 0
+		t[#t+1] = data.effect or ""
 
 		client:bufferraw(ms..table.concat(t,"#").."#%")
 	end
@@ -503,6 +531,15 @@ function AO2:send(client,process, call,data)
 		mc=mc .. self:getCharacterId(client, data.character).."#"
 		if data.name then
 			mc=mc..self:escape(tostring(data.name)).."#"
+		end
+		if data.looping then
+			mc=mc..(data.looping and 1 or 0).."#"
+		end
+		if data.channel then
+			mc=mc..(self:tointeger(data.channel) or 0).."#"
+		end
+		if data.effects then
+			mc=mc..string.byte(tostring(data.effects)).."#"
 		end
 		client:bufferraw(mc.."%")
 	end
@@ -538,6 +575,23 @@ function AO2:send(client,process, call,data)
 			local list = ""
 			client:bufferraw("ARUP#3#"..table.concat(data,"#").."#%")
 		end
+	end
+
+	if call == "SIDE" then
+		local side = "wit"
+		if data.side == SIDE_DEF then side = "def"
+		elseif data.side == SIDE_PRO then side = "pro"
+		elseif data.side == SIDE_JUD then side = "jud"
+		elseif data.side == SIDE_HLD then side = "hld"
+		elseif data.side == SIDE_HLP then side = "hlp"
+		elseif data.side == SIDE_JUR then side = "jur"
+		elseif data.side == SIDE_SEA then side = "sea"
+		end
+		client:bufferraw("SP#"..side.."#%")
+	end
+	if call == "SIDE_LIST" then
+		local list = table.concat(data,"*")
+		client:bufferraw("SD#"..list.."#%")
 	end
 
 	if call == "ITEM_LIST" then
