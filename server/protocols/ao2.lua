@@ -161,13 +161,6 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	pair = self:tointeger(pair)
 	hscroll = self:tointeger(hscroll)
 
-	flip = self:tointeger(flip) == 1
-	realization = self:tointeger(realization) == 1
-	shake = self:tointeger(shake) == 1
-	no_interrupt = self:tointeger(no_interrupt)  == 1
-	sfx_looping = self:tointeger(sfx_looping) == 1
-	append = self:tointeger(sfx_append) == 1
-
 	--Make sure the message is safe.
 	if not (desk and pre_emote and character and emote and message and side and sfx_name
 	and emote_modifier and char_id and sfx_delay and shout_modifier and evidence
@@ -178,10 +171,14 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	if not (sfx_delay >= 0) then return end
 --	if not (shout_modifier >= 0 and shout_modifier < 6) then return end
 	if not (evidence >= 0) then return end
---TODO: Test if shake works yet.
---	if not (realization == 0 or realization == 1) then return end --WebAO cannot see messages with this value as 2
-	--if not (text_color >= 0 and text_color < 9) then return end
+
 	message = self:unescape(message)
+	flip = self:tointeger(flip) == 1
+	realization = self:tointeger(realization) == 1
+	shake = self:tointeger(shake) == 1
+	no_interrupt = self:tointeger(no_interrupt) == 1
+	sfx_looping = self:tointeger(sfx_looping) == 1
+	append = self:tointeger(sfx_append) == 1
 
 	--Update values for processing
 	local zoom = emote_modifier == 5 or emote_modifier == 6
@@ -214,8 +211,6 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	else side = SIDE_JUR
 	end
 
-	no_interrupt=no_interrupt == 1
-
 	if not no_interrupt and emote_modifier == 0 or emote_modifier > 4
 	or pre_emote == "-" or zoom then
 		pre_emote = nil
@@ -224,6 +219,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	end
 
 	if pair then
+		pair_id = pair
 		pair = self:getCharacterName(client,pair)
 	end
 
@@ -231,7 +227,6 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 		showname = nil
 	end
 
-	--sfx_looping, shake, frames_shake, frames_realization, frames_sfx, additive, effect
 	process:send(client,"IC", {
 		dialogue=message,
 		character=character,
@@ -266,21 +261,22 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 		append=append,
 
 		char_id=char_id,
+		pair_id=pair_id,
 
 		effect=effect,
 	})
 end
 
-AO2.input["MC"] = function(self,client,process,call, track, id, cc_showname, looping, channel, effects)
+AO2.input["MC"] = function(self,client,process,call, track, id, cc_showname, effects)
 	if not track or not self:tointeger(id) then return end
 	if track == "" then return end
 	process:send(client,"MUSIC", {
 		track = self:unescape(tostring(track)),
 		character = self:getCharacterName(client, self:tointeger(id)),
 		name = cc_showname and cc_showname ~= "0" and self:unescape(tostring(cc_showname)),
-		looping = self:tointeger(looping) == 1,
+		looping = self:tointeger(looping),
 		channel = self:tointeger(channel),
-		effects = effects and string.byte(effects)
+		effects = self:tointeger(effects),
 	})
 end
 
@@ -380,7 +376,7 @@ function AO2:send(client,process, call,data)
 		client:bufferraw("decryptor#34#%")
 		client:bufferraw("PN#"..(data.players).."#"..(data.maxplayers).."#%")
 		client:bufferraw("ID#"..(process.firstempty).."#"..(data.software).."#"..(data.version).."#%")
-		client:bufferraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cccc_ic_support#arup#casing_alerts#looping_sfx#evidence#looping_sfx#additive#effects#%")--noencryption,
+		client:bufferraw("FL#yellowtext#customobjections#flipping#deskmod#fastloading#modcall_reason#cccc_ic_support#arup#casing_alerts#looping_sfx#evidence#additive#effects#%")--noencryption,
 	end
 	if call == "JOIN_ALLOW" then
 		local c = #process:getCharacters(client)
@@ -417,8 +413,8 @@ function AO2:send(client,process, call,data)
 
 	if call == "OOC" then
 		local msg = "CT#"
-		msg=msg..self:escape(data.name).."#"
-		msg=msg..self:escape(data.message).."#"
+		msg=msg..self:escape(data.name or "").."#"
+		msg=msg..self:escape(data.message or "").."#"
 		if data.server then
 			msg=msg.."1#"
 		end
@@ -495,7 +491,7 @@ function AO2:send(client,process, call,data)
 		--Shownames.
 		t[#t+1] = data.name or ""
 		--Character pairing.
-		local pair_id = self:getCharacterId(client, data.pair) or -1
+		local pair_id = data.pair_id or self:getCharacterId(client, data.pair) or -1
 		if pair_id ~= -1 and data.pair and data.pair_emote then
 			t[#t+1] = pair_id or -1
 			t[#t+1] = data.pair or ""
@@ -504,7 +500,7 @@ function AO2:send(client,process, call,data)
 			t[#t+1] = data.pair_hscroll or 0
 			t[#t+1] = data.pair_flip and 1 or 0
 			t[#t+1] = data.no_interrupt and 1 or 0
-		elseif data.no_interrupt then
+		else
 			t[#t+1] = -1
 			t[#t+1] = ""
 			t[#t+1] = ""
@@ -514,7 +510,7 @@ function AO2:send(client,process, call,data)
 			t[#t+1] = 1
 		end
 		t[#t+1] = data.sfx_looping and 1 or 0
-		t[#t+1] = data.screenshake and 1 or 0
+		t[#t+1] = data.shake and 1 or 0
 		t[#t+1] = ""
 		t[#t+1] = ""
 		t[#t+1] = ""
@@ -529,17 +525,12 @@ function AO2:send(client,process, call,data)
 		local mc = "MC#"
 		mc=mc .. self:escape(tostring(data.track)).."#"
 		mc=mc .. self:getCharacterId(client, data.character).."#"
-		if data.name then
-			mc=mc..self:escape(tostring(data.name)).."#"
-		end
+		mc=mc..self:escape(tostring(data.name or "")).."#"
 		if data.looping then
-			mc=mc..(data.looping and 1 or 0).."#"
-		end
-		if data.channel then
+			if not data.name then mc=mc.."#" end
+			mc=mc..(data.looping or 0).."#"
 			mc=mc..(self:tointeger(data.channel) or 0).."#"
-		end
-		if data.effects then
-			mc=mc..string.byte(tostring(data.effects)).."#"
+			mc=mc..(self:tointeger(data.effects) or 0).."#"
 		end
 		client:bufferraw(mc.."%")
 	end

@@ -173,6 +173,7 @@ function process:send(client, call, data)
 		end
 	end
 	if call == "IC" then
+		print("IC RECEIVED")
 		self:protocolStringAssert(call,data, "dialogue","character","emote")
 
 		if self:event("emote", client, data) then
@@ -193,7 +194,13 @@ function process:send(client, call, data)
 				local mp_received = self:clone(data)
 
 				if self:event("music_received", client, receiver, mp_received) then
-					self:sendMusic(receiver,mp_received.track,mp_received.character,mp_received.name)
+					self:sendMusic(receiver,
+					mp_received.track,
+					mp_received.character,
+					mp_received.name,
+					mp_received.looping,
+					mp_received.channel,
+					mp_received.effects)
 				end
 			end
 		end
@@ -480,7 +487,7 @@ function process:sendMessage(receiver,message,ooc_name)
 		message=message
 	}
 
-	if ooc.name then
+	if not ooc_name then
 		ooc.name = config.serverooc
 		ooc.server = true
 	end
@@ -499,7 +506,7 @@ function process:sendEmote(client,emote)
 	local ic = self:clone(emote)
 	client:send("IC", ic)
 end
-function process:sendMusic(client,music,character,name)
+function process:sendMusic(client,music,character,name,looping,channel,effects)
 	local track = type(music) == "table" and music:getName() or tostring(music)
 	client.music = track
 
@@ -513,7 +520,14 @@ function process:sendMusic(client,music,character,name)
 		end
 	end
 
-	client:send("MUSIC", {track=track, character=character, name=name})
+	client:send("MUSIC", {
+		track=track,
+		character=character,
+		name=name,
+		looping=looping,
+		channel=channel,
+		effects=effects,
+	})
 end
 function process:sendEvent(client,t)
 	client:send("EVENT", t)

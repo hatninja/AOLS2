@@ -21,6 +21,7 @@ webfixer
 bghelper
 emotehelper
 charhelper
+musichelper
 iniswap
 spacers
 
