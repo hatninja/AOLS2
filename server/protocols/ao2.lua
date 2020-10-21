@@ -528,7 +528,7 @@ function AO2:send(client,process, call,data)
 		mc=mc..self:escape(tostring(data.name or "")).."#"
 		if data.looping then
 			if not data.name then mc=mc.."#" end
-			mc=mc..(data.looping or 0).."#"
+			mc=mc..(data.looping and 1 or 0).."#"
 			mc=mc..(self:tointeger(data.channel) or 0).."#"
 			mc=mc..(self:tointeger(data.effects) or 0).."#"
 		end
