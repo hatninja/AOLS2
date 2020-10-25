@@ -22,7 +22,14 @@ function ao2advertiser:connect(ip,port)
 		client:settimeout(0)
 		self.client = client
 
-		local heartbeat = "SCC#"..tostring(config.port).."#"..tostring(config.name).."#"..tostring(config.desc).."#"..tostring(process.server.software).."#%"
+		local heartbeat = "SCC#"..tostring(config.port)
+		heartbeat=heartbeat.."#"..tostring(config.name)
+		heartbeat=heartbeat.."#"..tostring(config.desc)
+		heartbeat=heartbeat.."#"..tostring(process.server.software)
+		if config.assets then
+			heartbeat=heartbeat.."#"..tostring(config.assets)
+		end
+		hearbeat=hearbeat.."#%"
 		client:send(heartbeat,1,#heartbeat)
 		self.lastupdate = process.time
 
