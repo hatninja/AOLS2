@@ -57,29 +57,6 @@ function rooms:command(client, cmd,str,args)
 			return true
 		end
 	end
-	if cmd == "cm" then
-		local id = tonumber(args[1])
-		local name = not id and str
-		local player
-		if id then
-			player = process:getPlayer(id)
-		else
-			player = client
-		end
-
-		if player.room then
-			local room = client.room
-			if not room.cm or client == room.cm then
-				room.cm = player
-				process:sendMessage(room,client:getIdent().." set the CM of the room to ["..tostring(player.id).."]!")
-			end
-			if client == room.cm then
-				room.cm = nil
-				process:sendMessage(room,client:getIdent().." reset the room's CM!")
-			end
-		end
-		return true
-	end
 end
 
 function rooms:move(client, targetroom, room)
