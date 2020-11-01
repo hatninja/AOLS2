@@ -45,7 +45,7 @@ function AO2:update(client,process)
 		end
 
 		if self.input[args[1]] then
-			self.input[args[1]](self,client,process,table.unpack(args))
+			self.input[args[1]](self,client,process,unpack(args))
 		else
 			print("Unknown message: "..tostring(args[1]),bit and self:decryptStr(self:hexToString(tostring(args[1])),5))
 		end
