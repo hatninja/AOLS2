@@ -29,7 +29,7 @@ function ao2advertiser:connect(ip,port)
 		if config.assets then
 			heartbeat=heartbeat.."#"..tostring(config.assets)
 		end
-		hearbeat=hearbeat.."#%"
+		heartbeat=heartbeat.."#%"
 		client:send(heartbeat,1,#heartbeat)
 		self.lastupdate = process.time
 
