@@ -70,7 +70,7 @@ function communication:trackOOCname(client, ooc)
 		ooc.name = ooc.name:match("^%s*(.-)%s*$")
 
 		for player in process:eachPlayer() do
-			if player ~= client	and player.ip ~= client.ip
+			if (player ~= client and player.ip ~= client.ip)
 			and (ooc.name == player.name) then
 				process:sendMessage(client,"Your nickname is already in use!")
 				return true
@@ -91,18 +91,19 @@ end
 
 function communication:trackshowname(client, emote)
 	if not emote.name then
-		emote.name = emote.character
+	--	emote.name = emote.character
 	end
 	if emote.name then
 		emote.name = emote.name:match("^%s*(.-)%s*$")
 
 		--Allow same shownames if in different rooms, but never allow a showname of a username.
 		for player in process:eachPlayer() do
-			if player ~= client	and player.ip ~= client.ip
-			and ((player.room == client.room and emote.name == player.showname)
-			or (emote.name == player.name)) then
-				process:sendMessage(client,"Your character/showname is already in use!")
-				return true
+			if (player ~= client and player.ip ~= client.ip) then
+				if ((player.room == client.room and emote.name == player.showname)
+				or (emote.name == player.name)) then
+					process:sendMessage(client,"Your character/showname is already in use!")
+					return true
+				end
 			end
 		end
 
