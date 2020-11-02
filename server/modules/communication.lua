@@ -100,7 +100,7 @@ function communication:trackshowname(client, emote)
 		for player in process:eachPlayer() do
 			if (player ~= client and player.ip ~= client.ip) then
 				if ((player.room == client.room and emote.name == player.showname)
-				or (emote.name == player.name)) then
+				or (emote.name == player.name and emote.name ~= "")) then
 					process:sendMessage(client,"Your character/showname is already in use!")
 					return true
 				end

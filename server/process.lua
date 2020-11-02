@@ -524,9 +524,9 @@ function process:sendMusic(client,music,character,name,looping,channel,effects)
 		track=track,
 		character=character,
 		name=name,
-		looping=looping,
-		channel=channel,
-		effects=effects,
+		looping=type(music) == "table" and music.looping or looping,
+		channel=type(music) == "table" and music.channel or channel,
+		effects=type(music) == "table" and music.effects or effects,
 	})
 end
 function process:sendEvent(client,t)
