@@ -267,7 +267,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	})
 end
 
-AO2.input["MC"] = function(self,client,process,call, track, id, cc_showname, effects)
+AO2.input["MC"] = function(self,client,process,call, track, id, cc_showname, effects, looping, channel)
 	if not track or not self:tointeger(id) then return end
 	if track == "" then return end
 	process:send(client,"MUSIC", {
@@ -525,8 +525,8 @@ function AO2:send(client,process, call,data)
 		local mc = "MC#"
 		mc=mc .. self:escape(tostring(data.track)).."#"
 		mc=mc .. self:getCharacterId(client, data.character).."#"
-		mc=mc..self:escape(tostring(data.name or "")).."#"
-		if data.looping then
+		mc=mc .. self:escape(tostring(data.name or "")).."#"
+		if data.looping or data.channel or data.effects then
 			if not data.name then mc=mc.."#" end
 			mc=mc..(data.looping and 1 or 0).."#"
 			mc=mc..(self:tointeger(data.channel) or 0).."#"

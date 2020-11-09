@@ -78,7 +78,7 @@ function rooms:joinroom(client,r)
 
 	self:print(client:getIdent().." joined room: "..room.name)
 
-	process:sendMusic(client,room.music)
+	process:sendMusic(client,room.music,-1,nil,1,0,0)
 	process:sendBG(client,room.bg)
 	if room.hp then
 		process:sendEvent(client,{event="hp",side=1,amount=room.hp[1]})
