@@ -7,6 +7,8 @@ function verbosewrite(msg)
 	end
 end
 
+if table.unpack then unpack = table.unpack end
+
 local f = io.open(path.."config/config.lua")
 if not f then
 	print("Configuration not found at 'config/', unable to start.")
