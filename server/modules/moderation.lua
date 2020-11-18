@@ -221,6 +221,16 @@ function moderation:command(client, cmd,str,args)
 		self:print("A mod loaded modules: "..str)
 		return true
 	end
+	if cmd == "unload" then
+		local modules = args
+
+		for i,name in ipairs(modules) do
+			process:removeModule(name)
+		end
+
+		self:print("A mod un-loaded modules: "..str)
+		return true
+	end
 end
 
 function moderation:check(client)
