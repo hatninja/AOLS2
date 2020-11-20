@@ -19,6 +19,7 @@ return function(c) --Note: Every variable here is printable as a command, via mi
 	c.iniswap = true --Allow iniswaps to work or not.
 
 	c.serverooc = "(*^v^)/"
+	c.viewertime = 120 --How long (in seconds) clients can watch the server from the masterlist before being kicked.
 
 	--Module: motd
 	c.motd = "Welcome to a default server!\nSee `/help` for commands."

@@ -307,7 +307,7 @@ function process:updateClient(client)
 			self:sendMusic(client,client.music,-1)
 		end
 	else
-		if self.time > client.jointime+30 then
+		if self.time > client.jointime+(config.viewertime or 120) then
 			client:close()
 		end
 	end
