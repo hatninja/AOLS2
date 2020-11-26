@@ -173,7 +173,6 @@ function process:send(client, call, data)
 		end
 	end
 	if call == "IC" then
-		print("IC RECEIVED")
 		self:protocolStringAssert(call,data, "dialogue","character","emote")
 
 		if self:event("emote", client, data) then
