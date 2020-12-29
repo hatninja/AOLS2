@@ -49,10 +49,10 @@ function rooms:init()
 	process:registerCallback(self,"player_done", 5,self.joinroom)
 	process:registerCallback(self,"player_leave", 1,self.leaveroom)
 
-	process:registerCallback(self,"item_add", 4,self.item_add)
-	process:registerCallback(self,"item_edit", 4,self.item_edit)
-	process:registerCallback(self,"item_remove", 4,self.item_remove)
-	process:registerCallback(self,"item_list", 4,self.item_list)
+	process:registerCallback(self,"item_add", 1,self.item_add)
+	process:registerCallback(self,"item_edit", 1,self.item_edit)
+	process:registerCallback(self,"item_remove", 1,self.item_remove)
+	process:registerCallback(self,"item_list", 1,self.item_list)
 
 	process:registerCallback(self,"done", 5,self.done)
 end
@@ -112,20 +112,39 @@ function rooms:item_add(client,item)
 	local room = client.room
 	if room then
 		table.insert(room.evidence,item)
+
+		for player in process:eachPlayer() do
+			if player ~= client and room == player.room then
+				process:sendItems(player,{})
+			end
+		end
 	end
 end
 function rooms:item_edit(client,id,item)
 	local room = client.room
 	if room and tonumber(id) and room.evidence[id+1] then
 		room.evidence[id+1] = item
+
+		for player in process:eachPlayer() do
+			if player ~= client and room == player.room then
+				process:sendItems(player,{})
+			end
+		end
 	end
 end
 function rooms:item_remove(client,id)
 	local room = client.room
 	if room and tonumber(id) and room.evidence[id+1] then
 		table.remove(room.evidence, id+1)
+
+		for player in process:eachPlayer() do
+			if player ~= client and room == player.room then
+				process:sendItems(player,{})
+			end
+		end
 	end
 end
+--Manually add the items from the room into the displayed list.
 function rooms:item_list(client,list)
 	local room = client.room
 	if room then
