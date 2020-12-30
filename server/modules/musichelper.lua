@@ -13,15 +13,17 @@ end
 
 function music:musicbutton(client, music)
 	music.looping = true
+	music.channel = 0
 end
 
 function music:command(client, cmd,str,args)
-	--if cmd == "play" then
-	--end
+	if cmd == "play" then
+	end
 end
 
 function music:musicreceived(client, music)
 	music.looping = true
+	music.channel = 0
 end
 
 
