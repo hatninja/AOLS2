@@ -27,15 +27,11 @@ Bit library operations are required for WebSocket support.
 * Hot-reloading of modules supported.
 
 
-##Modules
+## Modules
 Found in [server/modules/](server/modules). Modules extend the basic functionality of the server using callbacks, and enable a wide range of features to work through events.
 
-####Commands
+#### Commands
 Commands are implemented via Modules, for this repository's list, see [Commands](Commands.md).
 
-##Protocols
+## Protocols
 Found in [server/protocols/](server/protocols). Protocols are the translation layer between raw socket messages and the server process itself. Using message objects that can pass-through back to clients, this allows the server to function independently of what a protocol may require.  
-
-Documentation exists in the [Interface Guide](server/protocols/Interface Guide.txt)
-
-The goal of AOLS2 is to eventually support the next Attorney Online protocol.
