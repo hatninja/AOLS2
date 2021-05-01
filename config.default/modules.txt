@@ -17,7 +17,6 @@ moderation
 antispam
 whois
 
-webfixer
 bghelper
 emotehelper
 charhelper

@@ -1,3 +1,0 @@
-#(Target Web Character) > (Character to replace)
-
-Ponco > Clonco

@@ -1,5 +1,0 @@
-#(Target Web BG) > (BG to replace)
-
-AADefendantLobby > AALobby
-
-#A list can be found in WebAO itself
