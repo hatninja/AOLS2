@@ -1,8 +1,9 @@
-return function(c) --Note: Every variable here is printable as a command, via misc.
-
+return function(c) --Note: Every variable here is printable as a command via misc.
 	--Server information
-	c.name = "AOLS2 Server" --Server's name.
+	c.name = "Default AOLS2 Server" --Server's name.
 	c.desc = "This is a default server." --Description.
+	c.shortname = "DAS" --Abbreviated name that may be used for identification.
+	c.serverooc = "(*^v^)/" --Name that shows for server messages.
 
 	--Connection settings
 	c.ip = "0.0.0.0" --The local ip to bind to. "*" is perfectly fine in most situations.
@@ -11,15 +12,19 @@ return function(c) --Note: Every variable here is printable as a command, via mi
 
 	--Software settings
 	c.rate = 1/8 --How fast to update the server, in seconds.
+	c.viewertime = 120 --How long (in seconds) unjoined clients can watch before being kicked.
+	c.iniswap = true --Allow iniswaps to work or not. Implemented by protocols/ao2.lua
 
+	--Debug settings
 	c.verbose = true --Verbose mode shows more descriptive messages. Use if developing.
 	c.autorestart = true --Automatically restart when the server experiences a crash.
 	c.strict = true --If the server isn't strict, it will ignore errors and keep running.
 	c.monitor = false --Reading of client-sent packets.
-	c.iniswap = true --Allow iniswaps to work or not.
 
-	c.serverooc = "(*^v^)/"
-	c.viewertime = 120 --How long (in seconds) clients can watch the server from the masterlist before being kicked.
+	--Module: ao2advertiser
+	c.ao2msip = "master.aceattorneyonline.com"
+	c.ao2msport = 27016
+	c.ao2advertise = false
 
 	--Module: motd
 	c.motd = "Welcome to a default server!\nSee `/help` for commands."
@@ -68,9 +73,4 @@ return function(c) --Note: Every variable here is printable as a command, via mi
 		"dog","sfx-yip",
 		"cat","sfx-meow",
 	}
-
-	--Module: ao2advertiser
-	c.ao2msip = "master.aceattorneyonline.com"
-	c.ao2msport = 27016
-	c.ao2advertise = false
 end
