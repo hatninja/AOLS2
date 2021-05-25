@@ -10,34 +10,29 @@ local Music = require("classes/music")
 local Character = require("classes/character")
 
 function process:start(server)
-	math.randomseed(os.time())
-	math.random()math.random()
-
 	self.server = server
 
-	self.mod = true
+	self.name = "Process"
+	self.time = 0
 
+
+	--Viewers are clients observing the server's status.
 	self.viewers = {}
 	self.viewercount = 0
 
+	--Players are clients that explicitly join the server.
 	self.players = {}
 	self.firstempty = 1
 	self.playercount = 0
 
-	self.rooms = {}
 
-	self.events = {}
-	self.callbacks = {}
-
-	self.modules = {}
-
+	--Built-in Functionality.
 	self.characters = {}
 	self.music = {}
 
-	self.time = 0
+	verbose("-Assets-\n")
 
-	verbosewrite("--Reading Assets--\n")
-
+	verbose("Reading from config/characters.txt\n")
 	local characters = self:loadList(path.."config/characters.txt")
 	for i,char in ipairs(characters) do
 		local s, e = char:find(": ")
@@ -46,8 +41,9 @@ function process:start(server)
 			e and track:sub(e+1,-1) or "wit"
 		)
 	end
-	verbosewrite(#self.characters.." characters loaded!\n")
+	verbose(#self.characters.." characters loaded!\n")
 
+	verbose("Reading from config/music.txt\n")
 	self.music = {}
 	local music = self:loadList(path.."config/music.txt")
 	for i,track in ipairs(music) do
@@ -57,46 +53,59 @@ function process:start(server)
 			e and tonumber(track:sub(e+1,-1)) or 0
 		)
 	end
-	verbosewrite(#self.music.." music tracks loaded!\n")
+	verbose(#self.music.." music tracks loaded!\n")
 
+	verbose("-Events-\n")
+	--Module functionality.
+	self.modules = {}
+	self.events = {}
+	self.callbacks = {}
 
-	self:registerEvent("client_join")
-	self:registerEvent("player_join")
-	self:registerEvent("player_done")
-	self:registerEvent("player_leave")
-	self:registerEvent("player_update")
+	self:registerEvents(
+		"client_join",
+		"player_join",
+		"player_done",
+		"player_leave",
+		"player_update"
+	)
+	self:registerEvents(
+		"done",
+		"update",
+		"close",
+		"remove_module"
+	)
+	self:registerEvents(
+		"ooc",
+		"ooc_received",
+		"emote",
+		"emote_received",
+		"music_play",
+		"music_received",
+		"event_play",
+		"event_received",
+		"bg_received",
+		"call_mod",
+		"character_pick"
+	)
+	self:registerEvents(
+		"list_characters",
+		"list_music"
+	)
+	self:registerEvents(
+		"item_add",
+		"item_remove",
+		"item_edit",
+		"item_list"
+	)
 
-	self:registerEvent("done")
-	self:registerEvent("update")
-	self:registerEvent("close")
+	verbose("-Modules-\n")
 
-	self:registerEvent("ooc")
-	self:registerEvent("ooc_received")
-	self:registerEvent("emote")
-	self:registerEvent("emote_received")
-	self:registerEvent("music_play")
-	self:registerEvent("music_received")
-	self:registerEvent("event_play")
-	self:registerEvent("event_received")
-	self:registerEvent("bg_received")
-	self:registerEvent("call_mod")
-	self:registerEvent("character_pick")
-
-	self:registerEvent("list_characters")
-	self:registerEvent("list_music")
-
-	self:registerEvent("item_add")
-	self:registerEvent("item_remove")
-	self:registerEvent("item_edit")
-	self:registerEvent("item_list")
-
-
-	verbosewrite("--Loading Modules--\n")
+	verbose("Reading from config/modules.txt\n")
 	local modules = self:loadList(path.."config/modules.txt")
 	for i,name in ipairs(modules) do
 		local suc, err = self:loadModule(name)
 		if not suc then
-			print("👎 Error with "..name..": "..err)
+			print(f("👎 Error with ${1}: ${2}",name,err))
 		end
 	end
 	for i,name in ipairs(modules) do
@@ -104,10 +113,11 @@ function process:start(server)
 		if module then
 			if type(module.init) == "function" then
 				module:init(self)
-				verbosewrite("👍 '"..name.."' loaded!\n")
+				verbose(f("👍 '${1}' loaded!\n",name))
 			end
 		end
 	end
+
 	self:event("done",process)
 end
 
@@ -123,6 +133,8 @@ function process:send(client, call, data)
 
 			maxplayers = config.maxplayers,
 			players = self.playercount,
+
+			uptime = self.time,
 		})
 	end
 	if call == "JOIN_REQ" then
@@ -274,7 +286,7 @@ function process:join(client)
 	Player.init(client)
 
 	self:event("player_join",client)
-	self:print("Player "..client.ip ..":".. client.port .." joined with ID: ".. client.id)
+	self:print(f("Player ${ip}:${port} joined with ID: ${id}",client))
 end
 
 function process:disconnect(client)
@@ -325,7 +337,6 @@ function process:protocolStringAssert(call,data,...)
 		end
 	end
 end
-
 function process:protocolNumberAssert(call,data,...)
 	local list = {...}
 	for i,key in ipairs(list) do
@@ -355,7 +366,7 @@ function process:loadModule(name)
 		module.print = self.print
 		self.modules[name] = module
 	else
-		verbosewrite("👎 Warning: No module object in '"..name.."'\n")
+		verbose("👎 Warning: No module object in '"..name.."'\n")
 	end
 	return module
 end
@@ -363,9 +374,11 @@ end
 function process:removeModule(name)
 	local module = self.modules[name]
 	if not module then
-		verbosewrite("👎 Warning: Module '"..name.."' already removed!\n")
+		verbose("👎 Warning: Module '"..name.."' already removed!\n")
 		return
 	end
+
+	self:event("close_module",name)
 
 	self.modules[name] = nil
 	for event,callbacks in pairs(self.callbacks) do
@@ -382,13 +395,18 @@ end
 function process:assertValue(value,kind,argi)
 	if type(value) ~= kind then error("Error: Expected "..kind.." value at argument #"..argi.."! Got "..type(value).." instead.",3) end
 end
------------------------
---General API functions
------------------------
-function process:print(text)
-	print(os.date("%x %H:%M",os.time()).." ["..(self.name or "N/A").."] "..text)
+-------------------------
+--General API functions--
+-------------------------
+--Modules
+function process:print(text,...)
+	local formatted = f(text,...)
+	print(f("${1} [${2}] ${3}",os.date("%x %H:%M",os.time()),self.name,formatted))
 end
-
+function process:getModule(name)
+	return name and self.modules[name]
+end
+--Events & Callbacks
 function process:event(name,...)
 	if not self.events[name] then
 		print("Warning: Sent unregistered event: '"..name.."'")
@@ -399,6 +417,22 @@ function process:event(name,...)
 		end
 	end
 	return true
+end
+function process:registerEvents(...)
+	local newEvents = {...}
+	verbose("Registered event: ")
+	for i=1,#newEvents do
+		local name = tostring(newEvents[i])
+		if self.callbacks[name] then
+			print("Warning: Tried to register '"..name.."' twice!")
+			return
+		end
+
+		verbose((i==1 and "" or ", ")..name)
+		self.events[name] = true
+		self.callbacks[name] = {}
+	end
+	verbose("\n")
 end
 function process:registerCallback(module,name,priority,func)
 	if type(module) ~= "table" then error("Expected module object at arg #1!",2) end
@@ -413,16 +447,7 @@ function process:registerCallback(module,name,priority,func)
 	table.insert(self.callbacks[name],{func,priority,module})
 	table.sort(self.callbacks[name],function(a,b) return a[2] > b[2] end)
 end
-function process:registerEvent(name)
-	if self.callbacks[name] then
-		print("Warning: Tried to register '"..name.."' twice!")
-		return
-	end
-	verbosewrite("Registered event: "..name.."\n")
-	self.events[name] = true
-	self.callbacks[name] = {}
-end
-
+--General Utility
 function process:loadList(dir)
 	local t = {}
 	local file = io.open(dir)
@@ -447,7 +472,7 @@ function process:saveList(list,dir)
 		file:close()
 	end
 end
-
+--Process Utility
 function process:getCharacters(client)
 	local characters = self:clone(self.characters)
 	if self:event("list_characters", client, characters) then
@@ -479,7 +504,7 @@ function process:eachPlayer()
 		return self.players[id]
 	end
 end
-
+--Specialized Senders
 function process:sendMessage(receiver,message,ooc_name)
 	local ooc = {
 		name=ooc_name,
@@ -545,7 +570,16 @@ function process:sendItems(client,list)
 		client:send("ITEM_LIST", list)
 	end
 end
-
+function process:sendNotice(client,msg)
+	client:send("NOTICE", {message = msg})
+end
+function process:sendKick(client,msg)
+	client:send("KICK", {reason = msg})
+end
+function process:sendBan(client,msg)
+	client:send("BAN", {reason = msg})
+end
+--Process Behaviour
 function process:getSideName(side)
 	if side == SIDE_WIT then return "Witness"
 	elseif side == SIDE_DEF then return "Defense"
@@ -557,6 +591,12 @@ function process:getSideName(side)
 	elseif side == SIDE_SEA then return "Seance"
 	else return "N/A"
 	end
+end
+
+--DEPRECATED
+function process:registerEvent(name)
+	trace(2) warn "registerEvent is deprecated!"
+	self:registerEvents(name)
 end
 
 return process
