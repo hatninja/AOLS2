@@ -7,58 +7,69 @@ Protocols
 	Translates raw client messages into process-readable objects and vice-versa.
 ]]
 
-local RECEIVEMAX = 2048
+local RECEIVEMAX = 4096
 local SENDMAX = 4096
 
 local server = {
 	software = "AOLS2",
-	version = "2.0",
+	version = "3.0",
 }
 
-local Client = require("classes/client")
+local Client = dofile(path.."server/classes/client.lua")
 
 function server:start()
-	self:listen()
+	verbose(self.software.." ("..self.version..")\n")
+
 	self:reload()
+	self:listen()
 end
 
 function server:listen()
+	verbose("-Socket-\n")
 	self.socket = socket.tcp()
 	self.socket:setoption("reuseaddr",true)
 	self.socket:setoption("keepalive",true)
 	self.socket:settimeout(0)
 
 	assert(self.socket:bind(config.ip,config.port))
-	local ip,port = self.socket:getsockname()
-	verbosewrite("Bound to "..ip..":"..port..".\n")
+
+	self.ip,self.port = self.socket:getsockname()
+	verbose(f("Bound to ${ip}:${port}\n",self))
 
 	assert(self.socket:listen(config.maxplayers))
-	print("Server is now listening for up to "..config.maxplayers.." players.")
+	print(f("Server is now listening for up to ${maxplayers} players.",config))
 end
 
 function server:reload()
+	--reload() may be called more than once to update configuration.
 	if self.process then
 		self.process:close()
 	end
-
-	config = {}
-	dofile(path.."config/config.lua")(config)
-
 	if self.clients then
 		for k,client in pairs(self.clients) do
 			client:close()
 		end
 	end
+
+	config = {}
+	dofile(path.."config/config.lua")(config)
+
 	self.clients = {}
 
-	self.protocols = {
-		dofile(path.."server/protocols/ao2.lua"),
-		dofile(path.."server/protocols/websocket.lua"),
-	}
+	self.protocols = {}
+	local file = io.open(path.."config/protocols.txt")
+	if file then
+		for line in file:lines() do
+			if line:sub(1,1) ~= "#" and line:find("%S") then
+				local protocol = dofile(path.."server/protocols/"..line..".lua")
+				table.insert(self.protocols,1,protocol)
+			end
+		end
+		file:close()
+	end
 
 	self.process = dofile(path.."server/process.lua")
 	self.process:start(self)
-	print("--Finished, now running--")
 end
 
 function server:close()
@@ -68,7 +79,7 @@ function server:close()
 	self.kill = true
 end
 
-local self = server
+local self = server --Lua 5.1 compatibility hack
 function server.update()
 	--Accept new connections
 	repeat
@@ -85,23 +96,17 @@ function server.update()
 
 	for k,client in pairs(self.clients) do
 		--Receive data
-		local data = ""
-		repeat
-			local char,err = client:receive(1)
-			if char then
-				data = data .. char
-				if #data > RECEIVEMAX then --Failsafe against impossibly large messages.
-					print("Receiving excessive data!",client:getAddress())
-					client:close()
-					data=""
-					break
-				end
+		local data,err = client:receive(RECEIVEMAX)
+		if data then
+			client.received = client.received .. data
+			if #data == RECEIVEMAX then
+				print("Receiving excessive data!",client:getAddress())
+				client:close()
 			end
-		until not char
-		client.received = client.received .. data
+		end
 
 		--Detect and assign a client's protocol
-		if not client.protocol then
+		if not client.protocol and not client:isClosed() then
 			for i,protocol in ipairs(self.protocols) do
 				if protocol:detect(client,self.process) then
 					self.process:accept(client)
@@ -113,10 +118,11 @@ function server.update()
 		--Update client
 		if client.protocol then
 			self.process:updateClient(client)
+			if client:isClosed() then
+				self.process:disconnect(client)
+			end
 		end
-		if client.protocol then
-			client.protocol:update(client,self.process)
-		end
+		client:update()
 
 		--Send data
 		local data = client.buffer:sub(1,SENDMAX)
