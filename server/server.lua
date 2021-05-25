@@ -15,7 +15,7 @@ local server = {
 	version = "3.0",
 }
 
-local Client = dofile(path.."server/classes/client.lua")
+local Client = require("classes/client")
 
 function server:start()
 	verbose(self.software.." ("..self.version..")\n")
