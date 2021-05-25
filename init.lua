@@ -1,14 +1,7 @@
 path = debug.getinfo(1, "S").source:sub(2,-9)
 config = {}
 
-function verbosewrite(msg)
-	if config.verbose then
-		io.write(msg)
-	end
-end
-
-if table.unpack then unpack = table.unpack end
-
+--Check for config.lua
 local f = io.open(path.."config/config.lua")
 if not f then
 	print("Configuration not found at 'config/', unable to start.")
@@ -17,7 +10,7 @@ end
 f:close()
 
 
-print "--Loading configuration--"
+print "--Run Sequence--"
 
 	dofile(path.."config/config.lua")(config)
 
@@ -25,29 +18,38 @@ print "--Loading configuration--"
 		return
 	end
 
+	--Set require paths to be relative to 'server/'
+	package.path = path.."server/?.lua;" .. package.path
+	--Unpack compatibility
+	if table.unpack then unpack = table.unpack end
 
-print "--Loading dependencies--"
+	local log = require("logging")
+	log.globalise()
+	verbose "Initialized logging tools.\n"
 
-	if not dofile(path.."server/loader.lua") then return end
-	verbosewrite "Requirements met!\n"
+	local translator = require("translator")
+	translator.globalise()
+	verbose "Initialized translating tools.\n"
+
+	if not require("dependencies") then return end
 
 
 print "--Starting server--"
-
-	--Set require paths to be relative to 'server/'
-	package.path = path.."server/?.lua;" .. package.path
 
 	require("constants")
 	server = require("server")
 	server:start()
 
-	--Do update loop.
+
+print "--Start finished, now running--"
+
+	--Update loop.
 	while not server.kill do
 		local st = os.clock()
 
 		local g,err = xpcall(server.update, debug.traceback)
 		if not g then
-			print("FATAL ERROR: "..tostring(err))
+			print(tostring(err))
 			if config.strict then
 				if config.autorestart then
 					print("RESTARTING!")
@@ -63,8 +65,9 @@ print "--Starting server--"
 		if time < config.rate then
 			socket.sleep(config.rate-time)
 		else
-			print("Stutter detected! Maybe your update rate is too fast?")
+			print("Stutter detected!","+"..tostring((time-config.rate)*1000).."ms")
 		end
+
 	end
 
 print "Safely shut down server!"
