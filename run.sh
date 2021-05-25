@@ -1,2 +1,2 @@
 #!/bin/sh
-luajit init.lua
+lua init.lua
