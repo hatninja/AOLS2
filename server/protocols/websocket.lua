@@ -9,7 +9,7 @@ local websocket = {
 }
 
 local mime = require("mime")
-local sha1 = dofile(path.."server/libraries/sha1.lua")
+local sha1 = require("libraries/sha1")
 
 function websocket:detect(client,process)
 	if not bit then return end
