@@ -3,7 +3,7 @@ local process = ...
 
 local DISPLAY_RATE = 3
 
-local rooms = {
+local rooms_status = {
 	name = "Rooms",
 
 	help = {
@@ -13,12 +13,10 @@ local rooms = {
 	}
 }
 
-function rooms:init()
-	self.parent = process.modules["rooms"]
+function rooms_status:init()
+	self.parent = process:getModule("rooms")
 
-	process:registerEvent("room_doc")
-	process:registerEvent("room_status")
-	process:registerEvent("room_cm")
+	process:registerEvents("room_doc","room_status","rooms_cm")
 
 	process:registerCallback(self,"room_doc", 1,self.send_info)
 	process:registerCallback(self,"room_status", 1,self.send_info)
@@ -46,7 +44,7 @@ function rooms:init()
 	self.lockchange = false
 end
 
-function rooms:done()
+function rooms_status:done()
 	--Must match the area list in the area selector
 	self.roomlist = {}
 	for k,room in pairs(self.parent.rooms) do
@@ -56,7 +54,7 @@ function rooms:done()
 	end
 end
 
-function rooms:update()
+function rooms_status:update()
 	self.updatetimer = self.updatetimer - config.rate
 	if self.updatetimer <= 0 then
 		self.updatetimer = self.updatetimer + DISPLAY_RATE
@@ -93,7 +91,7 @@ function rooms:update()
 	end
 end
 
-function rooms:displaycount(client)
+function rooms_status:displaycount(client)
 	local counts = {}
 	for i,v in pairs(self.roomlist) do
 		table.insert(counts,v.count)
@@ -107,7 +105,7 @@ function rooms:displaycount(client)
 		end
 	end
 end
-function rooms:displaystatus(client)
+function rooms_status:displaystatus(client)
 	local statuses = {}
 	for i,v in pairs(self.roomlist) do
 		table.insert(statuses,v.status or "")
@@ -121,7 +119,7 @@ function rooms:displaystatus(client)
 		end
 	end
 end
-function rooms:displaycm(client)
+function rooms_status:displaycm(client)
 	local cms = {}
 	for i,v in pairs(self.roomlist) do
 		local cm = "None"
@@ -140,7 +138,7 @@ function rooms:displaycm(client)
 	end
 end
 
-function rooms:displaylock(client)
+function rooms_status:displaylock(client)
 	local locks = {}
 	for i,v in pairs(self.roomlist) do
 		local lock = "OPEN"
@@ -166,11 +164,11 @@ function rooms:displaylock(client)
 	end
 end
 
-function rooms:send_info()
+function rooms_status:send_info()
 	self.updatetimer = 0
 end
 
-function rooms:command(client, cmd,str,args)
+function rooms_status:command(client, cmd,str,args)
 	if cmd == "doc" then
 		local room = client.room
 		if room then
@@ -238,24 +236,24 @@ function rooms:command(client, cmd,str,args)
 	end
 end
 
-function rooms:join(client)
+function rooms_status:join(client)
 	self:displaystatus(client)
 	self:displaycm(client)
 	self:displaylock(client)
 	self.countchange = true
 end
 
-function rooms:count_update()
+function rooms_status:count_update()
 	self.countchange = true
 end
-function rooms:cm_update()
+function rooms_status:cm_update()
 	self.cmchange = true
 end
-function rooms:lock_update()
+function rooms_status:lock_update()
 	self.lockchange = true
 end
-function rooms:status_update()
+function rooms_status:status_update()
 	self.statuschange = true
 end
 
-return rooms
+return rooms_status

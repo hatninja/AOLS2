@@ -1,6 +1,6 @@
 local process = ...
 
-local rooms = {
+local rooms_logging = {
 	name = "Rooms",
 
 	help = {
@@ -8,7 +8,7 @@ local rooms = {
 	}
 }
 
-function rooms:init()
+function rooms_logging:init()
 	self.parent = process.modules["rooms"]
 
 	process:registerCallback(self,"emote",0,function(self,client,emote)
@@ -29,7 +29,7 @@ function rooms:init()
 	process:registerCallback(self,"command", 3,self.command)
 end
 
-function rooms:welcometoroom(client,room)
+function rooms_logging:welcometoroom(client,room)
 	process:sendBG(client,room.bg)
 	process:sendMessage(room,client:getIdent().." joined this room.")
 
@@ -38,7 +38,7 @@ function rooms:welcometoroom(client,room)
 	end
 end
 
-function rooms:command(client, cmd,str,args)
+function rooms_logging:command(client, cmd,str,args)
 	if not self.parent then return end
 	if cmd == "areainfo" or cmd == "roominfo" or cmd == "ai" or cmd == "ri" then
 
@@ -84,13 +84,14 @@ function rooms:command(client, cmd,str,args)
 	end
 end
 
-function rooms:connected(client)
+--TODO: Allow for lang functionality.
+function rooms_logging:connected(client)
 	local msg = client:getIdent().." connected to the server."
 
 	process:sendMessage(client.room,msg)
 end
 
-function rooms:disconnected(client)
+function rooms_logging:disconnected(client)
 	local msg = client:getIdent().." disconnected."
 
 	if client.room then
@@ -98,4 +99,4 @@ function rooms:disconnected(client)
 	end
 end
 
-return rooms
+return rooms_logging
