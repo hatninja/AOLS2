@@ -75,10 +75,8 @@ function misc:command(client, cmd,str,args)
 		local msg = tostring(process.server.software)
 		msg = msg .. " server version "
 		msg = msg .. tostring(process.server.version)
-		if client.mod then
-			msg = msg .. "\nMemory: " ..(collectgarbage("count")/1024) .. "MiB"
-			msg = msg .. "\nAlive: " ..(process.time/60/60) .. " hours"
-		end
+		msg = msg .. "\nMemory: " ..(collectgarbage("count")/1024) .. "MiB"
+		msg = msg .. "\nAlive: " ..(process.time/60/60) .. " hours"
 		process:sendMessage(client,msg)
 		return true
 	end
