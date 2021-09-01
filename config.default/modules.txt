@@ -13,6 +13,7 @@ clientlimit
 rejoiner
 spectator
 
+ipid
 moderation
 antispam
 whois

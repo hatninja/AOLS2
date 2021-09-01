@@ -50,8 +50,9 @@ function whois:command(client, cmd,str,args)
 				msg=msg.."\nModerator: Yes"
 			end
 			if client.mod then
-				msg=msg.."\nAddress: "..tostring(player.ip)..":"..tostring(player.port)
-				msg=msg.."\nHardware: "..tostring(player.hardwareid)
+				msg = msg.."\nIPID: "..tostring(player.ipid)
+				--[[msg=msg.."\nAddress: "..tostring(player.ip)..":"..tostring(player.port)
+				msg=msg.."\nHardware: "..tostring(player.hardwareid)]]
 			end
 
 			msg=msg.."\nRoom: "..tostring(player.room and player.room.name)
@@ -94,7 +95,7 @@ function whois:command(client, cmd,str,args)
 		return true
 	end
 	if cmd == "getareas" then
-		local rooms_module = process.modules["rooms"]
+		local rooms_module = process:getModule("rooms")
 		if rooms_module then
 			local msg = "Total players: "..(process.playercount)
 			for k,room in pairs(rooms_module.rooms) do
