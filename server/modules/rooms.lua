@@ -1,3 +1,32 @@
+--[[rooms.lua
+Handles the rooms sub-system in a module.
+Rooms are basically the Area functionality you may already be familiar with.
+
+------------------
+Registered Events:
+------------------
+rooms_reload
+Called when all rooms are read and done initializing.
+Rooms can theoretically be reloaded, which means the event may be called more than once..
+
+room_make(room)
+Called for each room initialized, allowing you to make additional changes to the object.
+
+player_move(client, target_room, source_room)
+Called before a player moves. You can interrupt by returning true.
+
+------------------
+Useful Methods:
+------------------
+:getRoom(id)
+Get a room object by id, returns nil if no such room exists with it.
+
+:moveto(player,target_room, override)
+Moves a player to a different room.
+This will call player_move event to check if the player can move, except if override is true.
+It will fail if the player is already inside the targeted room.
+
+]]
 local process = ...
 
 local rooms = {
@@ -5,34 +34,10 @@ local rooms = {
 	rooms = {},
 }
 
-local Room = require(path.."server/classes/room")
-
-function rooms:reload()
-	self.rooms = {}
-	local id = dofile(path.."config/rooms.lua")(self.rooms)
-
-	for k,room in pairs(self.rooms) do
-		local newroom = Room:new(room, k)
-		self.rooms[k] = newroom
-		process:event("room_make",newroom)
-	end
-
-	self.defaultroom = self.rooms[id]
-	assert(self.defaultroom,"Invalid default room ID.")
-
-	for player in process:eachPlayer() do
-		self:joinroom(client,self.defaultroom)
-	end
-
-	process:event("rooms_reload")
-
-	self:print("Reloaded all rooms.")
-end
+local Room = require("server/classes/room")
 
 function rooms:init()
-	process:registerEvent("rooms_reload")
-	process:registerEvent("player_move")
-	process:registerEvent("room_make")
+	process:registerEvents("rooms_reload","player_move","room_make")
 
 	process:registerCallback(self,"music_play",1,function(self,client,music) --Track last played music.
 		if client.room then
@@ -54,11 +59,34 @@ function rooms:init()
 	process:registerCallback(self,"item_remove", 1,self.item_remove)
 	process:registerCallback(self,"item_list", 1,self.item_list)
 
+	process:registerCallback(self,"remove_module", 1,self.remove_module)
+
 	process:registerCallback(self,"done", 5,self.done)
 end
 
 function rooms:done()
 	self:reload()
+end
+function rooms:reload()
+	self.rooms = {}
+	local id = dofile(path.."config/rooms.lua")(self.rooms)
+
+	for k,room in pairs(self.rooms) do
+		local newroom = Room:new(room, k)
+		self.rooms[k] = newroom
+		process:event("room_make",newroom)
+	end
+
+	self.defaultroom = self.rooms[id]
+	assert(self.defaultroom,"Invalid default room ID.")
+
+	for player in process:eachPlayer() do
+		self:joinroom(client,self.defaultroom)
+	end
+
+	process:event("rooms_reload")
+
+	self:print("Reloaded all rooms.")
 end
 
 function rooms:roomcheck(sender, receiver, data)
@@ -96,7 +124,7 @@ function rooms:leaveroom(client)
 end
 
 function rooms:getRoom(id)
-	return self.rooms[id]
+	return id and self.rooms[id]
 end
 
 function rooms:moveto(client,targetroom,override)
@@ -151,6 +179,12 @@ function rooms:item_list(client,list)
 		for i,v in ipairs(room.evidence) do
 			table.insert(list,v)
 		end
+	end
+end
+
+function rooms:remove_module(module)
+	if module == "rooms" then
+		--self:leaveroom()
 	end
 end
 
