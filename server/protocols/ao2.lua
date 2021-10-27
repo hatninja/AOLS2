@@ -403,6 +403,9 @@ AO2.output["INFO_SEND"] = function(self,client,process,data)
 	client:bufferraw("PN#"..(data.players).."#"..(data.maxplayers).."#%")
 	client:bufferraw("ID#0#"..(data.software).."#"..(data.version).."#%")
 	client:bufferraw("FL#yellowtext#customobjections#flipping#fastloading#deskmod#evidence#modcall_reason#cccc_ic_support#arup#casing_alerts#looping_sfx#additive#effects#y_offset#expanded_desk_mods#auth_packet#%")
+	if config.assets and config.assets ~= "" then
+		client:bufferraw("ASS#"..tostring(config.assets).."#%")
+	end
 end
 
 AO2.output["JOIN_ALLOW"] = function(self,client,process,data)
