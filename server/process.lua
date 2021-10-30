@@ -28,7 +28,6 @@ function process:start(server)
 
 	--Built-in Functionality.
 	self.characters = {}
-	self.music = {}
 
 	verbose("-Assets-\n")
 
@@ -443,6 +442,9 @@ function process:registerEvents(...)
 	end
 	verbose("\n")
 end
+function process:registerEvent(name)
+	self:registerEvents(name)
+end
 function process:registerCallback(module,name,priority,func)
 	if type(module) ~= "table" then error("Expected module object at arg #1!",2) end
 	if not name then error("Expected event name at arg #2!",2) end
@@ -540,7 +542,7 @@ function process:sendEmote(client,emote)
 	client:send("IC", ic)
 end
 function process:sendMusic(client,music,character,name,looping,channel,effects)
-	local track = type(music) == "table" and music:getName() or tostring(music)
+	local track = type(music) == "table" and music.track or tostring(music)
 	client.music = track
 
 	client.loopat = nil
@@ -604,10 +606,5 @@ function process:getSideName(side)
 	end
 end
 
---DEPRECATED
-function process:registerEvent(name)
-	trace(2) warn "registerEvent is deprecated!"
-	self:registerEvents(name)
-end
 
 return process

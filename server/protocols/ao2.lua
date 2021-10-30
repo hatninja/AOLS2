@@ -82,7 +82,7 @@ AO2.input["askchaa"] = function(self,client,process,call)
 	local characters =  AO2:makeNameList(process:getCharacters(client),"name")
 	self.state[client].char_list = characters
 
-	local music =  AO2:makeNameList(process:getMusic(client),"name")
+	local music =  AO2:makeNameList(process:getMusic(client),"track")
 	self.state[client].music_list = music
 
 	self.state[client].hp = {0,0}
