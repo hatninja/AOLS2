@@ -12,7 +12,7 @@ local SENDMAX = 4096
 
 local server = {
 	software = "AOLS2",
-	version = "3.0",
+	version = "git",
 }
 
 local Client = require("classes/client")
