@@ -65,6 +65,7 @@ function process:start(server)
 		"client_join",
 		"player_join",
 		"player_done",
+		"player_side",
 		"player_leave",
 		"player_update"
 	)
@@ -232,6 +233,10 @@ function process:send(client, call, data)
 		end
 	end
 
+	if call == "SIDE" then
+		self:event("player_side",client,data.side)
+	end
+
 	if call == "ITEM_ADD" then
 		self:protocolStringAssert(call,data, "name","description","image")
 		if self:event("item_add",client,data) then
@@ -284,6 +289,9 @@ function process:join(client)
 	self.playercount = self.playercount + 1
 
 	Player.init(client)
+
+	--AOLS2 doesn't support custom sides yet, so we'll just set a default for 2.9
+	client:send("SIDE_LIST",{"def","pro","jud","wit","hld","hlp","jur"})
 
 	self:event("player_join",client)
 	self:print(f("Player ${ip}:${port} joined with ID: ${id}",client))
@@ -413,6 +421,7 @@ function process:event(name,...)
 	end
 	if self.callbacks[name] then
 		for i,callback in ipairs(self.callbacks[name]) do
+			--Have safe calls here?
 			if callback[1](callback[3],...) then return false end
 		end
 	end
@@ -575,9 +584,11 @@ function process:sendNotice(client,msg)
 end
 function process:sendKick(client,msg)
 	client:send("KICK", {reason = msg})
+	client:close()
 end
 function process:sendBan(client,msg)
 	client:send("BAN", {reason = msg})
+	client:close()
 end
 --Process Behaviour
 function process:getSideName(side)

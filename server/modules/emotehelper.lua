@@ -15,31 +15,12 @@ function emotehelper:init()
 	process:registerCallback(self,"command",3,self.command)
 	process:registerCallback(self,"emote",3,self.handle)
 	process:registerCallback(self,"character_pick",3,self.resetside)
+	process:registerCallback(self,"player_side",3,self.setside)
 end
 
 function emotehelper:command(client, cmd,str,args)
 	if cmd == "pos" then
-		local arg = string.lower(tostring(str))
-		local side
-		if arg:sub(1,3) == "def" then side = SIDE_DEF
-		elseif arg:sub(1,3) == "pro" then side = SIDE_PRO
-		elseif arg == "jud" or arg == "judge" then side = SIDE_JUD
-		elseif arg == "wit" or arg == "witness" then side = SIDE_WIT
-		elseif arg == "hld" or arg == "helper" then side = SIDE_HLD
-		elseif arg == "hlp" then side = SIDE_HLP
-		elseif arg:sub(1,3) == "jur" then side = SIDE_JUR
-		elseif arg:sub(1,3) == "sea" then side = SIDE_SEA
-		end
-		if side then
-			if process:event("pos",client,side) then
-				client.side = side
-				process:sendMessage(client,"Changed position!")
-			else
-				process:sendMessage(client,"Cannot change position!")
-			end
-		else
-			process:sendMessage(client,"Invalid side name!")
-		end
+		self:setside(client,str)
 		return true
 	end
 	if cmd == "desk" then
@@ -94,6 +75,30 @@ end
 function emotehelper:resetside(client, name)
 	if client.character ~= name then
 		client.side = nil
+	end
+end
+
+function emotehelper:setside(client, str)
+	local arg = string.lower(tostring(str))
+	local side
+	if arg:sub(1,3) == "def" then side = SIDE_DEF
+	elseif arg:sub(1,3) == "pro" then side = SIDE_PRO
+	elseif arg == "jud" or arg == "judge" then side = SIDE_JUD
+	elseif arg == "wit" or arg == "witness" then side = SIDE_WIT
+	elseif arg == "hld" or arg == "helper" then side = SIDE_HLD
+	elseif arg == "hlp" then side = SIDE_HLP
+	elseif arg:sub(1,3) == "jur" then side = SIDE_JUR
+	elseif arg:sub(1,3) == "sea" then side = SIDE_SEA
+	end
+	if side then
+		if process:event("pos",client,side) then
+			client.side = side
+			process:sendMessage(client,"Changed position!")
+		else
+			process:sendMessage(client,"Cannot change position!")
+		end
+	else
+		process:sendMessage(client,"Invalid side name!")
 	end
 end
 

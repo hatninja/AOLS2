@@ -1,4 +1,4 @@
---The Attorney Online 1.x/2.x protocol. Supports up to 2.9.1.
+--The Attorney Online 1.x/2.x protocol. Supports up to 2.8
 --The AO protocol documentation can be found here:
 --https://github.com/AttorneyOnline/docs/blob/master/docs/development/network.md
 local AO2 = {
@@ -13,10 +13,10 @@ local AO2 = {
 function AO2:detect(client,process) --Simple timer, attempt to connect if nothing sent. AO2 really needs a handshake...
 	if not self.state[client] then
 		self.state[client] = {}
-		self.state[client].time = os.clock()
+		self.state[client].time = process.time
 	end
 
-	if os.clock() > self.state[client].time+0.001
+	if (client.received == "" and process.time > self.state[client].time)
 	or client.received:find("615810BC07D139")
 	or client.received:find("615810BC07D12A5A")
 	or client.received:find("48E0")
@@ -318,8 +318,10 @@ AO2.input["RT"] = function(self,client,process,call, event, ...)
 	local name
 	if event == "testimony1" then
 		name = "witness_testimony"
-		if ... then
-			name = "disable_testimony"
+		if ... == "1" then
+			name = "clear_testimony"
+		else
+			name = "add_testimony"
 		end
 	end
 	if event == "testimony2" then
@@ -335,6 +337,13 @@ AO2.input["RT"] = function(self,client,process,call, event, ...)
 	if name then
 		process:send(client,"EVENT", {
 			event=self:unescape(name),
+			iswoosh=true,
+		})
+	else
+		process:send(client,"EVENT", {
+			event="custom_woosh",
+			name=event,
+			iswoosh=true,
 		})
 	end
 end
@@ -363,6 +372,12 @@ AO2.input["EE"] = function(self,client,process,call, id,name,desc,image)
 		name=tostring(name),
 		description=tostring(desc),
 		image=tostring(image),
+	})
+end
+--Send position
+AO2.input["SP"] = function(self,client,process,call,...)
+	process:send(client,"SIDE", {
+		side = ...
 	})
 end
 
@@ -402,7 +417,7 @@ AO2.output["INFO_SEND"] = function(self,client,process,data)
 	client:bufferraw("decryptor#34#%")
 	client:bufferraw("PN#"..(data.players).."#"..(data.maxplayers).."#%")
 	client:bufferraw("ID#0#"..(data.software).."#"..(data.version).."#%")
-	client:bufferraw("FL#yellowtext#customobjections#flipping#fastloading#deskmod#evidence#modcall_reason#cccc_ic_support#arup#casing_alerts#looping_sfx#additive#effects#y_offset#expanded_desk_mods#auth_packet#%")
+	client:bufferraw("FL#yellowtext#customobjections#flipping#fastloading#deskmod#evidence#modcall_reason#cccc_ic_support#arup#casing_alerts#looping_sfx#additive#effects#%")
 	if config.assets and config.assets ~= "" then
 		client:bufferraw("ASS#"..tostring(config.assets).."#%")
 	end
@@ -577,6 +592,16 @@ AO2.output["EVENT"] = function(self,client,process,data)
 		client:bufferraw("RT#judgeruling#0#%")
 	elseif data.event == "verdict_guilty" then
 		client:bufferraw("RT#judgeruling#1#%")
+	elseif data.event == "clear_testimony" then
+		if self:vertonumber(client.version) >= 9000 then
+			client:bufferraw("RT#testimony1#1#%")
+		end
+	elseif data.event == "add_testimony" then
+		if self:vertonumber(client.version) >= 9000 then
+			client:bufferraw("RT#testimony1#0#%")
+		end
+	elseif data.event == "custom_event" then
+		client:bufferraw("RT#"..data.name.."#%")
 	elseif data.event == "hp" then
 		if self.state[client].hp then
 			self.state[client].hp[data.side] = data.amount
@@ -598,16 +623,21 @@ AO2.output["EVENT"] = function(self,client,process,data)
 end
 
 AO2.output["SIDE"] = function(self,client,process,data)
-	local side = "wit"
-	if data.side == SIDE_DEF then side = "def"
-	elseif data.side == SIDE_PRO then side = "pro"
-	elseif data.side == SIDE_JUD then side = "jud"
-	elseif data.side == SIDE_HLD then side = "hld"
-	elseif data.side == SIDE_HLP then side = "hlp"
-	elseif data.side == SIDE_JUR then side = "jur"
-	elseif data.side == SIDE_SEA then side = "sea"
+	local side = data.side
+	if type(side) == "number" then
+
+		if side == SIDE_DEF then side = "def"
+		elseif side == SIDE_PRO then side = "pro"
+		elseif side == SIDE_JUD then side = "jud"
+		elseif side == SIDE_HLD then side = "hld"
+		elseif side == SIDE_HLP then side = "hlp"
+		elseif side == SIDE_JUR then side = "jur"
+		elseif side == SIDE_SEA then side = "sea"
+		end
 	end
-	client:bufferraw("SP#"..side.."#%")
+	if side then
+		client:bufferraw("SP#"..side.."#%")
+	end
 end
 AO2.output["SIDE_LIST"] = function(self,client,process,data)
 	local list = table.concat(data,"*")
@@ -738,6 +768,13 @@ function AO2:getCharacterName(client,id)
 		end
 	end
 	return char_name
+end
+
+--Converts AO2 version numbers into a single number for easy comparison.
+function AO2:vertonumber(ver)
+	local major = tonumber(ver:match("%.(%d+)") or 1)*10
+	local minor = tonumber(ver:match("(%d+)^") or 0)*10
+	return tonumber(major..minor)
 end
 
 --Character list shenanigans.
