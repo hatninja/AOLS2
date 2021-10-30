@@ -31,7 +31,7 @@ function misc:command(client, cmd,str,args)
 		return true
 	end
 	if cmd == "diceroll" or cmd == "roll" then
-		local low = tonumber(args[1]) or 6
+		local low = tonumber(args[1]) or 20
 		local high = tonumber(args[2])
 
 		local result
