@@ -261,7 +261,7 @@ function process:send(client, call, data)
 	end
 
 	if call == "CLOSE" then
-		client:close()
+		client.kill=true
 	end
 end
 
@@ -309,6 +309,7 @@ function process:disconnect(client)
 		self.viewers[client] = nil
 		self.viewercount =  math.max(self.viewercount - 1, 0)
 	end
+	client:close()
 end
 
 function process:update()
@@ -318,6 +319,8 @@ function process:update()
 end
 
 function process:updateClient(client)
+	if not client.jointime then return end
+
 	if client.id then
 		self:event("player_update",client)
 
@@ -326,8 +329,11 @@ function process:updateClient(client)
 		end
 	else
 		if self.time > client.jointime+(config.viewertime or 120) then
-			client:close()
+			client.kill = true
 		end
+	end
+	if client.kill or client:isClosed() then
+		self:disconnect(client)
 	end
 end
 
@@ -586,11 +592,11 @@ function process:sendNotice(client,msg)
 end
 function process:sendKick(client,msg)
 	client:send("KICK", {reason = msg})
-	client:close()
+	client.kill=true
 end
 function process:sendBan(client,msg)
 	client:send("BAN", {reason = msg})
-	client:close()
+	client.kill=true
 end
 --Process Behaviour
 function process:getSideName(side)

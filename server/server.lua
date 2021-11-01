@@ -116,27 +116,18 @@ function server.update()
 		end
 
 		--Update client
-		if client.protocol then
-			self.process:updateClient(client)
-			if client:isClosed() then
-				self.process:disconnect(client)
-			end
-		end
+		self.process:updateClient(client)
 		client:update()
 
 		--Send data
 		local data = client.buffer:sub(1,SENDMAX)
-		if #data < #client.buffer then
-			print("Sending excessive data!",client:getAddress())
-		end
 		if #client.buffer > 0 then
 			client:sendraw(data)
 		end
 		client.buffer = client.buffer:sub(SENDMAX+1,-1)
 
-
-		--Remove closed clients
-		if not client.socket then
+		--Remove closed client
+		if client:isClosed() then
 			self.clients[k] = nil
 		end
 	end
