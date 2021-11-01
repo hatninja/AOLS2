@@ -4,6 +4,7 @@ return function(c) --Note: Every variable here is printable as a command via mis
 	c.desc = "This is a default server." --Description.
 	c.shortname = "DAS" --Abbreviated name that may be used for identification.
 	c.serverooc = "(*^v^)/" --Name that shows for server messages.
+	c.assets = "" --The URL to a base folder supplying the server's content. Not required.
 
 	--Connection settings
 	c.ip = "0.0.0.0" --The local ip to bind to. "*" is perfectly fine in most situations.
