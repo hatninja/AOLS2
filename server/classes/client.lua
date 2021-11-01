@@ -81,7 +81,9 @@ end
 function Client:send(...)
 	if self:isClosed() then return end
 
-	self.protocol:send(self,self.process,...)
+	if self.protocol then
+		self.protocol:send(self,self.process,...)
+	end
 end
 
 --[[Miscellaneous]]
