@@ -16,7 +16,7 @@ function AO2:detect(client,process) --Simple timer, attempt to connect if nothin
 		self.state[client].time = process.time
 	end
 
-	if (process.time > self.state[client].time+0.4)
+	if (client.received == "" and process.time > self.state[client].time)
 	or client.received:find("615810BC07D139")
 	or client.received:find("615810BC07D12A5A")
 	or client.received:find("48E0")
