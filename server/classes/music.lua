@@ -11,7 +11,7 @@ function Music:new(...)
 end
 
 function Music:init(name, length)
-	self.name = name
+	self.track = name
 	self.length = length
 end
 
@@ -20,7 +20,7 @@ function Music:getLength()
 end
 
 function Music:getName()
-	return self.name
+	return self.track
 end
 
 return Music
