@@ -193,11 +193,6 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 	local zoom = emote_modifier == 5 or emote_modifier == 6
 	local side_name = side
 
-	if desk == "1" then
-		desk = true
-	else
-		desk = false
-	end
 	if zoom then
 		desk = false
 
@@ -206,7 +201,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 			bg = "prosecution_speedlines"
 		end
 	end
-	if desk then
+	if desk == "1" then
 		fg = "desk"
 	else
 		fg = false
@@ -258,6 +253,7 @@ AO2.input["MS"] = function(self,client,process,call, ...) --No server is complet
 		bg=bg,
 		fg=fg,
 
+		desk=desk,
 		flip=flip,
 
 		pair=pair,
@@ -472,7 +468,7 @@ AO2.output["IC"] = function(self,client,process,data)
 	if client.software == "AO" or client.software == "webAO" then
 		t[#t+1] = "chat"
 	else
-		t[#t+1] = data.fg and 1 or 0
+		t[#t+1] = data.desk or data.fg and 1 or 0
 	end
 	t[#t+1] = self:escape(data.pre_emote or "none") --"-" completely disables sound.
 	t[#t+1] = self:escape(data.character or " ")
