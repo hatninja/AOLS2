@@ -27,7 +27,7 @@ end
 function log.globalise()
 	verbose = log.verbose
 	print = log.print
-
+	warn = log.warn
 	trace = log.trace
 end
 

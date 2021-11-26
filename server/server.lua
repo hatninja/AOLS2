@@ -34,10 +34,10 @@ function server:listen()
 	assert(self.socket:bind(config.ip,config.port))
 
 	self.ip,self.port = self.socket:getsockname()
-	verbose(f("Bound to ${ip}:${port}\n",self))
+	verbose("Bound to "..tostring(self.ip)..":"..tostring(self.port).."\n")
 
 	assert(self.socket:listen(config.maxplayers))
-	print(f("Server is now listening for up to ${maxplayers} players.",config))
+	print("Server is now listening for up to "..config.maxplayers.." players.")
 end
 
 function server:reload()

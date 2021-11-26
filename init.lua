@@ -27,10 +27,6 @@ print "--Run Sequence--"
 	log.globalise()
 	verbose "Initialized logging tools.\n"
 
-	local translator = require("translator")
-	translator.globalise()
-	verbose "Initialized translating tools.\n"
-
 	if not require("dependencies") then return end
 
 

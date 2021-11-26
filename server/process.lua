@@ -105,7 +105,7 @@ function process:start(server)
 	for i,name in ipairs(modules) do
 		local suc, err = self:loadModule(name)
 		if not suc then
-			print(f("👎 Error with ${1}: ${2}",name,err))
+			print("👎 Error with "..name..": "..err)
 		end
 	end
 	for i,name in ipairs(modules) do
@@ -113,7 +113,7 @@ function process:start(server)
 		if module then
 			if type(module.init) == "function" then
 				module:init(self)
-				verbose(f("👍 '${1}' loaded!\n",name))
+				verbose("👍 '"..name.."' loaded!\n")
 			end
 		end
 	end
@@ -293,7 +293,7 @@ function process:join(client)
 	client:send("SIDE_LIST",{"def","pro","jud","wit","hld","hlp","jur"})
 
 	self:event("player_join",client)
-	self:print(f("Player ${ip}:${port} joined with ID: ${id}",client))
+	self:print("Player "..tostring(client:getAddress()).." joined with ID: "..tostring(client.ip))
 end
 
 function process:disconnect(client)
@@ -412,9 +412,9 @@ end
 --General API functions--
 -------------------------
 --Modules
-function process:print(text,...)
-	local formatted = f(text,...)
-	print(f("${1} [${2}] ${3}",os.date("%x %H:%M",os.time()),self.name,formatted))
+function process:print(...)
+	local formatted = table.concat({... or ""},"\t")
+	print(os.date("%x %H:%M",os.time()).." ["..tostring(self.name).."] "..formatted)
 end
 function process:getModule(name)
 	return name and self.modules[name]
